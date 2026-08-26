@@ -1,7 +1,5 @@
 # Learn Claude Code -- 真正的 Agent Harness 工程
 
-[English](./README.md) | [中文](./README-zh.md) | [日本語](./README-ja.md)
-
 ## Agency 来自模型，Agent 产品 = 模型 + Harness
 
 在讨论代码之前，先把一件事说清楚。
@@ -267,7 +265,7 @@ def agent_loop(messages):
 ### 新版 17 章主线
 
 ```sh
-git clone https://github.com/shareAI-lab/learn-claude-code
+git clone https://github.com/huuuboo/learn-claude-code
 cd learn-claude-code
 
 # Mac 用户：双击「启动.command」即可（自动装依赖 + 首次引导填 DeepSeek key）
@@ -280,7 +278,7 @@ python run.py s16 demo        # s16 附带的 demo / resume 模式
 python s01_agent_loop/code.py # 各章代码仍可独立运行
 ```
 
-> **零基础学生分发**：在根目录运行 `bash 打包发布.sh`，会生成一个干净的学生版压缩包（自动排除 `.env` 里的真实 key 和 `.venv` 等）。学生解压后打开「使用说明.txt」，从第 0 步开始。
+> **零基础学生分发**：让学生下载本仓库（GitHub 页面点「Code → Download ZIP」，或 `git clone`），下载内容不含 `.env` 和 `.venv`。解压后打开「使用说明.txt」，从第 0 步开始。
 
 ### 旧版 12 章过渡线
 
@@ -396,50 +394,6 @@ learn-claude-code/
   docs/                    # 旧 12 章文档，过渡期保留
   web/                     # 从根目录课程生成
   tests/
-```
-
-## 学完之后 -- 从理解到落地
-
-17 个课程走完, 你已经从内到外理解了 harness 工程的运作原理。两种方式把知识变成产品:
-
-### Kode Agent CLI -- 开源 Coding Agent CLI
-
-> `npm i -g @shareai-lab/kode`
-
-支持 Skill & LSP, 适配 Windows, 可接 GLM / MiniMax / DeepSeek 等开放模型。装完即用。
-
-GitHub: **[shareAI-lab/Kode-CLI](https://github.com/shareAI-lab/Kode-CLI)**
-
-### Kode Agent SDK -- 把 Agent 能力嵌入你的应用
-
-官方 Claude Code Agent SDK 底层与完整 CLI 进程通信 -- 每个并发用户 = 一个终端进程。Kode SDK 是独立库, 无 per-user 进程开销, 可嵌入后端、浏览器插件、嵌入式设备等任意运行时。
-
-GitHub: **[shareAI-lab/kode-agent-sdk](https://github.com/shareAI-lab/kode-agent-sdk)**
-
----
-
-## 姊妹教程: 从*被动临时会话*到*主动常驻助手*
-
-本仓库教的 harness 属于 **用完即走** 型 -- 开终端、给 agent 任务、做完关掉, 下次重开是全新会话。Claude Code 就是这种模式。
-
-但 [OpenClaw](https://github.com/openclaw/openclaw) 证明了另一种可能: 在同样的 agent core 之上, 加两个 harness 机制就能让 agent 从 "踹一下动一下" 变成 "自己隔 30 秒醒一次找活干":
-
-- **心跳 (Heartbeat)** -- 每 30 秒 harness 给 agent 发一条消息, 让它检查有没有事可做。没事就继续睡, 有事立刻行动。
-- **定时任务 (Cron)** -- agent 可以给自己安排未来要做的事, 到点自动执行。
-
-再加上 IM 多通道路由 (WhatsApp/Telegram/Slack/Discord 等 13+ 平台)、不清空的上下文记忆、Soul 人格系统, agent 就从一个临时工具变成了始终在线的个人 AI 助手。
-
-**[claw0](https://github.com/shareAI-lab/claw0)** 是我们的姊妹教学仓库, 从零拆解这些 harness 机制:
-
-```
-claw agent = agent core + heartbeat + cron + IM chat + memory + soul
-```
-
-```
-learn-claude-code                   claw0
-(agent harness 内核:                 (主动式常驻 harness:
- 循环、工具、规划、                    心跳、定时任务、IM 通道、
- 团队、任务绑定的 worktree)             记忆、Soul 人格)
 ```
 
 ## 许可证
