@@ -30,6 +30,8 @@ s08_context_compact.py - Context Compact
     prompt_too_long -> reactive_compact -> retry once
 """
 
+from __future__ import annotations
+
 import glob
 import json
 import os
@@ -115,9 +117,11 @@ def run_edit(path: str, old_text: str, new_text: str) -> str:
 
 def run_glob(pattern: str) -> str:
     try:
+        base = WORKDIR.resolve()
         matches = [
-            match for match in glob.glob(pattern, root_dir=WORKDIR)
-            if (WORKDIR / match).resolve().is_relative_to(WORKDIR)
+            str(match.relative_to(base))
+            for match in base.glob(pattern)
+            if match.resolve().is_relative_to(base)
         ]
         return "\n".join(matches) if matches else "(no matches)"
     except Exception as error:

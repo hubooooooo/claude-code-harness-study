@@ -313,8 +313,8 @@ This task produces at least 5 file results. Every result remains complete until 
 ### Experiment 2: Persist a Large Result
 
 ```text
-Analyze the structure of web/src/data/generated/docs.json
-and explain the main fields in one lesson record.
+Analyze the structure of s16_workflow_runtime/code.py
+and explain the main methods of the WorkflowRunner class.
 ```
 
 When the file exceeds the per-turn budget, the task can still finish and the complete result appears under `.task_outputs/tool-results/`.

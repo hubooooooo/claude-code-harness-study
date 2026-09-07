@@ -20,6 +20,8 @@ Hooks run callbacks at fixed points in the agent loop:
          +---------------- tool_result ------------------+
 """
 
+from __future__ import annotations
+
 import os
 import subprocess
 from pathlib import Path
@@ -92,9 +94,10 @@ def run_glob(pattern: str) -> str:
     import glob as g
     try:
         results = []
-        for match in g.glob(pattern, root_dir=WORKDIR):
-            if (WORKDIR / match).resolve().is_relative_to(WORKDIR):
-                results.append(match)
+        base = WORKDIR.resolve()
+        for match in base.glob(pattern):
+            if match.resolve().is_relative_to(base):
+                results.append(str(match.relative_to(base)))
         return "\n".join(results) if results else "(no matches)"
     except Exception as e:
         return f"Error: {e}"

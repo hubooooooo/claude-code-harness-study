@@ -313,8 +313,8 @@ s01_agent_loop から s05_todo_write までの README.md を読み、
 ### 実験 2：大きな結果を保存する
 
 ```text
-web/src/data/generated/docs.json のデータ構造を調べ、
-1 件のレッスン記録に含まれる主なフィールドを説明してください。
+s16_workflow_runtime/code.py の構造を調べ、
+WorkflowRunner クラスの主なメソッドを説明してください。
 ```
 
 ファイルが 1 ラウンドの予算を超える場合でもタスクは続行でき、完全な結果が `.task_outputs/tool-results/` に保存されます。

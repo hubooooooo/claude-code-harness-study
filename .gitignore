@@ -201,9 +201,6 @@ cython_debug/
 .worktrees/
 .scheduled_tasks.json
 
-# Accidental root npm lockfile; web/package-lock.json is tracked.
-/package-lock.json
-
 # Ruff stuff:
 .ruff_cache/
 
@@ -222,11 +219,6 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# Web app
-web/node_modules/
-web/.next/
-web/out/
-.vercel
 .env*.local
 test_providers.py
 

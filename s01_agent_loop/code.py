@@ -29,6 +29,8 @@ Usage:
     ANTHROPIC_API_KEY=... python s01_agent_loop/code.py
 """
 
+from __future__ import annotations
+
 import os
 import subprocess
 

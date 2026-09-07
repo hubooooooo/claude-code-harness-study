@@ -18,6 +18,8 @@ the parent conversation.
 The subagent has no task tool, so it cannot delegate again.
 """
 
+from __future__ import annotations
+
 import os
 import subprocess
 from pathlib import Path
@@ -102,9 +104,10 @@ def run_glob(pattern: str) -> str:
     import glob
     try:
         matches = []
-        for match in glob.glob(pattern, root_dir=WORKDIR):
-            if (WORKDIR / match).resolve().is_relative_to(WORKDIR):
-                matches.append(match)
+        base = WORKDIR.resolve()
+        for match in base.glob(pattern):
+            if match.resolve().is_relative_to(base):
+                matches.append(str(match.relative_to(base)))
         return "\n".join(matches) if matches else "(no matches)"
     except Exception as e:
         return f"Error: {e}"

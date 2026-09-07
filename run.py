@@ -18,13 +18,22 @@ Mac 用户：双击「启动.command」即可（自动装依赖 + 引导填 key�
 """
 
 import os
+import re
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 from typing import Optional
 
 ROOT = Path(__file__).resolve().parent
 VENV_DIR = ROOT / ".venv"
+MIN_PYTHON = (3, 9)
+
+# 优先清华镜像；若失败则退回官方 PyPI，降低不同网络环境下的安装失败率。
+PIP_INDEXES = [
+    ("清华镜像", "https://pypi.tuna.tsinghua.edu.cn/simple"),
+    ("官方 PyPI", "https://pypi.org/simple"),
+]
 
 # (编号, 目录名, 标题, 说明)
 LESSONS = [
@@ -71,14 +80,36 @@ def _red(text: str) -> str:
     return _c(text, "31")
 
 
+def python_version_ok() -> bool:
+    return sys.version_info >= MIN_PYTHON
+
+
+def check_python_version() -> bool:
+    if python_version_ok():
+        return True
+    print(_red("\n当前 Python 版本过低，无法运行本项目课程。"))
+    print(f"当前版本: {sys.version.split()[0]}")
+    print(f"需要版本: 3.9 或更高（推荐 3.11 / 3.12）")
+    print(_cyan("双击「启动.command」会自动帮你处理；或到 https://www.python.org/downloads/ 安装。"))
+    print()
+    return False
+
+
 def find_lesson(query: str):
     """按编号 / sXX / 目录名 / 标题关键词 查找章节。"""
-    q = query.strip().lower()
+    q = unicodedata.normalize("NFKC", query).strip().lower()
     if not q:
         return None
-    # 纯数字 -> s03（自动补零，3 -> s03，17 -> s17）
-    if q.isdigit():
-        q = f"s{int(q):02d}"
+    # 统一编号输入：1 / 01 / s1 / s01 / s 1 / 全角数字都归一化为 sXX。
+    # 不能依赖 isdigit() 单独处理纯数字，否则 "s1" 会掉进模糊匹配并误命中 s10。
+    compact = re.sub(r"\s+", "", q)
+    match = re.fullmatch(r"s?(\d+)", compact)
+    if match:
+        number = int(match.group(1))
+        if 1 <= number <= len(LESSONS):
+            q = f"s{number:02d}"
+        else:
+            return None
     # 去掉可能的 "s" 前缀之外的空格等
     for num, folder, title, desc in LESSONS:
         if q in (num.lower(), folder.lower(), title.lower()) or q == folder:
@@ -194,13 +225,17 @@ def ensure_deps() -> bool:
             print()
             return False
 
-    ret = subprocess.call([
-        str(vp), "-m", "pip", "install", "-r", str(ROOT / "requirements.txt"),
-        "-i", "https://pypi.tuna.tsinghua.edu.cn/simple",
-    ])
-    if ret == 0 and venv_ready():
-        print(_green("✅ 环境准备完成。\n"))
-        return True
+    for index_name, index_url in PIP_INDEXES:
+        print(_cyan(f"  正在通过{index_name}安装依赖..."))
+        ret = subprocess.call([
+            str(vp), "-m", "pip", "install", "-r", str(ROOT / "requirements.txt"),
+            "-i", index_url,
+        ])
+        if ret == 0 and venv_ready():
+            print(_green("✅ 环境准备完成。\n"))
+            return True
+        print(_yellow(f"  {index_name}未成功，尝试下一种方式..."))
+
     print(_red("\n自动安装失败。请手动执行下面命令后重试：\n"))
     print(_cyan("  .venv/bin/python -m pip install -r requirements.txt"))
     print()
@@ -209,6 +244,8 @@ def ensure_deps() -> bool:
 
 def ensure_ready() -> bool:
     """确保依赖已装、key 已配置（key 缺失时交互式输入）。"""
+    if not check_python_version():
+        return False
     if not ensure_deps():
         return False
     if check_api_key():

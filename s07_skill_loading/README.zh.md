@@ -17,9 +17,9 @@ s01 → s02 → s03 → s04 → s05 → s06 → `s07` → [s08](../s08_context_c
 ```python
 SYSTEM = (
     f"You are a coding agent. "
-    + open("docs/react-style.md").read()
-    + open("docs/sql-style.md").read()
-    + open("docs/api-design.md").read()
+    + open("guides/react-style.md").read()
+    + open("guides/sql-style.md").read()
+    + open("guides/api-design.md").read()
 )
 ```
 

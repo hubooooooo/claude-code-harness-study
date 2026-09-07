@@ -17,9 +17,9 @@ Suppose a project has a React component specification, a SQL style guide, and an
 ```python
 SYSTEM = (
     f"You are a coding agent. "
-    + open("docs/react-style.md").read()
-    + open("docs/sql-style.md").read()
-    + open("docs/api-design.md").read()
+    + open("guides/react-style.md").read()
+    + open("guides/sql-style.md").read()
+    + open("guides/api-design.md").read()
 )
 ```
 

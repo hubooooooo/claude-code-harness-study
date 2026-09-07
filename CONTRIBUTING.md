@@ -7,7 +7,7 @@ This is a curated teaching repository. Each chapter (`sNN_topic/`) builds one id
 1. Tie it to a specific issue. Say what is wrong and why your change is the right fix. One PR addresses one issue.
 2. Keep teaching code minimal. Do not add production hardening, defensive parsing, error handling layers, abstractions, or a test framework unless the chapter is specifically about that. A simplification that looks like a bug is often deliberate, so ask in an issue first.
 3. Keep the three languages in sync. Any change to a chapter's `code.py` or a README must be reflected in all three language READMEs in that chapter folder, with the code blocks identical across them.
-4. Target the current course files (`sNN_topic/`), not legacy mirrors.
+4. Target the current course files (`sNN_topic/`).
 5. Disclose AI assistance. Using an agent is fine. Say so, and make sure you have read and stand behind the change.
 
 ## What gets closed without detailed review
@@ -30,7 +30,7 @@ Focused, clearly explained contributions from people who have actually worked wi
 1. 对应一个具体 issue。说清问题是什么、为什么你的改法是对的。一个 PR 只解决一个问题。
 2. 教学代码保持最简。不要加生产级的防御解析、错误处理层、抽象或测试框架,除非这一章本身就在讲这些。某处"像 bug"的简化往往是刻意的,先在 issue 里问一声。
 3. 三语保持同步。对某章 `code.py` 或 README 的改动,必须同步到该章目录下三种语言的 README,且其中代码块完全一致。
-4. 改现行课程文件(`sNN_topic/`),不要改旧的镜像目录。
+4. 改现行课程文件(`sNN_topic/`)。
 5. 声明 AI 协助。用 agent 没问题,但请说明,并确保你读过、也认可这份改动。
 
 ## 哪些会被直接关闭(不做详细评审)

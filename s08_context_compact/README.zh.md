@@ -313,8 +313,8 @@ python s08_context_compact/code.py
 ### 实验二：大结果转存
 
 ```text
-请分析 web/src/data/generated/docs.json 的数据结构，
-并说明一条课程记录包含哪些主要字段。
+请分析 s16_workflow_runtime/code.py 的结构，
+并说明 WorkflowRunner 类包含哪些主要方法。
 ```
 
 文件内容超过单轮预算时，终端仍能完成任务，同时 `.task_outputs/tool-results/` 中会出现完整结果文件。

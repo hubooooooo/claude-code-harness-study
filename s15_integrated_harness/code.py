@@ -18,6 +18,8 @@ Need: pip install anthropic python-dotenv pyyaml + .env with ANTHROPIC_API_KEY
     built-in tools      persistent teams      MCP tools
 """
 
+from __future__ import annotations
+
 import ast
 import atexit
 import fcntl
@@ -973,9 +975,9 @@ def run_glob(pattern: str, cwd: Path | None = None) -> str:
     try:
         base = (cwd or WORKDIR).resolve()
         results = []
-        for match in g.glob(pattern, root_dir=base):
-            if (base / match).resolve().is_relative_to(base):
-                results.append(match)
+        for match in base.glob(pattern):
+            if match.resolve().is_relative_to(base):
+                results.append(str(match.relative_to(base)))
         return "\n".join(results) if results else "(no matches)"
     except Exception as e:
         return f"Error: {e}"

@@ -797,10 +797,11 @@ class AgentSession:
             return f"Edited {path.relative_to(self.workdir)}"
 
         if name == "glob":
+            base = self.workdir.resolve()
             matches = [
-                match
-                for match in glob.glob(str(arguments["pattern"]), root_dir=self.workdir)
-                if (self.workdir / match).resolve().is_relative_to(self.workdir)
+                str(match.relative_to(base))
+                for match in base.glob(str(arguments["pattern"]))
+                if match.resolve().is_relative_to(base)
             ]
             return "\n".join(matches[:200]) if matches else "(no matches)"
 

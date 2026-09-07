@@ -18,6 +18,8 @@ Run:
                                    journal + result
 """
 
+from __future__ import annotations
+
 import asyncio
 import fcntl
 import hashlib

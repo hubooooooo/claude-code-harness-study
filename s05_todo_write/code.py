@@ -22,6 +22,8 @@ without an update, the harness adds a reminder alongside the tool results.
               rounds_since_todo >= 3 -> add <reminder>
 """
 
+from __future__ import annotations
+
 import ast
 import json
 import os
@@ -97,9 +99,10 @@ def run_glob(pattern: str) -> str:
     import glob as g
     try:
         results = []
-        for match in g.glob(pattern, root_dir=WORKDIR):
-            if (WORKDIR / match).resolve().is_relative_to(WORKDIR):
-                results.append(match)
+        base = WORKDIR.resolve()
+        for match in base.glob(pattern):
+            if match.resolve().is_relative_to(base):
+                results.append(str(match.relative_to(base)))
         return "\n".join(results) if results else "(no matches)"
     except Exception as e:
         return f"Error: {e}"

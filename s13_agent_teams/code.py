@@ -20,6 +20,8 @@ Need: pip install anthropic python-dotenv + .env with ANTHROPIC_API_KEY
     .worktrees/   optional task-bound working directories
 """
 
+from __future__ import annotations
+
 import fcntl
 import json
 import os
