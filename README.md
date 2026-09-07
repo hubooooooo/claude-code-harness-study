@@ -201,8 +201,6 @@ def agent_loop(messages):
 
 ## 零基础学生使用流程（推荐 Mac）
 
-如果学生完全不会代码，照着下面做即可。
-
 1. 打开项目 GitHub 页面，点右上角绿色 `Code` → `Download ZIP`，下载后解压。
 2. 进入解压后的文件夹，双击 `启动.command`。
    - 如果提示“无法打开/来自身份不明的开发者”：按住 `Control` 点按 `启动.command`，选“打开”，再点“打开”。
@@ -240,8 +238,6 @@ python run.py 3               # 直接运行指定章节（3 / s03 / agent_loop 
 python run.py s16 demo        # s16 附带的 demo / resume 模式
 python s01_agent_loop/code.py # 各章代码仍可独立运行
 ```
-
-> **零基础学生分发**：让学生下载本仓库（GitHub 页面点「Code → Download ZIP」，或 `git clone`），下载内容不含 `.env` 和 `.venv`。解压后打开「使用说明.txt」，从第 0 步开始。
 
 ## 学习路径
 
