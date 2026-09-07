@@ -199,15 +199,41 @@ def agent_loop(messages):
 
 这是一个从 0 到 1 的 harness 工程课程。每章先单独展开一个机制，s15 再把累积的运行时接回完整的 Agent 循环。s16 在这个循环上加入 workflow 编排；s17 用更小的工具池单独讲目标控制的续跑，不是又一个累积式运行时。
 
-## 快速开始
+## 零基础学生使用流程（推荐 Mac）
+
+如果学生完全不会代码，照着下面做即可。
+
+1. 打开项目 GitHub 页面，点右上角绿色 `Code` → `Download ZIP`，下载后解压。
+2. 进入解压后的文件夹，双击 `启动.command`。
+   - 如果提示“无法打开/来自身份不明的开发者”：按住 `Control` 点按 `启动.command`，选“打开”，再点“打开”。
+3. 保持联网等待。脚本会自动检查 Python；如果没有，会引导自动安装。弹出管理员密码框时，输入 Mac 开机密码。
+4. 第一次运行会自动安装依赖。看到 `请输入你的 DeepSeek API Key` 时：
+   - 打开 https://platform.deepseek.com/ 注册并登录；
+   - 在控制台创建 API Key 并复制；
+   - 回到终端窗口粘贴，然后按回车。
+5. 看到 `run >>` 菜单后，输入章节编号开始上课：
+   - `s01` 回车：第一课；
+   - 之后依次输入 `s02`、`s03` … `s17`；
+   - 课程里输入 `q`：退出当前章节，回到菜单；
+   - 菜单里输入 `q`：退出整个程序。
+6. 第二次以后，仍然双击 `启动.command`，即可直接进入课程。
+
+**Windows 用户**：目前自动安装脚本优先支持 Mac。Windows 请先到 https://www.python.org/downloads/ 安装 Python 3.11 或更高版本，安装时勾选 `Add Python to PATH`，然后在项目文件夹打开终端运行：
+
+```powershell
+python run.py
+```
+
+## 命令行方式（可选）
+
+如果你习惯用终端，也可以这样做：
 
 ```sh
 git clone https://github.com/huuuboo/learn-claude-code
 cd learn-claude-code
 
-# Mac 用户：双击「启动.command」即可（自动装依赖 + 首次引导填 DeepSeek key）
-# 或命令行方式：
-python3 run.py                # 自动装依赖 + 首次引导填 key + 菜单选择章节 s01–s17
+# 自动装依赖 + 首次引导填 key + 菜单选择章节 s01–s17
+python3 run.py
 
 # 高级用法：
 python run.py 3               # 直接运行指定章节（3 / s03 / agent_loop 均可）
