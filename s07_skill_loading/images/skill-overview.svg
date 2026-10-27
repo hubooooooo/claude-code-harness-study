@@ -1,55 +1,94 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 380" font-family="system-ui, -apple-system, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 410" font-family="'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif">
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M0 0 L10 5 L0 10 Z" fill="#2563eb"/>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
     </marker>
+    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
   </defs>
-  <rect width="800" height="380" rx="8" fill="#fafbfc"/>
-  <rect width="800" height="48" rx="8" fill="#1e3a5f"/>
-  <rect y="40" width="800" height="8" fill="#1e3a5f"/>
-  <text x="400" y="31" fill="#fff" font-size="16" font-weight="700" text-anchor="middle">Skill Loading — 目录进入 system prompt，完整内容进入 tool_result</text>
 
-  <text x="32" y="78" fill="#475569" font-size="11" font-weight="700">启动时</text>
-  <rect x="32" y="90" width="120" height="54" rx="6" fill="#fff" stroke="#64748b"/>
-  <text x="92" y="112" fill="#1e293b" font-size="11" font-weight="700" text-anchor="middle">skills/</text>
-  <text x="92" y="130" fill="#64748b" font-size="9" text-anchor="middle">*/SKILL.md</text>
-  <line x1="152" y1="117" x2="195" y2="117" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="198" y="90" width="130" height="54" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-  <text x="263" y="112" fill="#1e3a5f" font-size="11" font-weight="700" text-anchor="middle">SkillLoader.scan</text>
-  <text x="263" y="130" fill="#64748b" font-size="9" text-anchor="middle">解析 frontmatter</text>
-  <line x1="328" y1="117" x2="371" y2="117" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="374" y="90" width="130" height="54" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-  <text x="439" y="112" fill="#1e3a5f" font-size="11" font-weight="700" text-anchor="middle">技能目录</text>
-  <text x="439" y="130" fill="#64748b" font-size="9" text-anchor="middle">name + description</text>
-  <line x1="504" y1="117" x2="547" y2="117" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="550" y="90" width="218" height="54" rx="6" fill="#ecfdf5" stroke="#059669"/>
-  <text x="659" y="112" fill="#065f46" font-size="11" font-weight="700" text-anchor="middle">system prompt</text>
-  <text x="659" y="130" fill="#64748b" font-size="9" text-anchor="middle">基础指令 + 技能目录</text>
+  <!-- 背景 -->
+  <rect width="800" height="410" fill="#fafbfc" rx="8"/>
 
-  <text x="32" y="190" fill="#475569" font-size="11" font-weight="700">运行时</text>
-  <rect x="32" y="204" width="90" height="48" rx="6" fill="#fff" stroke="#2563eb"/>
-  <text x="77" y="233" fill="#1e293b" font-size="11" font-weight="700" text-anchor="middle">LLM</text>
-  <line x1="122" y1="228" x2="149" y2="228" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="152" y="204" width="110" height="48" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-  <text x="207" y="224" fill="#1e3a5f" font-size="10" font-weight="700" text-anchor="middle">load_skill</text>
-  <text x="207" y="240" fill="#64748b" font-size="9" text-anchor="middle">name</text>
-  <line x1="262" y1="228" x2="289" y2="228" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="292" y="204" width="100" height="48" rx="6" fill="#fff" stroke="#64748b"/>
-  <text x="342" y="224" fill="#1e293b" font-size="10" font-weight="700" text-anchor="middle">注册表查询</text>
-  <text x="342" y="240" fill="#64748b" font-size="9" text-anchor="middle">按名称</text>
-  <line x1="392" y1="228" x2="419" y2="228" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="422" y="204" width="110" height="48" rx="6" fill="#fff" stroke="#64748b"/>
-  <text x="477" y="224" fill="#1e293b" font-size="10" font-weight="700" text-anchor="middle">完整内容</text>
-  <text x="477" y="240" fill="#64748b" font-size="9" text-anchor="middle">SKILL.md</text>
-  <line x1="532" y1="228" x2="559" y2="228" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="562" y="204" width="100" height="48" rx="6" fill="#ecfdf5" stroke="#059669"/>
-  <text x="612" y="224" fill="#065f46" font-size="10" font-weight="700" text-anchor="middle">tool_result</text>
-  <text x="612" y="240" fill="#64748b" font-size="9" text-anchor="middle">返回模型</text>
-  <line x1="662" y1="228" x2="689" y2="228" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="692" y="204" width="76" height="48" rx="6" fill="#fff" stroke="#2563eb"/>
-  <text x="730" y="224" fill="#1e293b" font-size="10" font-weight="700" text-anchor="middle">messages[]</text>
-  <text x="730" y="240" fill="#64748b" font-size="9" text-anchor="middle">追加</text>
+  <!-- 标题栏 -->
+  <rect x="0" y="0" width="800" height="48" fill="url(#header)" rx="8"/>
+  <rect x="0" y="40" width="800" height="8" fill="url(#header)"/>
+  <text x="400" y="23" fill="#ffffff" font-size="15" font-weight="700" text-anchor="middle">技能加载 — 目录进入 system prompt，完整内容进入 tool_result</text>
+  <text x="400" y="40" fill="#bfdbfe" font-size="10" text-anchor="middle">Skill Loading — catalog in the system prompt, full content in tool_result</text>
 
-  <path d="M730 252 V316 H77 V252" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
-  <text x="403" y="309" fill="#475569" font-size="10" text-anchor="middle">下一次 LLM 调用继续使用更新后的 messages[]</text>
+  <!-- ===== 启动时 ===== -->
+  <text x="32" y="76" fill="#475569" font-size="11" font-weight="700">启动时 <tspan fill="#94a3b8" font-weight="400">(at startup)</tspan></text>
+
+  <!-- skills/ -->
+  <rect x="32" y="88" width="120" height="58" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="92" y="108" fill="#1e293b" font-size="11" font-weight="700" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">skills/</text>
+  <text x="92" y="123" fill="#64748b" font-size="9" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">*/SKILL.md</text>
+  <text x="92" y="137" fill="#64748b" font-size="9" text-anchor="middle">技能文件夹</text>
+  <line x1="152" y1="117" x2="196" y2="117" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <!-- SkillLoader.scan -->
+  <rect x="198" y="88" width="130" height="58" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="263" y="108" fill="#1e3a5f" font-size="11" font-weight="700" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">SkillLoader.scan</text>
+  <text x="263" y="123" fill="#475569" font-size="9" text-anchor="middle">扫描技能目录</text>
+  <text x="263" y="137" fill="#475569" font-size="9" text-anchor="middle">解析 YAML frontmatter</text>
+  <line x1="328" y1="117" x2="372" y2="117" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <!-- 技能目录 -->
+  <rect x="374" y="88" width="130" height="58" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="439" y="110" fill="#1e3a5f" font-size="11" font-weight="700" text-anchor="middle">技能目录 (catalog)</text>
+  <text x="439" y="130" fill="#475569" font-size="9" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">name + description</text>
+  <line x1="504" y1="117" x2="548" y2="117" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <!-- system prompt -->
+  <rect x="550" y="88" width="218" height="58" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="659" y="110" fill="#166534" font-size="11" font-weight="700" text-anchor="middle">系统提示词 (system prompt)</text>
+  <text x="659" y="130" fill="#15803d" font-size="9" text-anchor="middle">基础指令 + 技能目录</text>
+
+  <!-- ===== 运行时 ===== -->
+  <text x="32" y="186" fill="#475569" font-size="11" font-weight="700">运行时 <tspan fill="#94a3b8" font-weight="400">(at runtime)</tspan></text>
+
+  <!-- LLM -->
+  <rect x="32" y="198" width="90" height="52" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+  <text x="77" y="228" fill="#1e3a5f" font-size="11" font-weight="700" text-anchor="middle">大模型 (LLM)</text>
+  <line x1="122" y1="224" x2="150" y2="224" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <!-- load_skill -->
+  <rect x="152" y="198" width="110" height="52" rx="6" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+  <text x="207" y="219" fill="#92400e" font-size="10" font-weight="700" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">load_skill</text>
+  <text x="207" y="236" fill="#b45309" font-size="9" text-anchor="middle">按 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">name</tspan> 加载技能</text>
+  <line x1="262" y1="224" x2="290" y2="224" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <!-- 注册表查询 -->
+  <rect x="292" y="198" width="100" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="342" y="219" fill="#1e293b" font-size="10" font-weight="700" text-anchor="middle">注册表查询</text>
+  <text x="342" y="236" fill="#64748b" font-size="9" text-anchor="middle">按名称 (by name)</text>
+  <line x1="392" y1="224" x2="420" y2="224" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <!-- 完整内容 -->
+  <rect x="422" y="198" width="110" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="477" y="219" fill="#1e293b" font-size="10" font-weight="700" text-anchor="middle">完整内容</text>
+  <text x="477" y="236" fill="#64748b" font-size="9" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">SKILL.md</text>
+  <line x1="532" y1="224" x2="560" y2="224" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <!-- tool_result -->
+  <rect x="562" y="198" width="100" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="612" y="219" fill="#166534" font-size="10" font-weight="700" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result</text>
+  <text x="612" y="236" fill="#15803d" font-size="9" text-anchor="middle">作为工具结果返回</text>
+  <line x1="662" y1="224" x2="687" y2="224" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <!-- messages[] -->
+  <rect x="689" y="198" width="82" height="52" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="730" y="219" fill="#334155" font-size="10" font-weight="700" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">messages[]</text>
+  <text x="730" y="236" fill="#64748b" font-size="9" text-anchor="middle">追加 (append)</text>
+
+  <!-- 回环：下一次调用 -->
+  <path d="M 730 250 V 298 H 77 V 252" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-blue)"/>
+  <text x="403" y="318" fill="#475569" font-size="10" text-anchor="middle">下一次调用大模型时，继续使用更新后的 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">messages[]</tspan></text>
+
+  <!-- 底部要点 -->
+  <rect x="60" y="338" width="680" height="50" rx="6" fill="#f1f5f9"/>
+  <text x="80" y="358" fill="#334155" font-size="10">技能名称和描述 → system prompt（启动时就有）；完整 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">SKILL.md</tspan> → <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result</tspan>（调用 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">load_skill</tspan> 时才加入）。</text>
+  <text x="80" y="376" fill="#64748b" font-size="10">模型先知道有哪些技能，用到时再按名称读取全文。（Know the catalog first, load the full text on demand.）</text>
 </svg>

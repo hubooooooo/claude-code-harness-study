@@ -1,107 +1,122 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 620" font-family="system-ui, -apple-system, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 650" font-family="'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif">
   <defs>
-    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#0891b2"/>
-    </linearGradient>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
     </marker>
-    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0891b2"/>
-    </marker>
-    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
     </marker>
-    <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706"/>
     </marker>
+    <marker id="arrow-teal" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0d9488"/>
+    </marker>
+    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
   </defs>
 
-  <rect width="760" height="620" rx="8" fill="#fafbfc"/>
-  <rect width="760" height="44" rx="8" fill="url(#header)"/>
-  <rect y="36" width="760" height="8" fill="url(#header)"/>
-  <text x="380" y="28" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">Agent Teams — 一套 Team Harness</text>
+  <!-- 背景 -->
+  <rect width="760" height="650" fill="#fafbfc" rx="8"/>
 
-  <!-- 用户确认、Lead 与控制协议 -->
-  <rect x="28" y="82" width="140" height="62" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
-  <text x="98" y="106" text-anchor="middle" fill="#334155" font-size="11" font-weight="700">用户</text>
-  <text x="98" y="124" text-anchor="middle" fill="#64748b" font-size="9">先确认团队方案</text>
+  <!-- 标题栏 -->
+  <rect x="0" y="0" width="760" height="48" fill="url(#header)" rx="8"/>
+  <rect x="0" y="40" width="760" height="8" fill="url(#header)"/>
+  <text x="380" y="23" fill="#ffffff" font-size="15" font-weight="700" text-anchor="middle">Agent 团队 — 一套团队运行框架 (Team Harness)</text>
+  <text x="380" y="40" fill="#bfdbfe" font-size="10" text-anchor="middle">Agent Teams — one team harness: lead, mailboxes, teammates, task board, worktrees</text>
 
-  <line x1="168" y1="113" x2="220" y2="113" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- ===== 用户 ===== -->
+  <rect x="28" y="80" width="140" height="62" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="98" y="103" fill="#334155" font-size="12" font-weight="700" text-anchor="middle">用户 (User)</text>
+  <text x="98" y="121" fill="#475569" font-size="10" text-anchor="middle">先确认团队方案</text>
+  <text x="98" y="134" fill="#64748b" font-size="9" text-anchor="middle">confirms the team plan</text>
 
-  <rect x="220" y="72" width="300" height="82" rx="8" fill="#f0f4ff" stroke="#2563eb" stroke-width="1.8"/>
-  <text x="370" y="96" text-anchor="middle" fill="#1e3a5f" font-size="12" font-weight="700">Lead Agent Loop</text>
-  <text x="370" y="116" text-anchor="middle" fill="#475569" font-size="9">用户对话 · 创建任务 · 协调团队</text>
-  <text x="370" y="134" text-anchor="middle" fill="#2563eb" font-size="9" font-weight="600">启动 · 发消息 · 创建 worktree · 审批计划</text>
+  <!-- 用户 → Lead -->
+  <line x1="168" y1="111" x2="218" y2="111" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-  <line x1="520" y1="113" x2="570" y2="113" stroke="#d97706" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+  <!-- ===== Lead ===== -->
+  <rect x="220" y="70" width="300" height="82" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="370" y="94" fill="#1e3a5f" font-size="13" font-weight="700" text-anchor="middle">主控 Agent 循环 (Lead Agent Loop)</text>
+  <text x="370" y="115" fill="#475569" font-size="10" text-anchor="middle">用户对话 · 创建任务 · 协调团队</text>
+  <text x="370" y="135" fill="#2563eb" font-size="10" font-weight="600" text-anchor="middle">启动队友 · 发消息 · 创建 worktree · 审批计划</text>
 
-  <rect x="570" y="82" width="162" height="62" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
-  <text x="651" y="105" text-anchor="middle" fill="#92400e" font-size="10" font-weight="700">类型化控制</text>
-  <text x="651" y="122" text-anchor="middle" fill="#a16207" font-size="8.5">request_id · shutdown</text>
-  <text x="651" y="136" text-anchor="middle" fill="#a16207" font-size="8.5">计划审批闸门</text>
+  <!-- Lead → 类型化控制 -->
+  <line x1="520" y1="111" x2="568" y2="111" stroke="#d97706" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
 
-  <!-- 连线端点精确落在组件边缘 -->
-  <line x1="370" y1="154" x2="370" y2="190" stroke="#0891b2" stroke-width="1.8" marker-end="url(#arrow-cyan)"/>
-  <line x1="651" y1="144" x2="651" y2="190" stroke="#d97706" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+  <!-- ===== 类型化控制 ===== -->
+  <rect x="570" y="80" width="162" height="62" rx="8" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+  <text x="651" y="100" fill="#92400e" font-size="11" font-weight="700" text-anchor="middle">类型化控制 Typed Control</text>
+  <text x="651" y="117" fill="#b45309" font-size="10" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">request_id · shutdown</text>
+  <text x="651" y="133" fill="#b45309" font-size="10" text-anchor="middle">计划审批闸门 (plan gate)</text>
 
-  <rect x="60" y="190" width="640" height="44" rx="22" fill="#ecfeff" stroke="#0891b2" stroke-width="2"/>
-  <text x="380" y="209" text-anchor="middle" fill="#0e7490" font-size="11" font-weight="700">MessageBus · .mailboxes/&lt;name&gt;.jsonl</text>
-  <text x="380" y="225" text-anchor="middle" fill="#0f766e" font-size="8.5">运行时投递 · 普通消息 · result · idle_notification · 控制事件</text>
+  <!-- Lead / 控制 → MessageBus -->
+  <line x1="370" y1="152" x2="370" y2="186" stroke="#0d9488" stroke-width="1.8" marker-end="url(#arrow-teal)"/>
+  <line x1="651" y1="142" x2="651" y2="186" stroke="#d97706" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
 
-  <!-- MessageBus 与队友循环 -->
-  <line x1="118" y1="234" x2="118" y2="282" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
-  <line x1="348" y1="234" x2="348" y2="282" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
-  <line x1="578" y1="234" x2="578" y2="282" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
-  <line x1="182" y1="282" x2="182" y2="234" stroke="#0891b2" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow-cyan)"/>
-  <line x1="412" y1="282" x2="412" y2="234" stroke="#0891b2" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow-cyan)"/>
-  <line x1="642" y1="282" x2="642" y2="234" stroke="#0891b2" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow-cyan)"/>
+  <!-- ===== MessageBus ===== -->
+  <rect x="60" y="188" width="640" height="50" rx="25" fill="#f0fdfa" stroke="#0d9488" stroke-width="2"/>
+  <text x="380" y="209" fill="#115e59" font-size="12" font-weight="700" text-anchor="middle">消息总线 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">MessageBus</tspan> · <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">.mailboxes/&lt;name&gt;.jsonl</tspan></text>
+  <text x="380" y="227" fill="#0f766e" font-size="10" text-anchor="middle">运行时投递：普通消息 · <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">result</tspan> · <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">idle_notification</tspan> · 控制事件</text>
 
-  <rect x="40" y="282" width="220" height="82" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
-  <text x="150" y="305" text-anchor="middle" fill="#166534" font-size="10.5" font-weight="700">队友：config</text>
-  <text x="150" y="324" text-anchor="middle" fill="#15803d" font-size="8.5">独立 prompt · messages · tools</text>
-  <text x="150" y="342" text-anchor="middle" fill="#475569" font-size="8.5">WORK → result → IDLE</text>
-  <text x="150" y="356" text-anchor="middle" fill="#64748b" font-size="8">直接消息使其回到 WORK</text>
+  <!-- MessageBus ⇄ 队友循环 -->
+  <line x1="118" y1="238" x2="118" y2="284" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <line x1="348" y1="238" x2="348" y2="284" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <line x1="578" y1="238" x2="578" y2="284" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <line x1="182" y1="286" x2="182" y2="240" stroke="#0d9488" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow-teal)"/>
+  <line x1="412" y1="286" x2="412" y2="240" stroke="#0d9488" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow-teal)"/>
+  <line x1="642" y1="286" x2="642" y2="240" stroke="#0d9488" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow-teal)"/>
 
-  <rect x="270" y="282" width="220" height="82" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
-  <text x="380" y="305" text-anchor="middle" fill="#166534" font-size="10.5" font-weight="700">队友：auth</text>
-  <text x="380" y="324" text-anchor="middle" fill="#15803d" font-size="8.5">独立 prompt · messages · tools</text>
-  <text x="380" y="342" text-anchor="middle" fill="#475569" font-size="8.5">WORK → result → IDLE</text>
-  <text x="380" y="356" text-anchor="middle" fill="#64748b" font-size="8">认领任务使其回到 WORK</text>
+  <!-- ===== 队友 ===== -->
+  <rect x="40" y="286" width="220" height="88" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="150" y="308" fill="#166534" font-size="12" font-weight="700" text-anchor="middle">队友 (Teammate)：<tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">config</tspan></text>
+  <text x="150" y="327" fill="#15803d" font-size="10" text-anchor="middle">独立 prompt · messages · tools</text>
+  <text x="150" y="345" fill="#475569" font-size="10" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">WORK → result → IDLE</text>
+  <text x="150" y="363" fill="#64748b" font-size="10" text-anchor="middle">收到直接消息 → 回到 WORK</text>
 
-  <rect x="500" y="282" width="220" height="82" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
-  <text x="610" y="305" text-anchor="middle" fill="#166534" font-size="10.5" font-weight="700">队友：tests</text>
-  <text x="610" y="324" text-anchor="middle" fill="#15803d" font-size="8.5">独立 prompt · messages · tools</text>
-  <text x="610" y="342" text-anchor="middle" fill="#475569" font-size="8.5">WORK → result → IDLE</text>
-  <text x="610" y="356" text-anchor="middle" fill="#64748b" font-size="8">shutdown 结束循环</text>
+  <rect x="270" y="286" width="220" height="88" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="380" y="308" fill="#166534" font-size="12" font-weight="700" text-anchor="middle">队友 (Teammate)：<tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">auth</tspan></text>
+  <text x="380" y="327" fill="#15803d" font-size="10" text-anchor="middle">独立 prompt · messages · tools</text>
+  <text x="380" y="345" fill="#475569" font-size="10" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">WORK → result → IDLE</text>
+  <text x="380" y="363" fill="#64748b" font-size="10" text-anchor="middle">认领任务 → 回到 WORK</text>
+
+  <rect x="500" y="286" width="220" height="88" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="610" y="308" fill="#166534" font-size="12" font-weight="700" text-anchor="middle">队友 (Teammate)：<tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tests</tspan></text>
+  <text x="610" y="327" fill="#15803d" font-size="10" text-anchor="middle">独立 prompt · messages · tools</text>
+  <text x="610" y="345" fill="#475569" font-size="10" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">WORK → result → IDLE</text>
+  <text x="610" y="363" fill="#64748b" font-size="10" text-anchor="middle">收到 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">shutdown</tspan> → 结束循环</text>
 
   <!-- IDLE 时发现任务 -->
-  <line x1="150" y1="364" x2="150" y2="404" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
-  <line x1="380" y1="364" x2="380" y2="404" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
-  <line x1="610" y1="364" x2="610" y2="404" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <line x1="150" y1="374" x2="150" y2="410" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <line x1="380" y1="374" x2="380" y2="410" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <line x1="610" y1="374" x2="610" y2="410" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
 
-  <rect x="60" y="404" width="640" height="54" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
-  <text x="380" y="425" text-anchor="middle" fill="#334155" font-size="11" font-weight="700">共享任务板 · .tasks/</text>
-  <text x="380" y="444" text-anchor="middle" fill="#475569" font-size="9">IDLE：先等收件箱 → 扫描 ready task → 原子认领 → 复用 WORK 循环</text>
+  <!-- ===== 共享任务板 ===== -->
+  <rect x="60" y="412" width="640" height="56" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="380" y="434" fill="#334155" font-size="12" font-weight="700" text-anchor="middle">共享任务板 (Task Board) · <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">.tasks/</tspan></text>
+  <text x="380" y="455" fill="#475569" font-size="10" text-anchor="middle"><tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">IDLE</tspan>：先等收件箱 → 扫描 ready task → 原子认领 → 复用 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">WORK</tspan> 循环</text>
 
   <!-- 任务绑定选择 cwd -->
-  <line x1="380" y1="458" x2="380" y2="482" stroke="#475569" stroke-width="1.5"/>
-  <line x1="220" y1="482" x2="540" y2="482" stroke="#475569" stroke-width="1.5"/>
-  <line x1="220" y1="482" x2="220" y2="506" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <line x1="540" y1="482" x2="540" y2="506" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <rect x="311" y="468" width="138" height="18" rx="4" fill="#fafbfc"/>
-  <text x="380" y="480" text-anchor="middle" fill="#475569" font-size="8.5" font-weight="600">Task.worktree 选择 cwd</text>
+  <line x1="380" y1="468" x2="380" y2="494" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="210" y1="494" x2="550" y2="494" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="210" y1="494" x2="210" y2="520" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="550" y1="494" x2="550" y2="520" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <rect x="302" y="484" width="156" height="20" rx="4" fill="#fafbfc"/>
+  <text x="380" y="498" fill="#475569" font-size="10" font-weight="600" text-anchor="middle">按 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">Task.worktree</tspan> 选择 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">cwd</tspan></text>
 
-  <rect x="60" y="506" width="300" height="66" rx="8" fill="#f0f4ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="210" y="529" text-anchor="middle" fill="#1e3a5f" font-size="10.5" font-weight="700">无 worktree：仓库 WORKDIR</text>
-  <text x="210" y="548" text-anchor="middle" fill="#475569" font-size="8.5">task.worktree 为 null</text>
-  <text x="210" y="562" text-anchor="middle" fill="#64748b" font-size="8">行为与前面章节一致</text>
+  <!-- ===== 两种工作目录 ===== -->
+  <rect x="60" y="522" width="300" height="70" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="210" y="545" fill="#1e3a5f" font-size="12" font-weight="700" text-anchor="middle">无 worktree：仓库 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">WORKDIR</tspan></text>
+  <text x="210" y="564" fill="#475569" font-size="10" text-anchor="middle"><tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">task.worktree</tspan> 为 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">null</tspan></text>
+  <text x="210" y="581" fill="#64748b" font-size="10" text-anchor="middle">行为与前面章节一致</text>
 
-  <rect x="400" y="506" width="300" height="66" rx="8" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
-  <text x="550" y="529" text-anchor="middle" fill="#92400e" font-size="10.5" font-weight="700">按需开启：.worktrees/&lt;name&gt;</text>
-  <text x="550" y="548" text-anchor="middle" fill="#a16207" font-size="8.5">独立 checkout + 保留 wt/&lt;name&gt; 分支</text>
-  <text x="550" y="562" text-anchor="middle" fill="#78716c" font-size="8">只隔开工作目录，不是安全沙箱</text>
+  <rect x="400" y="522" width="300" height="70" rx="8" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+  <text x="550" y="545" fill="#92400e" font-size="12" font-weight="700" text-anchor="middle">按需开启：<tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">.worktrees/&lt;name&gt;</tspan></text>
+  <text x="550" y="564" fill="#b45309" font-size="10" text-anchor="middle">独立 checkout + 保留 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">wt/&lt;name&gt;</tspan> 分支</text>
+  <text x="550" y="581" fill="#b45309" font-size="10" text-anchor="middle">只隔开工作目录，不是安全沙箱</text>
 
-  <rect x="60" y="590" width="640" height="20" rx="5" fill="#ecfdf5" stroke="#bbf7d0"/>
-  <text x="380" y="604" text-anchor="middle" fill="#166534" font-size="8.5" font-weight="600">只有任务成功完成后，运行时才会清除队友的 assignment 和 cwd。</text>
+  <!-- 底部要点 -->
+  <rect x="60" y="608" width="640" height="28" rx="6" fill="#f1f5f9"/>
+  <text x="380" y="626" fill="#334155" font-size="10" font-weight="600" text-anchor="middle">任务完成后，要等队友回到 IDLE，运行时才释放 assignment 和 cwd。</text>
 </svg>

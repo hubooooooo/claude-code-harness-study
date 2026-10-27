@@ -1,115 +1,147 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" font-family="system-ui, -apple-system, sans-serif" role="img" aria-labelledby="title description">
-  <title id="title">Workflow Runtime execution flow</title>
-  <desc id="description">One Workflow tool call executes a complete workflow run. Lifecycle and progress events remain inside the call, which returns one tool result containing launch metadata, the result, and task state.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 690" font-family="'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" role="img" aria-labelledby="title description">
+  <title id="title">工作流运行时 (Workflow Runtime) 执行流程</title>
+  <desc id="description">一次 Workflow 工具调用执行一整次工作流运行。生命周期事件和进度事件都留在这次调用内部，调用结束时只返回一个 tool_result，里面包含启动信息、结果和任务状态。</desc>
   <defs>
-    <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#22c55e"/>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
     </marker>
-    <marker id="arrow-gray" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#888888"/>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
     </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706"/>
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7c3aed"/>
+    </marker>
+    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
   </defs>
 
-  <rect width="960" height="640" rx="8" fill="#ffffff"/>
+  <!-- 背景 -->
+  <rect width="960" height="690" fill="#fafbfc" rx="8"/>
 
-  <text x="480" y="30" text-anchor="middle" fill="#1a1a1a" font-size="19" font-weight="700">Workflow Runtime — one Workflow call executes one complete run</text>
-  <text x="480" y="51" text-anchor="middle" fill="#888888" font-size="12">lifecycle and progress events are emitted during the call; one final tool_result returns to messages[]</text>
+  <!-- 标题栏 -->
+  <rect x="0" y="0" width="960" height="48" fill="url(#header)" rx="8"/>
+  <rect x="0" y="40" width="960" height="8" fill="url(#header)"/>
+  <text x="480" y="23" fill="#ffffff" font-size="15" font-weight="700" text-anchor="middle">工作流运行时 — 一次 Workflow 调用跑完一整次运行</text>
+  <text x="480" y="40" fill="#bfdbfe" font-size="10" text-anchor="middle">Workflow Runtime — one Workflow call executes one complete run; one final tool_result returns to messages[]</text>
 
-  <!-- Main session loop -->
-  <rect x="20" y="68" width="920" height="132" rx="8" fill="#ffffff" stroke="#d0d0d0" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <text x="40" y="88" fill="#1a1a1a" font-size="13" font-weight="700">Main session loop</text>
+  <!-- ===== 第一层：主会话循环 ===== -->
+  <rect x="20" y="64" width="920" height="148" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="40" y="86" fill="#334155" font-size="13" font-weight="700">主会话循环 (Main Session Loop)</text>
 
-  <path d="M 818 118 L 818 100 L 110 100 L 110 118" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arrow-green)"/>
-  <text x="464" y="95" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="600">append one tool_result to messages[]</text>
+  <!-- 回写：tool_result → messages[] -->
+  <path d="M 818 116 L 818 104 L 110 104 L 110 122" fill="none" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arrow-green)"/>
+  <text x="464" y="98" text-anchor="middle" fill="#15803d" font-size="10" font-weight="600">把一个 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result</tspan> 追加进 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">messages[]</tspan></text>
 
-  <rect x="42" y="118" width="136" height="54" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <text x="110" y="141" text-anchor="middle" fill="#1a1a1a" font-size="12" font-weight="700" font-family="monospace">messages[]</text>
-  <text x="110" y="159" text-anchor="middle" fill="#888888" font-size="9">message history</text>
+  <!-- messages[] -->
+  <rect x="42" y="124" width="136" height="60" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="110" y="150" text-anchor="middle" fill="#334155" font-size="12" font-weight="600" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">messages[]</text>
+  <text x="110" y="168" text-anchor="middle" fill="#64748b" font-size="10">消息历史</text>
 
-  <line x1="178" y1="145" x2="218" y2="145" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <line x1="178" y1="154" x2="218" y2="154" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
 
-  <rect x="220" y="118" width="92" height="54" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
-  <text x="266" y="141" text-anchor="middle" fill="#1a1a1a" font-size="13" font-weight="700">LLM</text>
-  <text x="266" y="159" text-anchor="middle" fill="#888888" font-size="9">tool_use?</text>
+  <!-- LLM -->
+  <rect x="220" y="124" width="100" height="60" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="270" y="150" text-anchor="middle" fill="#1e3a5f" font-size="13" font-weight="700">大模型 (LLM)</text>
+  <text x="270" y="168" text-anchor="middle" fill="#475569" font-size="10">发出 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_use</tspan></text>
 
-  <line x1="312" y1="145" x2="352" y2="145" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <line x1="320" y1="154" x2="352" y2="154" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
 
-  <rect x="354" y="118" width="220" height="54" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
-  <text x="464" y="140" text-anchor="middle" fill="#1a1a1a" font-size="11" font-weight="700" font-family="monospace">Workflow({name, args})</text>
-  <text x="464" y="159" text-anchor="middle" fill="#888888" font-size="8.5" font-family="monospace">resume_from_run_id?</text>
+  <!-- Workflow 工具调用 -->
+  <rect x="354" y="124" width="220" height="60" rx="6" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+  <text x="464" y="149" text-anchor="middle" fill="#92400e" font-size="12" font-weight="700" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">Workflow({name, args})</text>
+  <text x="464" y="168" text-anchor="middle" fill="#b45309" font-size="10">可选 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">resume_from_run_id</tspan> 续跑</text>
 
-  <rect x="715" y="110" width="205" height="70" rx="6" fill="#fafafa" stroke="#1a1a1a" stroke-width="1.5"/>
-  <text x="818" y="134" text-anchor="middle" fill="#1a1a1a" font-size="12" font-weight="700">tool_result</text>
-  <text x="818" y="153" text-anchor="middle" fill="#22c55e" font-size="9.5" font-weight="600" font-family="monospace">launched + result + task</text>
-  <text x="818" y="168" text-anchor="middle" fill="#888888" font-size="8.5">one return after the run</text>
+  <!-- tool_result -->
+  <rect x="708" y="116" width="220" height="74" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="818" y="138" text-anchor="middle" fill="#166534" font-size="12" font-weight="700" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result</text>
+  <text x="818" y="157" text-anchor="middle" fill="#15803d" font-size="10" font-weight="600" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">launched + result + task</text>
+  <text x="818" y="176" text-anchor="middle" fill="#15803d" font-size="10">整次运行结束后一次性返回</text>
 
-  <!-- Complete WorkflowTool.call lifecycle -->
-  <rect x="20" y="232" width="920" height="350" rx="8" fill="#ffffff" stroke="#d0d0d0" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <text x="40" y="253" fill="#1a1a1a" font-size="13" font-weight="700">WorkflowTool.call — complete workflow task lifecycle</text>
+  <!-- ===== 第二层：WorkflowTool.call 完整生命周期（本章新增） ===== -->
+  <rect x="20" y="252" width="920" height="356" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="40" y="276" fill="#991b1b" font-size="13" font-weight="700"><tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">WorkflowTool.call</tspan> — 完整的工作流任务生命周期 (task lifecycle)</text>
+  <text x="920" y="276" text-anchor="end" fill="#dc2626" font-size="10" font-weight="600">s16 新增</text>
 
-  <rect x="45" y="272" width="180" height="76" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
-  <text x="135" y="294" text-anchor="middle" fill="#1a1a1a" font-size="11" font-weight="700" font-family="monospace">WorkflowTool.call</text>
-  <text x="135" y="314" text-anchor="middle" fill="#888888" font-size="9">validate meta · permission</text>
-  <text x="135" y="331" text-anchor="middle" fill="#888888" font-size="9" font-family="monospace">runId · taskId · envelope</text>
+  <!-- 跨层调用：Workflow → WorkflowTool.call -->
+  <path d="M 464 184 L 464 232 L 32 232 L 32 336 L 43 336" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arrow-amber)"/>
+  <text x="300" y="226" text-anchor="middle" fill="#b45309" font-size="10" font-weight="600">执行一整次运行 (execute complete run)</text>
 
-  <line x1="225" y1="310" x2="263" y2="310" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <!-- 1. WorkflowTool.call -->
+  <rect x="45" y="296" width="180" height="80" rx="6" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+  <text x="135" y="320" text-anchor="middle" fill="#92400e" font-size="12" font-weight="700" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">WorkflowTool.call</text>
+  <text x="135" y="341" text-anchor="middle" fill="#b45309" font-size="10">校验元数据 · 权限检查</text>
+  <text x="135" y="360" text-anchor="middle" fill="#b45309" font-size="10" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">runId · taskId · envelope</text>
 
-  <rect x="265" y="272" width="180" height="76" rx="6" fill="#fafafa" stroke="#d0d0d0" stroke-width="1.5"/>
-  <text x="355" y="294" text-anchor="middle" fill="#1a1a1a" font-size="11" font-weight="700">Emit lifecycle</text>
-  <text x="355" y="314" text-anchor="middle" fill="#22c55e" font-size="9.5" font-weight="600" font-family="monospace">async_launched</text>
-  <text x="355" y="331" text-anchor="middle" fill="#888888" font-size="9.5" font-family="monospace">task_started</text>
+  <line x1="225" y1="336" x2="263" y2="336" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
 
-  <line x1="445" y1="310" x2="483" y2="310" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <!-- 2. 发出生命周期事件 -->
+  <rect x="265" y="296" width="180" height="80" rx="6" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.5"/>
+  <text x="355" y="320" text-anchor="middle" fill="#115e59" font-size="12" font-weight="700">发出生命周期事件</text>
+  <text x="355" y="341" text-anchor="middle" fill="#0f766e" font-size="10" font-weight="600" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">async_launched</text>
+  <text x="355" y="360" text-anchor="middle" fill="#0f766e" font-size="10" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">task_started</text>
 
-  <rect x="485" y="272" width="180" height="76" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <text x="575" y="294" text-anchor="middle" fill="#1a1a1a" font-size="11" font-weight="700">Execute script</text>
-  <text x="575" y="314" text-anchor="middle" fill="#888888" font-size="9" font-family="monospace">phase · agent()</text>
-  <text x="575" y="331" text-anchor="middle" fill="#888888" font-size="9" font-family="monospace">parallel · pipeline</text>
+  <line x1="445" y1="336" x2="483" y2="336" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
 
-  <line x1="665" y1="310" x2="703" y2="310" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <!-- 3. 执行脚本 -->
+  <rect x="485" y="296" width="180" height="80" rx="6" fill="#fff7ed" stroke="#d97706" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="575" y="320" text-anchor="middle" fill="#92400e" font-size="12" font-weight="700">执行脚本 (script)</text>
+  <text x="575" y="341" text-anchor="middle" fill="#b45309" font-size="10" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">phase · agent()</text>
+  <text x="575" y="360" text-anchor="middle" fill="#b45309" font-size="10" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">parallel · pipeline</text>
 
-  <rect x="705" y="272" width="210" height="76" rx="6" fill="#fafafa" stroke="#d0d0d0" stroke-width="1.5"/>
-  <text x="810" y="294" text-anchor="middle" fill="#1a1a1a" font-size="11" font-weight="700">Finalize task</text>
-  <text x="810" y="314" text-anchor="middle" fill="#888888" font-size="9">write output · save last run</text>
-  <text x="810" y="331" text-anchor="middle" fill="#22c55e" font-size="9.5" font-weight="600" font-family="monospace">task_notification</text>
+  <line x1="665" y1="336" x2="703" y2="336" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
 
-  <!-- Script execution details -->
-  <line x1="575" y1="348" x2="575" y2="388" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow-green)"/>
-  <text x="588" y="371" fill="#22c55e" font-size="9" font-weight="600">agent()</text>
+  <!-- 4. 收尾任务 -->
+  <rect x="705" y="296" width="210" height="80" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="810" y="320" text-anchor="middle" fill="#166534" font-size="12" font-weight="700">收尾任务 (finalize)</text>
+  <text x="810" y="341" text-anchor="middle" fill="#15803d" font-size="10">写出输出 · 保存本次运行</text>
+  <text x="810" y="360" text-anchor="middle" fill="#15803d" font-size="10" font-weight="600" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">task_notification</text>
 
-  <rect x="475" y="390" width="190" height="64" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
-  <text x="570" y="413" text-anchor="middle" fill="#1a1a1a" font-size="11" font-weight="700">Agent runner calls × N</text>
-  <text x="570" y="432" text-anchor="middle" fill="#888888" font-size="9">schema validation · token budget</text>
-  <text x="570" y="447" text-anchor="middle" fill="#888888" font-size="8.5">parallel work, structured results</text>
+  <!-- 脚本执行细节：agent() → Agent runner -->
+  <line x1="545" y1="376" x2="545" y2="416" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <text x="537" y="400" text-anchor="end" fill="#1e3a5f" font-size="10" font-weight="600" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">agent()</text>
 
-  <line x1="665" y1="422" x2="703" y2="422" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow-green)"/>
-  <text x="684" y="414" text-anchor="middle" fill="#22c55e" font-size="8.5" font-weight="600">record</text>
+  <rect x="455" y="418" width="200" height="70" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="555" y="440" text-anchor="middle" fill="#1e3a5f" font-size="12" font-weight="700">Agent runner 调用 × N</text>
+  <text x="555" y="459" text-anchor="middle" fill="#475569" font-size="10"><tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">schema</tspan> 校验 · token 预算</text>
+  <text x="555" y="476" text-anchor="middle" fill="#475569" font-size="10">并行执行，返回结构化结果</text>
 
-  <rect x="705" y="390" width="190" height="64" rx="6" fill="#fafafa" stroke="#d0d0d0" stroke-width="1.5"/>
-  <text x="800" y="413" text-anchor="middle" fill="#1a1a1a" font-size="11" font-weight="700">Journal</text>
-  <text x="800" y="432" text-anchor="middle" fill="#888888" font-size="9" font-family="monospace">semantic key → result</text>
-  <text x="800" y="447" text-anchor="middle" fill="#888888" font-size="8.5">resume returns cached calls</text>
+  <!-- 记录到 journal -->
+  <line x1="655" y1="456" x2="698" y2="456" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arrow-purple)"/>
+  <text x="677" y="449" text-anchor="middle" fill="#6d28d9" font-size="10" font-weight="600">记录</text>
 
-  <path d="M 705 441 L 680 441 L 680 372 L 635 372 L 635 348" fill="none" stroke="#888888" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-gray)"/>
-  <text x="670" y="365" text-anchor="end" fill="#888888" font-size="8.5">cached</text>
+  <rect x="700" y="418" width="170" height="70" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="785" y="440" text-anchor="middle" fill="#5b21b6" font-size="12" font-weight="700">调用日志 (journal)</text>
+  <text x="785" y="459" text-anchor="middle" fill="#6d28d9" font-size="10">语义 key → 结果</text>
+  <text x="785" y="476" text-anchor="middle" fill="#6d28d9" font-size="10">resume 时直接返回缓存</text>
 
-  <!-- Events remain within the call; the call returns once -->
-  <rect x="45" y="490" width="470" height="58" rx="6" fill="#fafafa" stroke="#d0d0d0" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <text x="280" y="512" text-anchor="middle" fill="#1a1a1a" font-size="10.5" font-weight="700">Lifecycle + progress events emitted during the call</text>
-  <text x="280" y="532" text-anchor="middle" fill="#888888" font-size="8.8" font-family="monospace">async_launched · task_started · workflow_phase / agent / log · task_notification</text>
+  <!-- 命中缓存：journal → 脚本 -->
+  <path d="M 740 418 L 740 398 L 625 398 L 625 378" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-purple)"/>
+  <text x="685" y="393" text-anchor="middle" fill="#6d28d9" font-size="10">命中缓存 (cached)</text>
 
-  <path d="M 810 348 L 810 472 L 738 472 L 738 488" fill="none" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <!-- 调用期间发出的事件 -->
+  <rect x="45" y="520" width="470" height="72" rx="6" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="280" y="542" text-anchor="middle" fill="#115e59" font-size="12" font-weight="700">调用期间发出的生命周期 + 进度事件 (events)</text>
+  <text x="280" y="562" text-anchor="middle" fill="#0f766e" font-size="10" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">async_launched · task_started</text>
+  <text x="280" y="579" text-anchor="middle" fill="#0f766e" font-size="10" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">workflow_phase / agent / log · task_notification</text>
 
-  <rect x="560" y="490" width="355" height="58" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
-  <text x="738" y="513" text-anchor="middle" fill="#1a1a1a" font-size="11" font-weight="700" font-family="monospace">return { launched, result, task }</text>
-  <text x="738" y="532" text-anchor="middle" fill="#888888" font-size="9">after task_notification</text>
+  <!-- 收尾 → 返回 -->
+  <line x1="895" y1="376" x2="895" y2="518" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
 
-  <!-- Cross-lane call and return -->
-  <path d="M 464 172 L 464 215 L 135 215 L 135 270" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arrow-green)"/>
-  <text x="250" y="209" text-anchor="middle" fill="#22c55e" font-size="9" font-weight="600">execute complete run</text>
+  <rect x="560" y="520" width="355" height="60" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="737" y="545" text-anchor="middle" fill="#166534" font-size="12" font-weight="700" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">return { launched, result, task }</text>
+  <text x="737" y="566" text-anchor="middle" fill="#15803d" font-size="10">在 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">task_notification</tspan> 之后返回</text>
 
-  <path d="M 915 519 L 934 519 L 934 211 L 818 211 L 818 180" fill="none" stroke="#22c55e" stroke-width="1.8" marker-end="url(#arrow-green)"/>
-  <text x="928" y="380" text-anchor="middle" fill="#22c55e" font-size="9" font-weight="600" transform="rotate(-90 928 380)">return once</text>
+  <!-- 跨层返回：只返回一次 -->
+  <path d="M 915 550 L 932 550 L 932 236 L 818 236 L 818 192" fill="none" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <text x="926" y="445" text-anchor="middle" fill="#15803d" font-size="10" font-weight="600" transform="rotate(-90 926 445)">只返回一次 (return once)</text>
 
-  <text x="480" y="616" text-anchor="middle" fill="#888888" font-size="10">One return boundary: async_launched is a lifecycle event; launched + result + task return together.</text>
+  <!-- 底部要点 -->
+  <rect x="40" y="626" width="880" height="48" rx="6" fill="#f1f5f9"/>
+  <text x="60" y="646" fill="#334155" font-size="10">唯一返回边界：<tspan fill="#1e3a5f" font-weight="700" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">async_launched</tspan> 只是生命周期事件；<tspan fill="#1e3a5f" font-weight="700" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">launched + result + task</tspan> 在运行结束后一起返回。中间结果留在脚本变量里，不进对话历史。</text>
+  <text x="60" y="664" fill="#64748b" font-size="10">One return boundary: async_launched is a lifecycle event; launched + result + task return together.</text>
 </svg>

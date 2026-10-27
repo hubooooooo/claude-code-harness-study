@@ -1,57 +1,64 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" font-family="system-ui, -apple-system, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 346" font-family="'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif">
   <defs>
-    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#2563eb"/>
-    </linearGradient>
-    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ca8a04"/>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
     </marker>
+    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
   </defs>
 
-  <rect width="720" height="300" fill="#fafbfc" rx="8"/>
-  <rect x="0" y="0" width="720" height="38" fill="url(#header)" rx="8"/>
-  <rect x="0" y="30" width="720" height="8" fill="url(#header)"/>
-  <text x="360" y="25" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">Step 3: micro_compact，旧结果占位替换</text>
+  <!-- 背景 -->
+  <rect width="720" height="346" fill="#fafbfc" rx="8"/>
+
+  <!-- 标题栏 -->
+  <rect x="0" y="0" width="720" height="48" fill="url(#header)" rx="8"/>
+  <rect x="0" y="40" width="720" height="8" fill="url(#header)"/>
+  <text x="360" y="23" fill="#ffffff" font-size="15" font-weight="700" text-anchor="middle">第 3 步：<tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">micro_compact</tspan> — 旧结果替换为占位符</text>
+  <text x="360" y="40" fill="#bfdbfe" font-size="10" text-anchor="middle">Step 3: micro_compact — replace old tool results with placeholders</text>
 
   <!-- 痛点 -->
-  <rect x="20" y="54" width="680" height="36" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
-  <text x="35" y="70" fill="#991b1b" font-size="11" font-weight="600">痛点</text>
-  <text x="75" y="70" fill="#991b1b" font-size="11">Agent 连续读了 10 个文件，第 1-7 次的完整文件内容还躺在上下文里，占着位置但早就没用了</text>
+  <rect x="20" y="62" width="680" height="40" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+  <text x="35" y="86" fill="#991b1b" font-size="11" font-weight="600">痛点 (problem)</text>
+  <text x="125" y="86" fill="#991b1b" font-size="11">Agent 连续读了 10 个文件，第 1–7 次的完整内容还留在上下文里，占着位置却早已用不上</text>
 
-  <!-- Before -->
-  <text x="155" y="114" fill="#64748b" font-size="12" font-weight="600" text-anchor="middle">压缩前（10 条 tool_result 全部完整）</text>
-  <rect x="20" y="122" width="310" height="95" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1"/>
-  <rect x="30" y="130" width="290" height="10" rx="2" fill="#e2e8f0"/>
-  <text x="38" y="138" fill="#94a3b8" font-size="8" font-family="monospace">Read file A: (完整内容, 3200 字符)...</text>
-  <rect x="30" y="145" width="290" height="10" rx="2" fill="#e2e8f0"/>
-  <text x="38" y="153" fill="#94a3b8" font-size="8" font-family="monospace">Read file B: (完整内容, 1800 字符)...</text>
-  <rect x="30" y="160" width="290" height="10" rx="2" fill="#e2e8f0"/>
-  <text x="38" y="168" fill="#94a3b8" font-size="8" font-family="monospace">Read file C: (完整内容, 4500 字符)...</text>
-  <rect x="30" y="175" width="290" height="10" rx="2" fill="#fef3c7"/>
-  <text x="38" y="183" fill="#92400e" font-size="8" font-family="monospace">Read file J: (完整内容, 2800 字符)</text>
-  <text x="175" y="212" fill="#ef4444" font-size="9" font-weight="600">7 条旧结果白占 ~25K 字符</text>
+  <!-- 压缩前 -->
+  <text x="175" y="126" fill="#64748b" font-size="12" font-weight="600" text-anchor="middle">压缩前（10 条 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result</tspan> 全部完整）</text>
+  <rect x="20" y="136" width="310" height="118" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <rect x="30" y="144" width="290" height="15" rx="2" fill="#f1f5f9"/>
+  <text x="38" y="155" fill="#64748b" font-size="9" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">Read file A: (完整内容, 3200 字符)...</text>
+  <rect x="30" y="163" width="290" height="15" rx="2" fill="#f1f5f9"/>
+  <text x="38" y="174" fill="#64748b" font-size="9" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">Read file B: (完整内容, 1800 字符)...</text>
+  <rect x="30" y="182" width="290" height="15" rx="2" fill="#f1f5f9"/>
+  <text x="38" y="193" fill="#64748b" font-size="9" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">Read file C: (完整内容, 4500 字符)...</text>
+  <text x="175" y="208" fill="#94a3b8" font-size="9" text-anchor="middle">⋯</text>
+  <rect x="30" y="213" width="290" height="15" rx="2" fill="#fef3c7"/>
+  <text x="38" y="224" fill="#92400e" font-size="9" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">Read file J: (完整内容, 2800 字符)</text>
+  <text x="175" y="245" fill="#b91c1c" font-size="9" font-weight="600" text-anchor="middle">7 条旧结果白占约 25K 字符</text>
 
-  <!-- Arrow -->
-  <line x1="335" y1="170" x2="375" y2="170" stroke="#ca8a04" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- 箭头 -->
+  <line x1="335" y1="190" x2="383" y2="190" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)"/>
 
-  <!-- After -->
-  <text x="535" y="114" fill="#ca8a04" font-size="12" font-weight="600" text-anchor="middle">压缩后（只保留最近 3 条完整）</text>
-  <rect x="390" y="122" width="310" height="95" rx="6" fill="#fefce8" stroke="#ca8a04" stroke-width="1"/>
-  <rect x="400" y="130" width="290" height="10" rx="2" fill="#fef3c7"/>
-  <text x="408" y="138" fill="#92400e" font-size="8" font-family="monospace">[Earlier tool result saved at .task_outputs/...]</text>
-  <rect x="400" y="145" width="290" height="10" rx="2" fill="#fef3c7"/>
-  <text x="408" y="153" fill="#92400e" font-size="8" font-family="monospace">[Earlier tool result omitted.]</text>
-  <rect x="400" y="160" width="290" height="10" rx="2" fill="#fef3c7"/>
-  <text x="408" y="168" fill="#92400e" font-size="8" font-family="monospace">[Earlier tool result omitted.]</text>
-  <rect x="400" y="175" width="290" height="10" rx="2" fill="#fef3c7"/>
-  <text x="408" y="183" fill="#92400e" font-size="8" font-family="monospace">Read file J: (完整内容, 2800 字符)</text>
-  <text x="545" y="212" fill="#ca8a04" font-size="9" font-weight="600">只保留最近 3 条，前 7 条变占位</text>
+  <!-- 压缩后 -->
+  <text x="545" y="126" fill="#16a34a" font-size="12" font-weight="600" text-anchor="middle">压缩后（只保留最近 3 条完整）</text>
+  <rect x="390" y="136" width="310" height="118" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <rect x="400" y="144" width="290" height="15" rx="2" fill="#ffffff"/>
+  <text x="408" y="155" fill="#15803d" font-size="9" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">[Earlier tool result saved at .task_outputs/...]</text>
+  <rect x="400" y="163" width="290" height="15" rx="2" fill="#ffffff"/>
+  <text x="408" y="174" fill="#15803d" font-size="9" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">[Earlier tool result omitted.]</text>
+  <rect x="400" y="182" width="290" height="15" rx="2" fill="#ffffff"/>
+  <text x="408" y="193" fill="#15803d" font-size="9" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">[Earlier tool result omitted.]</text>
+  <text x="545" y="208" fill="#15803d" font-size="9" text-anchor="middle">⋯</text>
+  <rect x="400" y="213" width="290" height="15" rx="2" fill="#fef3c7"/>
+  <text x="408" y="224" fill="#92400e" font-size="9" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">Read file J: (完整内容, 2800 字符)</text>
+  <text x="545" y="245" fill="#15803d" font-size="9" font-weight="600" text-anchor="middle">最近 3 条保持完整，前 7 条变为占位符</text>
 
-  <!-- 原理 -->
-  <rect x="20" y="228" width="680" height="62" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="35" y="248" fill="#1e3a5f" font-size="11" font-weight="600">处理规则</text>
-  <text x="95" y="248" fill="#475569" font-size="10">最近 3 条保持完整，更早且超过 120 字符的结果替换为占位符。</text>
-  <text x="35" y="264" fill="#1e3a5f" font-size="11" font-weight="600">占位内容</text>
-  <text x="95" y="264" fill="#475569" font-size="10">有落盘路径时保留路径，否则标记该结果已省略。</text>
-  <text x="95" y="280" fill="#94a3b8" font-size="9">消息结构保持不变，后续循环仍可继续处理。</text>
+  <!-- 处理规则 -->
+  <rect x="20" y="266" width="680" height="66" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="35" y="286" fill="#1e3a5f" font-size="11" font-weight="600">规则 (rule)</text>
+  <text x="150" y="286" fill="#475569" font-size="10">新结果先完整保留一次；已读结果保留最近 3 条，更早且超过 120 字符的替换为占位符</text>
+  <text x="35" y="304" fill="#1e3a5f" font-size="11" font-weight="600">占位符 (placeholder)</text>
+  <text x="150" y="304" fill="#475569" font-size="10">有转存路径 → <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">[Earlier tool result saved at …]</tspan>；没有 → <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">[Earlier tool result omitted.]</tspan></text>
+  <text x="150" y="321" fill="#64748b" font-size="9">消息结构保持不变，后续循环仍可继续处理；第 1 步转存的完整结果仍可通过路径读回。</text>
 </svg>

@@ -1,50 +1,55 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 356" font-family="system-ui, -apple-system, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 366" font-family="'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif">
   <defs>
-    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#2563eb"/>
-    </linearGradient>
-    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
     </marker>
+    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
   </defs>
 
-  <rect width="720" height="356" fill="#fafbfc" rx="8"/>
-  <rect x="0" y="0" width="720" height="38" fill="url(#header)" rx="8"/>
-  <rect x="0" y="30" width="720" height="8" fill="url(#header)"/>
-  <text x="360" y="25" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">Step 1: tool_result_budget，大结果落盘</text>
+  <!-- 背景 -->
+  <rect width="720" height="366" fill="#fafbfc" rx="8"/>
+
+  <!-- 标题栏 -->
+  <rect x="0" y="0" width="720" height="48" fill="url(#header)" rx="8"/>
+  <rect x="0" y="40" width="720" height="8" fill="url(#header)"/>
+  <text x="360" y="23" fill="#ffffff" font-size="15" font-weight="700" text-anchor="middle">第 1 步：<tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result_budget</tspan> — 大结果转存磁盘</text>
+  <text x="360" y="40" fill="#bfdbfe" font-size="10" text-anchor="middle">Step 1: tool_result_budget — persist oversized tool results to disk</text>
 
   <!-- 痛点 -->
-  <rect x="20" y="54" width="680" height="42" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
-  <text x="35" y="72" fill="#991b1b" font-size="11" font-weight="600">痛点</text>
-  <text x="75" y="72" fill="#991b1b" font-size="11">模型一次读了 30 个文件，单轮 tool_result 合计约 500,000 字符</text>
+  <rect x="20" y="62" width="680" height="40" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+  <text x="35" y="86" fill="#991b1b" font-size="11" font-weight="600">痛点 (problem)</text>
+  <text x="125" y="86" fill="#991b1b" font-size="11">模型一次读了 30 个文件，单轮 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result</tspan> 合计约 500,000 字符</text>
 
-  <!-- Before -->
-  <text x="155" y="118" fill="#64748b" font-size="12" font-weight="600" text-anchor="middle">压缩前</text>
-  <rect x="20" y="128" width="270" height="82" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1"/>
-  <text x="35" y="148" fill="#475569" font-size="10" font-family="monospace">tool_result: (78K chars)  ...</text>
-  <text x="35" y="164" fill="#475569" font-size="10" font-family="monospace">tool_result: (142K chars) ...</text>
-  <text x="35" y="180" fill="#475569" font-size="10" font-family="monospace">tool_result: (290K chars) ...</text>
-  <text x="155" y="202" fill="#ef4444" font-size="9" font-weight="600" text-anchor="middle">合计 510K 字符 → 超预算</text>
+  <!-- 压缩前 -->
+  <text x="155" y="126" fill="#64748b" font-size="12" font-weight="600" text-anchor="middle">压缩前 (before)</text>
+  <rect x="20" y="136" width="270" height="86" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="35" y="158" fill="#475569" font-size="10" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result: (78K 字符)  ...</text>
+  <text x="35" y="174" fill="#475569" font-size="10" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result: (142K 字符) ...</text>
+  <text x="35" y="190" fill="#475569" font-size="10" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result: (290K 字符) ...</text>
+  <text x="155" y="212" fill="#b91c1c" font-size="9" font-weight="600" text-anchor="middle">合计 510K 字符 → 超出 200K 预算</text>
 
-  <!-- Arrow -->
-  <line x1="295" y1="163" x2="360" y2="163" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- 箭头 -->
+  <line x1="295" y1="179" x2="360" y2="179" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)"/>
 
-  <!-- After -->
-  <text x="485" y="118" fill="#16a34a" font-size="12" font-weight="600" text-anchor="middle">压缩后</text>
-  <rect x="365" y="128" width="335" height="82" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1"/>
-  <text x="380" y="148" fill="#166534" font-size="10" font-family="monospace">tool_result: &lt;persisted-output&gt;</text>
-  <text x="395" y="164" fill="#166534" font-size="9">Full output: .task_outputs/tool-results/t1.txt</text>
-  <text x="395" y="178" fill="#166534" font-size="9">Preview: (前 2000 字符) ...</text>
-  <text x="532" y="202" fill="#16a34a" font-size="9" font-weight="600" text-anchor="middle">合计约 18K 字符 → 正常</text>
+  <!-- 压缩后 -->
+  <text x="532" y="126" fill="#16a34a" font-size="12" font-weight="600" text-anchor="middle">压缩后 (after)</text>
+  <rect x="365" y="136" width="335" height="86" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="380" y="158" fill="#166534" font-size="10" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result: &lt;persisted-output&gt;</text>
+  <text x="395" y="174" fill="#166534" font-size="9" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">Full output: .task_outputs/tool-results/t1.txt</text>
+  <text x="395" y="189" fill="#166534" font-size="9" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">Preview: (前 2000 字符) ...</text>
+  <text x="532" y="212" fill="#15803d" font-size="9" font-weight="600" text-anchor="middle">从最大项开始转存，直到合计 ≤ 200K 字符 → 正常</text>
 
-  <!-- 原理说明 -->
-  <rect x="20" y="214" width="680" height="64" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="35" y="234" fill="#1e3a5f" font-size="11" font-weight="600">怎么做</text>
-  <text x="85" y="234" fill="#475569" font-size="10">1. 统计最后一轮所有 tool_result 的总大小</text>
-  <text x="85" y="250" fill="#475569" font-size="10">2. 超过 200,000 字符 → 从最大的开始落盘到 .task_outputs/tool-results/</text>
-  <text x="85" y="266" fill="#475569" font-size="10">3. 上下文里只留 &lt;persisted-output&gt; 标记 + 前 2000 字符预览</text>
+  <!-- 怎么做 -->
+  <rect x="20" y="234" width="680" height="66" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="35" y="254" fill="#1e3a5f" font-size="11" font-weight="600">怎么做 (how)</text>
+  <text x="115" y="254" fill="#475569" font-size="10">1. 统计最后一条 user 消息里所有 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result</tspan> 的总大小</text>
+  <text x="115" y="270" fill="#475569" font-size="10">2. 总和超过 200,000 字符 → 从最大的开始，把超过 30,000 字符的结果写入 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">.task_outputs/tool-results/</tspan></text>
+  <text x="115" y="286" fill="#475569" font-size="10">3. 上下文里只留 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">&lt;persisted-output&gt;</tspan> 标记：文件路径 + 前 2000 字符预览</text>
 
-  <!-- 变化摘要 -->
-  <rect x="20" y="290" width="680" height="36" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1"/>
-  <text x="35" y="312" fill="#166534" font-size="11">结果：完整数据保留在磁盘，上下文从 510K 降到约 18K 字符，0 次 API 调用</text>
+  <!-- 结果 -->
+  <rect x="20" y="310" width="680" height="36" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="35" y="332" fill="#166534" font-size="11">结果 (result)：完整数据保留在磁盘，本轮结果从 510K 降到 200K 字符预算以内，0 次 API 调用</text>
 </svg>

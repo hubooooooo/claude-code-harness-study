@@ -1,105 +1,138 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 620" font-family="'Noto Sans CJK SC', 'Droid Sans Fallback', system-ui, -apple-system, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 620" font-family="'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif">
   <defs>
-    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#1e3a5f"/>
-      <stop offset="100%" stop-color="#0f766e"/>
-    </linearGradient>
-    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
     </marker>
-    <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#059669"/>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
     </marker>
-    <marker id="arrow-purple" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706"/>
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#7c3aed"/>
     </marker>
-    <marker id="arrow-orange" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ea580c"/>
+    <marker id="arrow-teal" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0d9488"/>
     </marker>
+    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
   </defs>
 
-  <rect width="920" height="620" rx="8" fill="#fafbfc"/>
-  <rect x="0" y="0" width="920" height="46" rx="8" fill="url(#header)"/>
-  <rect x="0" y="38" width="920" height="8" fill="url(#header)"/>
-  <text x="460" y="29" text-anchor="middle" fill="#fff" font-size="17" font-weight="700">s15 Agent Harness 集成 — 多种机制，一个循环</text>
+  <!-- 背景 -->
+  <rect width="920" height="620" fill="#fafbfc" rx="8"/>
 
-  <!-- Main loop band -->
-  <rect x="40" y="76" width="840" height="212" rx="8" fill="#eef2ff" stroke="#2563eb" stroke-width="1.8"/>
-  <text x="460" y="101" text-anchor="middle" fill="#1e3a8a" font-size="13" font-weight="700">核心 Agent Loop</text>
+  <!-- 标题栏 -->
+  <rect x="0" y="0" width="920" height="48" fill="url(#header)" rx="8"/>
+  <rect x="0" y="40" width="920" height="8" fill="url(#header)"/>
+  <text x="460" y="23" fill="#ffffff" font-size="15" font-weight="700" text-anchor="middle">s15 Agent Harness 集成 — 多种机制，一个循环</text>
+  <text x="460" y="40" fill="#bfdbfe" font-size="10" text-anchor="middle">Integrated Harness — many mechanisms, one loop</text>
 
-  <rect x="70" y="128" width="110" height="48" rx="7" fill="#fff" stroke="#2563eb" stroke-width="1.4"/>
-  <text x="125" y="157" text-anchor="middle" fill="#1e3a5f" font-size="11" font-weight="700">messages[]</text>
+  <!-- ===== 核心循环 ===== -->
+  <rect x="40" y="68" width="840" height="198" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="460" y="90" fill="#1e3a5f" font-size="13" font-weight="700" text-anchor="middle">核心智能体循环 (Core Agent Loop)</text>
 
-  <line x1="180" y1="152" x2="222" y2="152" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- messages[] -->
+  <rect x="56" y="128" width="104" height="48" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="108" y="149" fill="#334155" font-size="12" font-weight="600" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">messages[]</text>
+  <text x="108" y="166" fill="#64748b" font-size="10" text-anchor="middle">消息列表</text>
 
-  <rect x="225" y="118" width="150" height="68" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.6"/>
-  <text x="300" y="140" text-anchor="middle" fill="#065f46" font-size="11" font-weight="700">LLM 前处理</text>
-  <text x="240" y="158" fill="#047857" font-size="8.5">cron / background 注入</text>
-  <text x="240" y="171" fill="#047857" font-size="8.5">compact + memory + prompt</text>
+  <line x1="160" y1="152" x2="194" y2="152" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-  <line x1="375" y1="152" x2="417" y2="152" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- LLM 前处理 -->
+  <rect x="196" y="112" width="168" height="80" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="280" y="132" fill="#166534" font-size="12" font-weight="700" text-anchor="middle">LLM 前处理 (pre-LLM)</text>
+  <text x="280" y="150" fill="#15803d" font-size="10" text-anchor="middle">注入 cron / background 通知</text>
+  <text x="280" y="166" fill="#15803d" font-size="10" text-anchor="middle">上下文压缩 · 记忆 · 系统提示词</text>
+  <text x="280" y="181" fill="#64748b" font-size="9" text-anchor="middle">compact · memory · system prompt</text>
 
-  <rect x="420" y="118" width="110" height="68" rx="7" fill="#fff" stroke="#2563eb" stroke-width="1.4"/>
-  <text x="475" y="146" text-anchor="middle" fill="#1e3a5f" font-size="12" font-weight="700">LLM</text>
-  <text x="475" y="164" text-anchor="middle" fill="#64748b" font-size="8.5">tool_use block?</text>
+  <line x1="364" y1="152" x2="398" y2="152" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-  <line x1="530" y1="152" x2="572" y2="152" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- LLM -->
+  <rect x="400" y="112" width="112" height="80" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+  <text x="456" y="146" fill="#1e3a5f" font-size="12" font-weight="700" text-anchor="middle">大模型 (LLM)</text>
+  <text x="456" y="166" fill="#475569" font-size="10" text-anchor="middle">有 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_use</tspan> 块？</text>
 
-  <rect x="575" y="118" width="150" height="68" rx="7" fill="#fff7ed" stroke="#ea580c" stroke-width="1.6"/>
-  <text x="650" y="140" text-anchor="middle" fill="#9a3412" font-size="11" font-weight="700">工具前闸门</text>
-  <text x="590" y="158" fill="#c2410c" font-size="8.5">PreToolUse hooks</text>
-  <text x="590" y="171" fill="#c2410c" font-size="8.5">permission pipeline</text>
+  <line x1="512" y1="152" x2="546" y2="152" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-  <line x1="725" y1="152" x2="767" y2="152" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- 工具前闸门 -->
+  <rect x="548" y="112" width="168" height="80" rx="8" fill="#fff7ed" stroke="#d97706" stroke-width="1.6"/>
+  <text x="632" y="132" fill="#92400e" font-size="12" font-weight="700" text-anchor="middle">工具前闸门</text>
+  <text x="632" y="146" fill="#64748b" font-size="9" text-anchor="middle">pre-tool gate</text>
+  <text x="632" y="164" fill="#b45309" font-size="10" text-anchor="middle"><tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">PreToolUse</tspan> 钩子 (hooks)</text>
+  <text x="632" y="180" fill="#b45309" font-size="10" text-anchor="middle">权限管线 (permission)</text>
 
-  <rect x="770" y="118" width="80" height="68" rx="7" fill="#fff" stroke="#2563eb" stroke-width="1.4"/>
-  <text x="810" y="147" text-anchor="middle" fill="#1e3a5f" font-size="10" font-weight="700">handlers</text>
-  <text x="810" y="164" text-anchor="middle" fill="#64748b" font-size="8">builtin + MCP</text>
+  <line x1="716" y1="152" x2="750" y2="152" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-  <path d="M 810 186 L 810 244 L 125 244 L 125 176" fill="none" stroke="#475569" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
-  <text x="460" y="263" text-anchor="middle" fill="#64748b" font-size="9">tool_result / task_notification → messages[] → 下一轮</text>
+  <!-- handlers -->
+  <rect x="752" y="112" width="112" height="80" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="808" y="134" fill="#1e3a5f" font-size="12" font-weight="700" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">handlers</text>
+  <text x="808" y="152" fill="#475569" font-size="10" text-anchor="middle">工具处理函数</text>
+  <text x="808" y="168" fill="#475569" font-size="10" text-anchor="middle">内置 + MCP</text>
+  <text x="808" y="182" fill="#64748b" font-size="9" text-anchor="middle">builtin + MCP</text>
 
-  <!-- Top sidecars -->
-  <rect x="40" y="318" width="190" height="104" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.4"/>
-  <text x="135" y="341" text-anchor="middle" fill="#065f46" font-size="11" font-weight="700">上下文与知识</text>
-  <text x="58" y="362" fill="#047857" font-size="9">s07 skills catalog + load_skill</text>
-  <text x="58" y="377" fill="#047857" font-size="9">s09 memory selection</text>
-  <text x="58" y="392" fill="#047857" font-size="9">组合后的 system prompt</text>
-  <text x="58" y="407" fill="#047857" font-size="9">s08 compact pipeline</text>
-  <path d="M 230 350 L 282 186" fill="none" stroke="#059669" stroke-width="1.3" marker-end="url(#arrow-green)" stroke-dasharray="5,3"/>
+  <!-- 结果回到 messages[] -->
+  <path d="M 790 192 L 790 244 L 108 244 L 108 176" fill="none" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+  <text x="456" y="214" fill="#64748b" font-size="10" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result / task_notification</text>
+  <text x="456" y="231" fill="#64748b" font-size="10" text-anchor="middle">→ 追加回 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">messages[]</tspan> → 下一轮</text>
 
-  <rect x="260" y="318" width="190" height="104" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.4"/>
-  <text x="355" y="341" text-anchor="middle" fill="#9a3412" font-size="11" font-weight="700">治理与扩展点</text>
-  <text x="278" y="362" fill="#c2410c" font-size="9">s03 permission</text>
-  <text x="278" y="377" fill="#c2410c" font-size="9">s04 hooks</text>
-  <text x="278" y="392" fill="#c2410c" font-size="9">model retry / fallback</text>
-  <text x="278" y="407" fill="#c2410c" font-size="9">Stop hooks</text>
-  <path d="M 450 350 L 592 186" fill="none" stroke="#ea580c" stroke-width="1.3" marker-end="url(#arrow-orange)" stroke-dasharray="5,3"/>
+  <!-- ===== 外挂机制 ===== -->
+  <!-- 上下文与知识 -->
+  <rect x="40" y="304" width="195" height="116" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="137" y="326" fill="#166534" font-size="12" font-weight="700" text-anchor="middle">上下文与知识</text>
+  <text x="137" y="341" fill="#64748b" font-size="9" text-anchor="middle">Context &amp; Knowledge</text>
+  <text x="56" y="361" fill="#15803d" font-size="10">s07 技能目录 + <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">load_skill</tspan></text>
+  <text x="56" y="378" fill="#15803d" font-size="10">s09 记忆筛选 (memory)</text>
+  <text x="56" y="395" fill="#15803d" font-size="10">组合后的 system prompt</text>
+  <text x="56" y="412" fill="#15803d" font-size="10">s08 压缩管线 (compact)</text>
+  <line x1="216" y1="304" x2="216" y2="194" stroke="#16a34a" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arrow-green)"/>
 
-  <rect x="480" y="318" width="190" height="104" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.4"/>
-  <text x="575" y="341" text-anchor="middle" fill="#5b21b6" font-size="11" font-weight="700">持久工作</text>
-  <text x="498" y="362" fill="#6d28d9" font-size="9">s05 todo_write</text>
-  <text x="498" y="377" fill="#6d28d9" font-size="9">s10 task graph</text>
-  <text x="498" y="392" fill="#6d28d9" font-size="9">s11 background</text>
-  <text x="498" y="407" fill="#6d28d9" font-size="9">s12 cron scheduler</text>
-  <path d="M 575 318 L 575 188" fill="none" stroke="#7c3aed" stroke-width="1.3" marker-end="url(#arrow-purple)" stroke-dasharray="5,3"/>
+  <!-- 治理与扩展点 -->
+  <rect x="255" y="304" width="195" height="116" rx="8" fill="#fff7ed" stroke="#d97706" stroke-width="1.4"/>
+  <text x="352" y="326" fill="#92400e" font-size="12" font-weight="700" text-anchor="middle">治理与扩展点</text>
+  <text x="352" y="341" fill="#64748b" font-size="9" text-anchor="middle">Governance &amp; Extension Points</text>
+  <text x="271" y="361" fill="#b45309" font-size="10">s03 权限 (permission)</text>
+  <text x="271" y="378" fill="#b45309" font-size="10">s04 钩子 (hooks)</text>
+  <text x="271" y="395" fill="#b45309" font-size="10">模型重试 / 回退 (fallback)</text>
+  <text x="271" y="412" fill="#b45309" font-size="10"><tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">Stop</tspan> 钩子 (hooks)</text>
+  <path d="M 430 304 L 430 284 L 580 284 L 580 194" fill="none" stroke="#d97706" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arrow-amber)"/>
 
-  <rect x="700" y="318" width="180" height="104" rx="8" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.4"/>
-  <text x="790" y="341" text-anchor="middle" fill="#0f766e" font-size="11" font-weight="700">团队与插件</text>
-  <text x="718" y="362" fill="#0f766e" font-size="9">s06 subagent</text>
-  <text x="718" y="377" fill="#0f766e" font-size="9">s13 teams + task protocols</text>
-  <text x="718" y="392" fill="#0f766e" font-size="9">s13 task-bound worktrees</text>
-  <text x="718" y="407" fill="#0f766e" font-size="9">s14 MCP tools</text>
-  <path d="M 790 318 L 790 188" fill="none" stroke="#0d9488" stroke-width="1.3" marker-end="url(#arrow-green)" stroke-dasharray="5,3"/>
+  <!-- 持久工作 -->
+  <rect x="470" y="304" width="195" height="116" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.4"/>
+  <text x="567" y="326" fill="#5b21b6" font-size="12" font-weight="700" text-anchor="middle">持久工作</text>
+  <text x="567" y="341" fill="#64748b" font-size="9" text-anchor="middle">Durable Work</text>
+  <text x="486" y="361" fill="#6d28d9" font-size="10">s05 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">todo_write</tspan></text>
+  <text x="486" y="378" fill="#6d28d9" font-size="10">s10 任务图 (task graph)</text>
+  <text x="486" y="395" fill="#6d28d9" font-size="10">s11 后台任务 (background)</text>
+  <text x="486" y="412" fill="#6d28d9" font-size="10">s12 定时调度 (cron scheduler)</text>
+  <line x1="640" y1="304" x2="640" y2="194" stroke="#7c3aed" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arrow-purple)"/>
 
-  <!-- Tool pool -->
-  <rect x="70" y="462" width="780" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
-  <text x="460" y="487" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="700">TOOL POOL: 26 builtins + dynamic mcp__server__tool</text>
-  <text x="95" y="512" fill="#334155" font-size="9">file/shell: bash · read · write · edit · glob</text>
-  <text x="95" y="530" fill="#334155" font-size="9">single-agent: todo_write · task · load_skill · compact</text>
-  <text x="95" y="548" fill="#334155" font-size="9">durable work: create/update/list/get/claim/complete_task · schedule/list/cancel_cron</text>
-  <text x="510" y="512" fill="#334155" font-size="9">team: spawn_teammate · send_message · typed protocols</text>
-  <text x="510" y="530" fill="#334155" font-size="9">protocol: request_shutdown · request_plan · review_plan</text>
-  <text x="510" y="548" fill="#334155" font-size="9">workdir/plugin: create_worktree · connect_mcp</text>
-  <path d="M 850 518 L 890 518 L 890 152 L 850 152" fill="none" stroke="#475569" stroke-width="1.2" marker-end="url(#arrow)" stroke-dasharray="4,4"/>
+  <!-- 团队与插件 -->
+  <rect x="685" y="304" width="195" height="116" rx="8" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.4"/>
+  <text x="782" y="326" fill="#115e59" font-size="12" font-weight="700" text-anchor="middle">团队与插件</text>
+  <text x="782" y="341" fill="#64748b" font-size="9" text-anchor="middle">Teams &amp; Plugins</text>
+  <text x="701" y="361" fill="#0f766e" font-size="10">s06 子 Agent (subagent)</text>
+  <text x="701" y="378" fill="#0f766e" font-size="10">s13 团队 + 协作协议 (teams)</text>
+  <text x="701" y="395" fill="#0f766e" font-size="10">s13 任务绑定的 worktree</text>
+  <text x="701" y="412" fill="#0f766e" font-size="10">s14 MCP 工具</text>
+  <line x1="836" y1="304" x2="836" y2="194" stroke="#0d9488" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arrow-teal)"/>
+
+  <!-- ===== 工具池 ===== -->
+  <rect x="56" y="456" width="808" height="124" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="460" y="480" fill="#1e293b" font-size="12" font-weight="700" text-anchor="middle">工具池 (Tool Pool)：26 个内置工具 + 动态 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">mcp__server__tool</tspan></text>
+  <line x1="76" y1="490" x2="844" y2="490" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="76" y="508" fill="#334155" font-size="10" font-weight="600">文件/Shell：<tspan fill="#475569" font-weight="400" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">bash · read · write · edit · glob</tspan></text>
+  <text x="76" y="526" fill="#334155" font-size="10" font-weight="600">单 Agent：<tspan fill="#475569" font-weight="400" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">todo_write · task · load_skill · compact</tspan></text>
+  <text x="76" y="544" fill="#334155" font-size="10" font-weight="600">持久工作：<tspan fill="#475569" font-weight="400" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">create/update/list/get/claim/complete_task</tspan></text>
+  <text x="126" y="562" fill="#475569" font-size="10" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">schedule/list/cancel_cron</text>
+
+  <text x="476" y="508" fill="#334155" font-size="10" font-weight="600">团队：<tspan fill="#475569" font-weight="400" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">spawn_teammate · send_message</tspan><tspan fill="#475569" font-weight="400"> · 类型化协议</tspan></text>
+  <text x="476" y="526" fill="#334155" font-size="10" font-weight="600">协议：<tspan fill="#475569" font-weight="400" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">request_shutdown · request_plan · review_plan</tspan></text>
+  <text x="476" y="544" fill="#334155" font-size="10" font-weight="600">工作目录/插件：<tspan fill="#475569" font-weight="400" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">create_worktree · connect_mcp</tspan></text>
+
+  <!-- 工具池 → handlers -->
+  <path d="M 864 518 L 900 518 L 900 152 L 864 152" fill="none" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4,4" marker-end="url(#arrow)"/>
 </svg>

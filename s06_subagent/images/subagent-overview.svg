@@ -1,16 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="system-ui, -apple-system, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif">
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#555"/>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
     </marker>
-    <marker id="arrow-blue" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
-    </marker>
-    <marker id="arrow-purple" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7c3aed"/>
-    </marker>
-    <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7c3aed"/>
     </marker>
     <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#1e3a5f"/>
@@ -21,105 +18,108 @@
   <!-- 背景 -->
   <rect width="800" height="500" fill="#fafbfc" rx="8"/>
 
-  <!-- 标题 -->
+  <!-- 标题栏 -->
   <rect x="0" y="0" width="800" height="48" fill="url(#header)" rx="8"/>
   <rect x="0" y="40" width="800" height="8" fill="url(#header)"/>
-  <text x="400" y="31" fill="#fff" font-size="16" font-weight="700" text-anchor="middle">Subagent — 全新 messages[]，最终文本返回父循环</text>
+  <text x="400" y="23" fill="#ffffff" font-size="15" font-weight="700" text-anchor="middle">子 Agent — 全新 messages[]，只把最终文本返回父循环</text>
+  <text x="400" y="40" fill="#bfdbfe" font-size="10" text-anchor="middle">Subagent — fresh messages[], only the final text returns to the parent loop</text>
 
-  <!-- ===== Parent Agent（左侧） ===== -->
-  <rect x="30" y="68" width="310" height="268" rx="12" fill="#f0f4ff" stroke="#2563eb" stroke-width="2"/>
-  <text x="185" y="92" fill="#1e3a5f" font-size="13" font-weight="700" text-anchor="middle">Parent Agent</text>
+  <!-- ===== 父 Agent（左侧） ===== -->
+  <rect x="30" y="68" width="310" height="268" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="185" y="90" fill="#1e3a5f" font-size="13" font-weight="700" text-anchor="middle">父 Agent (Parent Agent)</text>
 
   <!-- messages[] -->
-  <rect x="50" y="100" width="110" height="36" rx="6" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="105" y="123" fill="#1e3a5f" font-size="11" font-weight="600" text-anchor="middle">messages[]</text>
+  <rect x="50" y="100" width="110" height="36" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="105" y="122" fill="#334155" font-size="11" font-weight="600" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">messages[]</text>
 
-  <!-- → LLM -->
-  <line x1="160" y1="118" x2="198" y2="118" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <!-- messages → LLM -->
+  <line x1="160" y1="118" x2="198" y2="118" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
 
   <!-- LLM -->
-  <rect x="200" y="96" width="100" height="44" rx="6" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="250" y="123" fill="#1e3a5f" font-size="12" font-weight="700" text-anchor="middle">LLM</text>
+  <rect x="200" y="96" width="110" height="44" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="255" y="122" fill="#1e3a5f" font-size="12" font-weight="700" text-anchor="middle">大模型 (LLM)</text>
 
-  <!-- LLM → dispatch -->
-  <line x1="250" y1="140" x2="250" y2="156" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="264" y="152" fill="#64748b" font-size="8">tool_use</text>
+  <!-- LLM → 工具分发 -->
+  <line x1="255" y1="140" x2="255" y2="156" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="264" y="152" fill="#64748b" font-size="9" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_use</text>
 
   <!-- TOOL_HANDLERS -->
-  <rect x="50" y="158" width="280" height="74" rx="6" fill="#e0e7ff" stroke="#2563eb" stroke-width="1"/>
-  <text x="190" y="176" fill="#1e3a5f" font-size="10" font-weight="600" text-anchor="middle">TOOL_HANDLERS</text>
+  <rect x="50" y="158" width="280" height="74" rx="6" fill="#fff7ed" stroke="#d97706" stroke-width="1"/>
+  <text x="190" y="175" fill="#92400e" font-size="10" font-weight="600" text-anchor="middle"><tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">TOOL_HANDLERS</tspan> 工具分发表</text>
 
-  <!-- 其他工具（灰色） -->
-  <rect x="65" y="190" width="115" height="32" rx="4" fill="#f0f4ff" stroke="#2563eb" stroke-width="1"/>
-  <text x="122" y="206" fill="#1e3a5f" font-size="10" font-weight="600" text-anchor="middle">基础工具</text>
-  <text x="122" y="219" fill="#64748b" font-size="8" text-anchor="middle">bash / read / write / ...</text>
+  <!-- 基础工具 -->
+  <rect x="62" y="186" width="124" height="36" rx="4" fill="#ffffff" stroke="#d97706" stroke-width="1"/>
+  <text x="124" y="201" fill="#92400e" font-size="10" font-weight="600" text-anchor="middle">基础工具</text>
+  <text x="124" y="215" fill="#b45309" font-size="9" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">bash / read / ...</text>
 
-  <!-- task 运行嵌套循环 -->
-  <rect x="200" y="193" width="110" height="26" rx="4" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="255" y="210" fill="#5b21b6" font-size="10" font-weight="600" text-anchor="middle">task → run</text>
+  <!-- task → run_subagent -->
+  <rect x="196" y="186" width="122" height="36" rx="4" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="257" y="201" fill="#5b21b6" font-size="10" font-weight="700" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">task</text>
+  <text x="257" y="215" fill="#6d28d9" font-size="9" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">→ run_subagent()</text>
 
-  <!-- Parent tool_result target -->
+  <!-- 父 Agent 的 tool_result -->
   <rect x="190" y="270" width="120" height="34" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
-  <text x="250" y="291" fill="#166534" font-size="9" font-weight="700" text-anchor="middle">tool_result</text>
-  <path d="M 250 232 L 250 270" fill="none" stroke="#16a34a" stroke-width="1.4" marker-end="url(#arrow-green)"/>
-  <path d="M 190 287 L 42 287 L 42 118 L 50 118" fill="none" stroke="#16a34a" stroke-width="1.2" marker-end="url(#arrow-green)" stroke-dasharray="4,3"/>
-  <text x="110" y="304" fill="#94a3b8" font-size="8" text-anchor="middle">append messages[]</text>
-  <text x="210" y="256" fill="#94a3b8" font-size="8" text-anchor="middle">普通工具结果也回填 messages[]</text>
+  <text x="250" y="284" fill="#166534" font-size="10" font-weight="700" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result</text>
+  <text x="250" y="297" fill="#15803d" font-size="9" text-anchor="middle">工具结果</text>
+  <path d="M 250 232 L 250 268" fill="none" stroke="#16a34a" stroke-width="1.4" marker-end="url(#arrow-green)"/>
+  <path d="M 190 287 L 42 287 L 42 118 L 48 118" fill="none" stroke="#16a34a" stroke-width="1.2" marker-end="url(#arrow-green)" stroke-dasharray="4,3"/>
+  <text x="115" y="303" fill="#64748b" font-size="9" text-anchor="middle">追加到 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">messages[]</tspan></text>
+  <text x="243" y="254" fill="#64748b" font-size="9" text-anchor="end">普通工具结果也回填 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">messages[]</tspan></text>
 
-  <!-- ===== Subagent（右侧） ===== -->
-  <rect x="430" y="68" width="340" height="268" rx="12" fill="#faf5ff" stroke="#7c3aed" stroke-width="2"/>
-  <text x="600" y="92" fill="#5b21b6" font-size="13" font-weight="700" text-anchor="middle">Subagent (全新上下文)</text>
+  <!-- ===== 子 Agent（右侧） ===== -->
+  <rect x="430" y="68" width="340" height="268" rx="12" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+  <text x="600" y="90" fill="#5b21b6" font-size="13" font-weight="700" text-anchor="middle">子 Agent (Subagent) · 全新上下文</text>
 
-  <!-- fresh messages -->
-  <rect x="450" y="100" width="150" height="36" rx="6" fill="#fff" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="525" y="116" fill="#5b21b6" font-size="10" font-weight="600" text-anchor="middle">messages = [task]</text>
-  <text x="525" y="130" fill="#7c3aed" font-size="8" text-anchor="middle">fresh — 不继承父对话</text>
+  <!-- 全新 messages -->
+  <rect x="450" y="100" width="150" height="38" rx="6" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="525" y="116" fill="#5b21b6" font-size="10" font-weight="600" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">messages = [task]</text>
+  <text x="525" y="131" fill="#6d28d9" font-size="9" text-anchor="middle">全新 (fresh) — 不继承父对话</text>
 
   <!-- → LLM -->
   <line x1="600" y1="118" x2="648" y2="118" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arrow-purple)"/>
 
-  <!-- Subagent LLM -->
-  <rect x="650" y="96" width="100" height="44" rx="6" fill="#fff" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="700" y="123" fill="#5b21b6" font-size="12" font-weight="700" text-anchor="middle">LLM</text>
+  <!-- 子 Agent LLM -->
+  <rect x="650" y="96" width="104" height="44" rx="6" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="702" y="122" fill="#5b21b6" font-size="12" font-weight="700" text-anchor="middle">大模型 (LLM)</text>
 
-  <!-- own loop -->
-  <rect x="455" y="150" width="300" height="56" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1" stroke-dasharray="4,2"/>
-  <text x="605" y="170" fill="#5b21b6" font-size="10" font-weight="600" text-anchor="middle">自己的 while 循环（最多 30 轮）</text>
-  <text x="605" y="186" fill="#5b21b6" font-size="9" text-anchor="middle">bash · read · write · edit · glob</text>
-  <text x="605" y="198" fill="#94a3b8" font-size="8" text-anchor="middle">无 task — 只允许一层委派</text>
+  <!-- 自己的循环 -->
+  <rect x="455" y="150" width="300" height="58" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="605" y="168" fill="#5b21b6" font-size="10" font-weight="600" text-anchor="middle">自己的 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">while</tspan> 循环（最多 30 轮）</text>
+  <text x="605" y="184" fill="#6d28d9" font-size="9" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">bash · read · write · edit · glob</text>
+  <text x="605" y="199" fill="#64748b" font-size="9" text-anchor="middle">没有 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">task</tspan> — 只允许一层委派</text>
 
   <!-- 中间结果只保留在子 Agent 消息列表中 -->
   <rect x="460" y="218" width="290" height="44" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2"/>
-  <text x="605" y="238" fill="#64748b" font-size="10" text-anchor="middle">子 Agent 的工具调用与结果</text>
-  <text x="605" y="254" fill="#64748b" font-size="10" font-weight="600" text-anchor="middle">不复制到父 messages[]</text>
+  <text x="605" y="236" fill="#64748b" font-size="10" text-anchor="middle">子 Agent 的工具调用与结果</text>
+  <text x="605" y="253" fill="#334155" font-size="10" font-weight="600" text-anchor="middle">不复制到父 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">messages[]</tspan></text>
 
-  <!-- extract only last text -->
+  <!-- 只提取最终文本 -->
   <rect x="460" y="272" width="290" height="28" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
-  <text x="605" y="290" fill="#166534" font-size="10" font-weight="600" text-anchor="middle">最终文本 → Parent tool_result</text>
+  <text x="605" y="290" fill="#166534" font-size="10" font-weight="600" text-anchor="middle">最终文本 → 父 Agent 的 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">tool_result</tspan></text>
 
-  <!-- ===== dispatch 线：Parent → Subagent（走上面） ===== -->
-  <path d="M 310 206 L 362 206 Q 370 206 370 198 L 370 126 Q 370 118 378 118 L 450 118" fill="none" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
-  <rect x="342" y="152" width="80" height="20" rx="4" fill="#faf5ff" stroke="#7c3aed" stroke-width="1"/>
-  <text x="382" y="166" fill="#7c3aed" font-size="9" font-weight="700" text-anchor="middle">① task 描述</text>
+  <!-- ===== ① 派发：父 → 子 ===== -->
+  <path d="M 318 204 L 362 204 Q 370 204 370 196 L 370 126 Q 370 118 378 118 L 448 118" fill="none" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
+  <rect x="342" y="150" width="80" height="20" rx="4" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1"/>
+  <text x="382" y="164" fill="#6d28d9" font-size="9" font-weight="700" text-anchor="middle">① <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">task</tspan> 描述</text>
 
-  <!-- ===== return 线：Subagent → Parent tool_result ===== -->
-  <path d="M 460 286 L 310 286" fill="none" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arrow-green)"/>
-  <rect x="350" y="268" width="70" height="20" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
-  <text x="385" y="282" fill="#166534" font-size="9" font-weight="700" text-anchor="middle">② summary</text>
+  <!-- ===== ② 返回：子 → 父 tool_result ===== -->
+  <path d="M 460 287 L 312 287" fill="none" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arrow-green)"/>
+  <rect x="348" y="258" width="74" height="20" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="385" y="272" fill="#166534" font-size="9" font-weight="700" text-anchor="middle">② 最终文本</text>
 
-  <!-- ===== 图例 ===== -->
-  <rect x="60" y="370" width="680" height="56" rx="8" fill="#f1f5f9"/>
+  <!-- ===== 图例 + 数据流 ===== -->
+  <rect x="60" y="360" width="680" height="56" rx="6" fill="#f1f5f9"/>
+  <rect x="80" y="374" width="16" height="12" rx="3" fill="#eff6ff" stroke="#2563eb" stroke-width="1"/>
+  <text x="104" y="384" fill="#334155" font-size="10">父 Agent 工具：5 个基础工具 + <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">task</tspan></text>
+  <rect x="80" y="394" width="16" height="12" rx="3" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1"/>
+  <text x="104" y="404" fill="#334155" font-size="10">子 Agent 工具：5 个基础工具，无 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">task</tspan></text>
 
-  <rect x="80" y="384" width="16" height="12" rx="3" fill="#f0f4ff" stroke="#2563eb" stroke-width="1"/>
-  <text x="104" y="394" fill="#334155" font-size="10">父 Agent 工具：5 个基础工具 + task</text>
+  <line x1="400" y1="370" x2="400" y2="406" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="420" y="384" fill="#6d28d9" font-size="10" font-weight="600">① 父 → 子：<tspan fill="#64748b" font-weight="400"><tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">task</tspan> 提示词 (prompt)，一小段文字</tspan></text>
+  <text x="420" y="404" fill="#15803d" font-size="10" font-weight="600">② 子 → 父：<tspan fill="#64748b" font-weight="400"><tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">extract_text()</tspan>，只有最终结论</tspan></text>
 
-  <rect x="80" y="404" width="16" height="12" rx="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
-  <text x="104" y="414" fill="#334155" font-size="10">子 Agent 工具：5 个基础工具，无 task</text>
-
-  <!-- 数据流标注 -->
-  <rect x="430" y="440" width="310" height="44" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="445" y="458" fill="#7c3aed" font-size="10" font-weight="600">① Parent → Sub：</text>
-  <text x="580" y="458" fill="#64748b" font-size="10">task prompt（一小段文字）</text>
-  <text x="445" y="476" fill="#16a34a" font-size="10" font-weight="600">② Sub → Parent：</text>
-  <text x="580" y="476" fill="#64748b" font-size="10">extract_text()（只有最终结论）</text>
+  <!-- 要点 -->
+  <rect x="60" y="428" width="680" height="48" rx="6" fill="#f1f5f9"/>
+  <text x="80" y="448" fill="#334155" font-size="10">隔离的是<tspan font-weight="700" fill="#1e3a5f">消息</tspan>，不是进程或文件系统：父子 Agent 共享 <tspan font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">WORKDIR</tspan>，并使用同一组权限检查和钩子 (Hooks)。</text>
+  <text x="80" y="466" fill="#64748b" font-size="10">子 Agent 的中间过程留在它自己的上下文里，父上下文只多一条结论。（Only the conclusion enters the parent context.）</text>
 </svg>
