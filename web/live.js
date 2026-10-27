@@ -74,7 +74,7 @@
         <input id="lvText" autocomplete="off" placeholder="先点「开始运行」，然后在这里输入要交给 Agent 的任务">
         <button class="btn primary" type="submit">发送</button>
       </form>
-      ${tips.length ? `<div class="lv-tips"><span>试试：</span>${tips.map((t) => `<button class="tip" type="button">${esc(t)}</button>`).join("")}</div>` : ""}
+      ${tips.length ? `<div class="lv-tips"><span>试试：</span>${tips.map((t) => `<button class="lv-tip" type="button">${esc(t)}</button>`).join("")}</div>` : ""}
       <p class="error" id="lvErr" hidden></p>
       <div class="rp-grid">
         <section class="lv-stream" id="lvStream"><p class="loading">还没有开始运行。</p></section>
@@ -190,7 +190,7 @@
       $text.value = "";
       send(text);
     });
-    panel.querySelectorAll(".tip").forEach((b) => b.addEventListener("click", () => {
+    panel.querySelectorAll(".lv-tip").forEach((b) => b.addEventListener("click", () => {
       $text.value = b.textContent;
       if (state === "prompt") $text.focus();
     }));

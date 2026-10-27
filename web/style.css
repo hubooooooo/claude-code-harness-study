@@ -350,8 +350,8 @@ button { font: inherit; color: inherit; }
 .lv-input input:focus, .lv-key input:focus { outline: 2px solid var(--accent); border-color: transparent; }
 .lv-input .btn { height: 44px; }
 .lv-tips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0 0; font-size: 13px; color: var(--text-secondary); }
-.tip { border: 1px dashed var(--border); background: var(--bg-soft); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 13px; text-align: left; }
-.tip:hover { border-color: var(--text); }
+.lv-tip { border: 1px dashed var(--border); background: var(--bg-soft); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 13px; text-align: left; }
+.lv-tip:hover { border-color: var(--text); }
 .lv-stream { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .lv-stream .rp-step { min-height: 0; }
 .panel > .rp-grid { margin-top: 20px; }
