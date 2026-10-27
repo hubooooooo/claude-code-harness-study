@@ -1,20 +1,18 @@
-# s04: Hooks — Hang on the Loop, Don't Write into It
-
-[English](README.md) · [中文](README.zh.md) · [日本語](README.ja.md)
+# s04: Hooks — 挂在循环上，不写进循环里
 
 s01 → s02 → s03 → `s04` → [s05](../s05_todo_write/) → s06 → ... → s16 → s17
 
-> *"Hang on the loop, don't write into it"* — Hooks inject extension logic before and after tool execution.
+> *"挂在循环上, 不写进循环里"* — hook 在工具执行前后注入扩展逻辑。
 >
-> **Harness Layer**: Hooks — Extension points that don't invade the loop.
+> **Harness 层**: hook — 扩展点不侵入循环。
 
 ---
 
-## The Problem
+## 问题
 
-The s03 Agent has permission checks. But every new check, "log every bash call", "auto git add after writes", requires modifying the `agent_loop` function.
+s03 的 Agent 有权限检查了。但每次加一个新检查，比如"记录每次 bash 调用"、"操作后自动 git add"，都要修改 `agent_loop` 函数。
 
-The loop quickly becomes this:
+循环很快就变成了这样：
 
 ```python
 def agent_loop(messages):
@@ -23,40 +21,40 @@ def agent_loop(messages):
         for block in response.content:
             if block.type != "tool_use":
                 continue
-            log_to_file(block)          # added a line
-            check_permission(block)     # added a line
-            notify_slack(block)         # added another line
+            log_to_file(block)          # 加一行
+            check_permission(block)     # 加一行
+            notify_slack(block)         # 又加一行
             output = execute(block)
-            auto_git_add(block)         # yet another line
-            # ... the loop is unrecognizable
+            auto_git_add(block)         # 再加一行
+            # ... 很快循环就认不出来了
 ```
 
-What you want to extend is the Agent's behavior, but what you're modifying is the loop itself. The loop should be a stable core; extensions should hang on the outside.
+你想扩展的是 Agent 的行为，但你改的却是循环本身。循环应该是一个稳定的核心，扩展应该挂在外面。
 
 ---
 
-## The Solution
+## 解决方案
 
-![Hooks Overview](images/hooks-overview.en.svg)
+![Hooks Overview](images/hooks-overview.svg)
 
-The s03 loop and permission logic are fully preserved. The only change is moving `check_permission()` from inside the loop body onto a hook. The loop no longer directly calls any check function. Instead it calls `trigger_hooks("PreToolUse", block)`, and the registry decides what to run.
+s03 的循环和权限逻辑完全保留。唯一的变动是把 `check_permission()` 从循环体内移到了 hook 上，循环不再直接调用任何检查函数，改为 `trigger_hooks("PreToolUse", block)`，由注册表决定跑什么。
 
-Four events, covering a complete agent cycle:
+四个事件，覆盖一个完整的 agent cycle：
 
-| Event | Trigger Timing | Typical Use |
-|-------|---------------|-------------|
-| UserPromptSubmit | After user input, before entering LLM | Input validation, context injection |
-| PreToolUse | Before tool execution | Permission checks, logging |
-| PostToolUse | After tool execution | Side effects (auto git add etc.), output checking |
-| Stop | When the loop is about to exit | Cleanup, decide whether the loop continues |
+| 事件 | 触发时机 | 典型用途 |
+|------|---------|---------|
+| UserPromptSubmit | 用户输入提交后、进入 LLM 前 | 输入验证、注入上下文 |
+| PreToolUse | 工具执行前 | 权限检查、日志记录 |
+| PostToolUse | 工具执行后 | 副作用（自动 git add 等）、输出检查 |
+| Stop | 循环即将退出时 | 收尾清理、决定是否继续循环 |
 
-Extensions are added via `register_hook()`. The loop only calls `trigger_hooks()`.
+扩展通过 `register_hook()` 添加，循环只调用 `trigger_hooks()`。
 
 ---
 
-## How It Works
+## 工作原理
 
-**Hook registry**: a dict mapping event names to callback lists.
+**hook 注册表**：一个字典，事件名映射到回调列表。
 
 ```python
 HOOKS = {
@@ -72,14 +70,14 @@ def register_hook(event: str, callback):
 def trigger_hooks(event: str, *args):
     for callback in HOOKS[event]:
         result = callback(*args)
-        if result is not None:   # return value ≠ None → hook says "stop"
+        if result is not None:   # 返回值 ≠ None → hook 说"停"
             return result
     return None
 ```
 
-When `PreToolUse` returns non-None, the current tool execution is blocked. When `Stop` returns non-None, the loop continues. Return values from `UserPromptSubmit` and `PostToolUse` do not affect control flow.
+`PreToolUse` 返回非 `None` 时，本次工具执行被阻止；`Stop` 返回非 `None` 时，循环继续。`UserPromptSubmit` 和 `PostToolUse` 的返回值不参与控制流。
 
-**UserPromptSubmit** triggers after user input and before entering the LLM. The following hook records the current working directory:
+**UserPromptSubmit** 在用户输入提交后、进入 LLM 前触发。以下 hook 记录当前工作目录：
 
 ```python
 def context_inject_hook(query: str) -> str | None:
@@ -90,19 +88,19 @@ def context_inject_hook(query: str) -> str | None:
 register_hook("UserPromptSubmit", context_inject_hook)
 ```
 
-In the main loop, triggered right after user input:
+在主循环中，用户输入后立即触发：
 
 ```python
 query = input("s04 >> ")
-trigger_hooks("UserPromptSubmit", query)   # ← before entering LLM
+trigger_hooks("UserPromptSubmit", query)   # ← 进入 LLM 之前
 history.append({"role": "user", "content": query})
 agent_loop(history)
 ```
 
-**PreToolUse / PostToolUse**, hooks before and after tool execution. s03's permission check logic is now wrapped as a PreToolUse hook, plus a logging hook and a large-output reminder:
+**PreToolUse / PostToolUse**，工具执行前后的 hook。s03 的权限检查逻辑现在包装成 PreToolUse hook，再加一个日志 hook 和一个大输出提醒：
 
 ```python
-# PreToolUse: permission check (s03 logic, moved from loop to hook)
+# PreToolUse: 权限检查（s03 的逻辑，从循环移到 hook）
 def permission_hook(block):
     if block.name == "bash":
         for pattern in DENY_LIST:
@@ -116,11 +114,11 @@ def permission_hook(block):
                 return "Permission denied by user"
     return None
 
-# PreToolUse: logging
+# PreToolUse: 日志
 def log_hook(block):
     print(f"[HOOK] {block.name}(...)")
 
-# PostToolUse: large output reminder
+# PostToolUse: 大文件提醒
 def large_output_hook(block, output):
     if len(str(output)) > 100000:
         print(f"[HOOK] ⚠ Large output from {block.name}")
@@ -130,7 +128,7 @@ register_hook("PreToolUse", log_hook)
 register_hook("PostToolUse", large_output_hook)
 ```
 
-**Stop** triggers when the loop is about to exit. The following hook prints a cleanup summary:
+**Stop** 在循环即将退出时触发。以下 hook 打印收尾统计：
 
 ```python
 def summary_hook(messages: list) -> str | None:
@@ -144,14 +142,14 @@ def summary_hook(messages: list) -> str | None:
 register_hook("Stop", summary_hook)
 ```
 
-In agent_loop, triggered before exit:
+在 agent_loop 中，退出前触发：
 
 ```python
 tool_calls = [
     block for block in response.content if block.type == "tool_use"
 ]
 if not tool_calls:
-    force = trigger_hooks("Stop", messages)   # ← before exiting
+    force = trigger_hooks("Stop", messages)   # ← 退出之前
     if force:
         # hook returned a message → inject it and continue
         messages.append({"role": "user", "content": force})
@@ -159,12 +157,12 @@ if not tool_calls:
     return
 ```
 
-**Only one change in the loop**: s03 directly called `check_permission(block)`, s04 replaces it with `trigger_hooks("PreToolUse", block)`:
+**循环里只改了一处**：s03 直接调用 `check_permission(block)`，s04 改为 `trigger_hooks("PreToolUse", block)`：
 
 ```python
 for block in tool_calls:
     # s03: if not check_permission(block): ...
-    # s04: hooks replace hardcoding
+    # s04: hook 替代硬编码
     blocked = trigger_hooks("PreToolUse", block)
     if blocked:
         results.append({"type": "tool_result", "tool_use_id": block.id,
@@ -180,45 +178,45 @@ for block in tool_calls:
                     "content": output})
 ```
 
-Four hooks cover the critical nodes of the agent cycle: input → before execution → after execution → exit. The loop only calls trigger_hooks(); all logic lives in hook callbacks.
+四个 hook 覆盖了 agent cycle 的关键节点：输入→执行前→执行后→退出。循环只负责调用 trigger_hooks()，具体逻辑全在 hook 回调里。
 
 ---
 
-## Changes from s03
+## 相对 s03 的变更
 
-| Component | Before (s03) | After (s04) |
-|-----------|-------------|-------------|
-| Extension method | check_permission() hardcoded in the loop | HOOKS registry + trigger_hooks() |
-| New functions | — | register_hook, trigger_hooks |
-| Hook callbacks | — | context_inject_hook, permission_hook, log_hook, large_output_hook, summary_hook |
-| Loop | Directly calls check_permission() | Calls trigger_hooks("PreToolUse", ...) |
-| Exit control | None | trigger_hooks("Stop", ...) can prevent exit |
-| Input interception | None | trigger_hooks("UserPromptSubmit", ...) can inject context |
+| 组件 | 之前 (s03) | 之后 (s04) |
+|------|-----------|-----------|
+| 扩展方式 | check_permission() 硬编码在循环里 | HOOKS 注册表 + trigger_hooks() |
+| 新函数 | — | register_hook, trigger_hooks |
+| hook 回调 | — | context_inject_hook, permission_hook, log_hook, large_output_hook, summary_hook |
+| 循环 | 直接调用 check_permission() | 调用 trigger_hooks("PreToolUse", ...) |
+| 退出控制 | 无 | trigger_hooks("Stop", ...) 可阻止退出 |
+| 输入拦截 | 无 | trigger_hooks("UserPromptSubmit", ...) 可注入上下文 |
 
 ---
 
-## Try It
+## 试一下
 
 ```sh
 cd learn-claude-code
 python s04_hooks/code.py
 ```
 
-Try these prompts:
+试试这些 prompt：
 
-1. `Read the file README.md` (should pass directly, observe hook logs)
-2. `Create a file called test.txt` (after creation, observe if PostToolUse fires)
-3. `Delete all temporary files in /tmp` (bash + rm triggers permission hook)
+1. `Read the file README.md`（应该直接通过，观察 hook 日志）
+2. `Create a file called test.txt`（通过后观察 PostToolUse 是否触发）
+3. `Delete all temporary files in /tmp`（bash + rm 触发权限 hook）
 
-What to watch for: Before each tool execution, does the `[HOOK]` log appear? When permission is denied, was it intercepted by a hook or hardcoded in the loop?
+观察重点：每次工具执行前，是否出现了 `[HOOK]` 日志？权限被拒时，是 hook 拦截的还是循环里硬编码的？
 
 ---
 
-## What's Next
+## 接下来
 
-The Agent can now safely execute operations. But does it ever stop to think "what should I do first, and what next?" Given a complex task, does it jump straight in, or plan first?
+Agent 现在能安全执行操作了。但它有没有停下来想过"我应该先做什么，再做什么"？给它一个复杂任务，它是一上来就动手，还是先列个计划？
 
-→ s05 TodoWrite: Give the Agent a planning tool. Make a list first, then execute.
+s05 TodoWrite → 给 Agent 一个计划工具。先列清单，再做。
 
 
-<!-- translation-sync: zh@v1, en@v1, ja@v1 -->
+<!-- translation-sync: zh@v1, en@v0, ja@v0 -->

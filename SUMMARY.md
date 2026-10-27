@@ -29,7 +29,7 @@
 - `pyyaml>=6.0` — YAML 解析，用于配置/技能文件
 
 ## 项目结构
-- `s01_agent_loop/` ~ `s17_goal_loop/` — 17 章主线，每章含英文/中文/日文 README、可运行 code.py 和 SVG 图示
+- `s01_agent_loop/` ~ `s17_goal_loop/` — 17 章主线，每章含中文 README、可运行 code.py 和 SVG 图示
 - `skills/` — s07 使用的技能文件
 - `tests/` — 测试
 

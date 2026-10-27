@@ -1,85 +1,83 @@
-# s15: Integrated Harness — Many Mechanisms, One Loop
-
-[English](README.md) · [中文](README.zh.md) · [日本語](README.ja.md)
+# s15: Agent Harness 集成 — 多种机制，一个循环
 
 s01 → ... → s13 → [s14](../s14_mcp_plugin/) → `s15` → [s16](../s16_workflow_runtime/) → s17
 
-> *"Many mechanisms, one loop"* — tools, permissions, memory, tasks, teams, and plugins all hang off the same `while True`.
+> *"多种机制，一个循环"* — 工具、权限、记忆、任务、团队、插件都挂在同一个 while True 上。
 >
-> **Harness layer**: Integration — put the mechanisms used by this example into one runnable system.
+> **Harness 层**: 集成 — 把本章示例实际使用的机制放进同一个可运行系统。
 
 ---
 
-## Problem
+## 问题
 
-The earlier chapters keep separate mechanisms in separate runnable examples. This chapter connects the mechanisms needed by the integrated runtime.
+前面的章节把不同机制放在各自独立的示例中。本章把集成运行时需要的机制接到一起。
 
-A long-running coding agent needs all of these at once:
+一个能长期工作的 coding agent 需要同时拥有：
 
-- tool dispatch and permission boundaries
-- hook extension points
-- todo planning and task graphs
-- skills, memory, and runtime system prompt assembly
-- compaction and error recovery
-- background tasks and cron scheduling
-- teams, protocols, and IDLE task claiming
-- task-bound worktrees
-- MCP external tool integration
+- 工具分发和权限边界
+- hooks 扩展点
+- todo 计划和任务图
+- 技能、记忆、系统 prompt 组装
+- 压缩和错误恢复
+- 后台任务和 cron 调度
+- 团队、协议和 idle 任务认领
+- 任务绑定的 worktree
+- MCP 外部工具接入
 
-S15 does not introduce another isolated mechanism. It shows where the existing mechanisms enter the model loop and how their events return to the same conversation.
+S15 不再引入一个独立机制，而是展示现有机制从哪里进入模型循环，以及它们产生的事件如何回到同一段对话。
 
 ---
 
-## Solution
+## 解决方案
 
-![System Architecture](images/system-architecture.en.svg)
+![System Architecture](images/system-architecture.svg)
 
-S15 does not introduce a new mechanism. It connects the components from the earlier chapters in one integrated harness:
+S15 不再引入新机制，而是把前面各章的组件集成到同一个 harness：
 
 ```text
-user input
+用户输入
   → UserPromptSubmit hooks
-  → cron/background notification injection
+  → cron/background 通知注入
   → context compact
-  → memory + skills + MCP state assemble the system prompt
+  → memory + skills + MCP 状态组装 system prompt
   → LLM
   → has tool_use block?
-      no  → Stop hooks → return
-      yes → PreToolUse hooks + permission
+      否 → Stop hooks → 返回
+      是 → PreToolUse hooks + permission
           → TOOL_HANDLERS / MCP handlers / background dispatch
           → PostToolUse hooks
-          → tool_result / task_notification back to messages
-          → next round
+          → tool_result / task_notification 回 messages
+          → 下一轮
 ```
 
-The loop keeps the same structure: call the model, check whether the response contains a `tool_use` block, execute tools, and append results to `messages`. The presence of a `tool_use` block decides whether tool execution continues.
+循环仍是同一个结构：调用模型，检查响应里是否出现 `tool_use` block，执行工具，再把结果追加回 `messages`。是否继续工具轮，由响应中有没有实际的 `tool_use` block 决定。
 
 ---
 
-## Where Each Component Sits
+## 组件在循环中的位置
 
-| Position | Component | Role |
-|----------|-----------|------|
-| Around user input | `UserPromptSubmit` hooks | Log, inject, or audit user input |
-| Before LLM | cron queue | Inject scheduled prompts into `messages` |
-| Before LLM | background notifications | Inject completed background work as `<task_notification>` |
-| Before LLM | compaction pipeline | Budget large outputs, trim history, compact old tool results, summarize when needed |
-| Before LLM | memory / skills / MCP state | Assemble the system prompt so the model sees current capabilities and long-term context |
-| LLM call | error recovery | Retry 429/529, escalate `max_tokens`, compact on prompt-too-long |
-| Before tool execution | `PreToolUse` hooks + permission | Block dangerous commands, out-of-bounds writes, destructive MCP tools |
-| Tool dispatch | `assemble_tool_pool` | Assemble built-in tools and dynamic MCP tools |
-| During tool execution | background dispatch | Move explicitly marked bash work into a daemon thread and return a placeholder result |
-| After tool execution | `PostToolUse` hooks | Large-output warnings, logs, post-processing |
-| Back to loop | tool_result | One `tool_result` per `tool_use`, then the next model round |
-| No tool_use this round / on stop | `Stop` hooks | Stats, cleanup, audit |
+| 位置 | 组件 | 作用 |
+|------|------|------|
+| 用户输入前后 | `UserPromptSubmit` hooks | 记录、注入、审计用户输入 |
+| LLM 前 | cron queue | 把定时触发的 prompt 注入 `messages` |
+| LLM 前 | background notifications | 后台任务完成后以 `<task_notification>` 注入 |
+| LLM 前 | compaction pipeline | 先压大输出，再裁历史，再压旧 tool_result，必要时摘要 |
+| LLM 前 | memory / skills / MCP state | 组装 system prompt，让模型看到当前能力和长期上下文 |
+| LLM 调用 | error recovery | 429/529 重试，`max_tokens` 升级，prompt too long 触发 reactive compact |
+| 工具执行前 | `PreToolUse` hooks + permission | 拦截危险命令、写越界、破坏性 MCP 工具 |
+| 工具分发 | `assemble_tool_pool` | 组装内置工具和 MCP 动态工具 |
+| 工具执行时 | background dispatch | 显式标记的 bash 操作放入 daemon thread，主循环先返回占位结果 |
+| 工具执行后 | `PostToolUse` hooks | 大输出告警、日志等后处理 |
+| 返回循环 | tool_result | 每个 `tool_use` 对应一个 `tool_result`，再回到下一轮 |
+| 本轮没有 tool_use / 停止时 | `Stop` hooks | 统计、清理、审计 |
 
 ---
 
-## What code.py Contains
+## code.py 包含什么
 
-### Tools and Dispatch
+### 工具与分发
 
-The built-in tool pool contains 26 tools:
+内置工具池包含 26 个工具：
 
 ```text
 bash, read_file, write_file, edit_file, glob
@@ -92,18 +90,18 @@ create_worktree
 connect_mcp
 ```
 
-`assemble_tool_pool()` assembles these every round:
+`assemble_tool_pool()` 每轮组装：
 
 ```text
 BUILTIN_TOOLS + connected MCP tools
 BUILTIN_HANDLERS + mcp__server__tool handlers
 ```
 
-After `connect_mcp("docs")`, the next round exposes tools like `mcp__docs__search`.
+所以 `connect_mcp("docs")` 后，下一轮工具池里会出现 `mcp__docs__search`。
 
-### Permissions and Hooks
+### 权限和 hooks
 
-Permission is not hardcoded into the tool execution line. It is a `PreToolUse` hook:
+权限不写死在工具执行行里，而是作为 `PreToolUse` hook：
 
 ```python
 blocked = trigger_hooks("PreToolUse", block)
@@ -112,132 +110,132 @@ if blocked:
     continue
 ```
 
-That means permission, logging, and audit logic all attach to the same hook point. Lead tools, one-shot subagent tools, and teammate tools all pass through `PreToolUse`; an allowed call then runs `PostToolUse` after its handler.
+这样 permission、log、审计都可以挂在同一个 hook 点上。Lead、一次性 subagent 和队友的工具都会先经过 `PreToolUse`；允许执行的调用会在 handler 返回后触发 `PostToolUse`。
 
-The policy does not trust an MCP server's own description as authorization. The host owns a small exact allowlist for known read-only calls; every other MCP tool asks the user. File tools are denied outside `WORKDIR`, and every bash command asks before execution. Only the foreground user turn may open an interactive approval prompt; asynchronous turns fail closed instead of competing with the main CLI for stdin.
+权限判断不会把 MCP server 自己写的 description 当成授权依据。宿主维护一组精确的已知只读工具名单，其他 MCP 工具都要询问用户。文件工具越过 `WORKDIR` 会直接拒绝，每条 bash 命令执行前都会询问。只有前台用户轮次可以弹出交互确认；异步轮次直接拒绝需要确认的操作，不和主 CLI 争抢输入。
 
-### Planning and Tasks
+### 计划与任务
 
-S15 keeps two planning layers:
+S15 同时保留两层计划：
 
-- `todo_write`: lightweight plan for the current session, kept in memory
-- task graph: cross-session, dependency-aware, claimable task files under `.tasks/task_*.json`
+- `todo_write`：当前会话内的轻量计划，保存在内存中
+- task graph：跨会话、可依赖、可认领的任务文件，写入 `.tasks/task_*.json`
 
-The first keeps a single agent from drifting. The second supports team coordination.
+前者帮助单个 Agent 不漂移；后者支撑团队协作。
 
-They share an intent, not an implementation: `todo_write` replaces one session checklist, while task records have stable IDs and individual lifecycle updates. The separate `task` tool below means "dispatch one isolated subagent"; it is not the Task System.
+两者目标相近，但实现不同：`todo_write` 整表替换当前会话清单，task record 则有稳定 ID 和单条生命周期更新。下面单独出现的 `task` 工具表示“一次性派发隔离 subagent”，不是 Task System。
 
-Task graph construction remains two-phase in the integrated host: the Lead creates all task nodes first, then calls `update_task` with the runtime IDs returned by `create_task`. Teammates receive only list, claim, and complete operations, so dependency structure is fixed by the Lead before work is distributed.
+集成宿主中的任务图仍采用两阶段构建：Lead 先创建所有任务节点，再使用 `create_task` 返回的运行时 ID 调用 `update_task`。队友只能列举、认领和完成任务，因此依赖结构由 Lead 在分发工作前确定。
 
-### Subagents and Teams
+### 子 agent 与团队
 
-S15 has two kinds of delegation:
+S15 有两种 delegation：
 
-- `task`: one-shot subagent. It uses an isolated `messages[]`, discards intermediate context, and returns only a final summary.
-- `spawn_teammate`: persistent teammate thread. When given a ready `task_id`, the runtime claims it before the thread starts; without one, the teammate can wait in IDLE for later work. A teammate without an assignment cannot use file or Shell tools. It follows `WORK → result → IDLE` without a fixed tool-round cap; model or dispatch failures emit an `error`, and thread cleanup releases an unfinished assignment back to the task board. It drains its inbox before every model call, so direct messages and shutdown requests cannot wait behind an unbroken tool-use sequence. While idle it waits for `MessageBus` delivery first, then scans ready tasks only after the wait times out and atomically claims at most one.
+- `task`：一次性 subagent。独立 `messages[]`，中间过程丢弃，只返回最终摘要。
+- `spawn_teammate`：持久队友线程。传入 ready `task_id` 时，运行时会在线程启动前完成认领；不传时，队友可以在 IDLE 中等待后续任务。没有 assignment 的队友不能使用文件或 Shell 工具。它按 `WORK → result → IDLE` 运行，不设固定的工具轮数上限；模型或分发失败会发出 `error`，线程清理会把未完成 assignment 释放回任务板。每次调用模型前都会先读取收件箱，因此直接消息和关机请求不会被连续的 tool-use 轮次饿死。idle 时先等待 `MessageBus` 消息，只在超时后扫描就绪 task，并以原子操作最多认领一个。
 
-After spawning a teammate, Lead ends the current turn instead of repeatedly querying its status inside the model loop. A team event in Lead's mailbox makes the runtime start the next turn.
+Lead 启动队友后结束当前轮次，不在模型循环里反复查询状态。队友事件进入 Lead 收件箱后，运行时会自动唤醒下一轮。
 
-One-shot subagents solve context isolation. Persistent teammates solve long-running parallel collaboration.
+一次性 subagent 解决“上下文隔离”；持久队友解决“长期并行协作”。
 
-### Memory, Skills, and Prompt
+### 记忆、技能和 prompt
 
-S15 reuses the s09 memory runtime directly. Before each model call, it reads the `.memory/MEMORY.md` catalog, selects records relevant to the current request, and passes their contents to `assemble_system_prompt(context)`. At the end of the turn, `extract_memories()` keeps information that can help in later sessions; when new records are stored, `consolidate_memories()` runs next.
+S15 直接复用 s09 的 Memory runtime。每轮调用模型前，它读取 `.memory/MEMORY.md` 目录，根据当前请求选择相关记录，再把选中的正文交给 `assemble_system_prompt(context)`。本轮结束后，`extract_memories()` 提取可跨会话使用的信息；有新增记录时再运行 `consolidate_memories()`。
 
-The same system prompt also includes identity, tool guidance, the workspace, the skills catalog, and connected MCP servers. Skills contribute only their catalog; `load_skill(name)` loads full content on demand.
+同一份 system prompt 还会加入身份、工具说明、workspace、skills catalog 和已连接的 MCP server。技能只放目录，完整内容通过 `load_skill(name)` 按需加载。
 
-### Compaction and Recovery
+### 压缩和恢复
 
-Before the LLM call, S15 runs the compaction pipeline:
+LLM 前先跑压缩管线：
 
 ```text
 tool_result_budget → snip_compact → micro_compact → compact_history
 ```
 
-The model call is wrapped with recovery:
+调用模型时再包一层恢复：
 
-- 429: exponential backoff retry
-- 529: exponential backoff, optionally switch to fallback model after repeated failures
-- `max_tokens`: raise max tokens, then request continuation
-- prompt too long: reactive compact and retry
+- 429：指数退避重试
+- 529：指数退避，连续失败可切 fallback model
+- `max_tokens`：先提高 max_tokens，再要求 continuation
+- prompt too long：reactive compact 后重试
 
-### Background and Cron
+### 后台和 cron
 
-When a bash call sets `run_in_background=true`, the main loop returns a placeholder without waiting for the command:
+bash 调用设置 `run_in_background=true` 后，主循环不再等待命令结束，而是先返回占位结果：
 
 ```text
 should_run_background → start_background_task → placeholder tool_result
-background done → task_notification → next round injects messages
+后台完成 → task_notification → 下一轮注入 messages
 ```
 
-Only explicitly marked bash calls enter the background path. A non-zero exit or worker exception produces a `failed` notification. Each shell runs in its own process group, which the runtime stops when the command or Agent process ends through the normal or `SIGTERM` path. A process that creates another session can leave that group.
+只有显式标记的 bash 调用会进入后台路径。命令非零退出或 worker 抛出异常时会发出 `failed` 通知。每条 Shell 命令都在独立进程组中运行；命令结束，或 Agent 经正常路径、`SIGTERM` 退出时，运行时会停止原进程组。另建 session 的进程可以离开这个进程组。
 
-The cron scheduler runs as a daemon thread and checks once per second. A durable one-shot job is persisted as `pending_delivery` before entering the queue and remains there until the model call containing its prompt succeeds; a failed call restores it to the queue, and a restart queues it again. Delivery is therefore at-least-once. The CLI watches `cron_queue`, Lead's inbox, and terminal background work; any of them can wake one automatic agent turn.
+cron 调度器独立 daemon thread 每秒检查一次。durable 的一次性任务会先持久化为 `pending_delivery`，再进入队列，并保留到包含该 prompt 的模型调用成功；调用失败会放回队列，重启后也会再次入队，因此交付语义是至少一次。CLI 同时监听 `cron_queue`、Lead 收件箱和已经结束的后台任务，任一事件都能自动唤醒一轮 Agent。
 
-### Worktree and MCP
+### worktree 与 MCP
 
-The task-scoped worktree behavior inherited from s13 manages working directories:
+从 s13 继承的任务级 worktree 机制负责管理任务工作目录：
 
-- a pending, unowned task may remain in the main workspace or be bound by `create_worktree(name, task_id)` to a separate branch and directory
-- creation prevalidates the task, name, path, branch, and Git registry; a failed Git command is reconciled against the registry and branch state, and any partial checkout remains unbound and preserved for manual recovery
-- an idle teammate atomically claims one ready task; the assignment records both `task_id` and its effective `cwd`
-- Lead can also pass a ready `task_id` to `spawn_teammate`; the thread starts only after the claim succeeds
-- all teammate file tools use that `cwd`; only the owning teammate can complete the task, and the assignment stays selected until that model turn ends
-- removal stays in the host-side `remove_worktree()` helper. The model cannot call it. The user or host first checks task ownership, assignment leases, background work, and Git state; destructive removal requires separate user confirmation
+- pending 且未被认领的 task 可以留在主工作区，也可以通过 `create_worktree(name, task_id)` 绑定独立分支和目录
+- 创建前会校验 task、名称、路径、分支和 Git registry；Git 命令失败后还会核对 registry 和分支状态，任何部分创建的 checkout 都保持未绑定并保留供人工恢复
+- idle 队友以原子操作认领一个就绪 task，assignment 同时记录 `task_id` 和有效 `cwd`
+- Lead 也可以把 ready `task_id` 直接传给 `spawn_teammate`，认领成功后才启动线程
+- 队友所有文件工具都使用该 `cwd`；只有 task owner 能完成任务，assignment 会保留到当前模型轮次结束
+- 移除保留在宿主侧的 `remove_worktree()` 函数中，模型不能调用。用户或宿主先检查任务所有权、assignment lease、后台工作和 Git 状态；破坏性移除需要另行取得用户确认
 
-The worktree changes tool default directories. It separates working copies; it is not a sandbox, and process-group cleanup does not contain a process that starts another session. This is why deletion remains host-owned.
+worktree 只改变工具的默认工作目录，用于分离 working copy，并不是安全沙箱。进程组清理也无法约束另建 session 的进程，因此删除保留为宿主操作。
 
-Claiming or releasing a Task changes the assignment version and invalidates an old plan approval. An ordinary `send_message` only delivers text; it changes neither the Task identity nor the plan state.
+认领或释放 task 会改变 assignment version，使旧的 plan approval 失效；普通 `send_message` 只传递消息，不会改变 task identity 或 plan 状态。
 
-MCP owns external capability:
+MCP 负责外部能力：
 
-- `connect_mcp(name)` connects a mock server
-- `assemble_tool_pool()` assembles MCP tools and rejects normalized name collisions
-- tool names use `mcp__server__tool`
-
----
-
-## Changes from s14
-
-| Scope | s14 MCP | s15 Integrated Harness |
-|-------|---------|-------------------------|
-| built-in tools | 6 | 25 |
-| external tools | connected MCP tools | the same dynamic MCP path and host policy |
-| local mechanisms | S04 tools, hooks, permission, MCP | todo, subagent, skills, compaction, memory, task graph, background bash, cron, teams, and worktrees |
-| event sources | user input and tool results | user input, tool results, cron prompts, background notifications, and team events |
+- `connect_mcp(name)` 连接 mock server
+- `assemble_tool_pool()` 把 MCP 工具组装进工具池，并拒绝规范化后的名称冲突
+- 工具名统一为 `mcp__server__tool`
 
 ---
 
-## Try It
+## 相对 s14 的变化
+
+| 范围 | s14 MCP | s15 Integrated Harness |
+|------|---------|-------------------------|
+| 内置工具 | 6 个 | 25 个 |
+| 外部工具 | 已连接的 MCP 工具 | 沿用同一套动态 MCP 路径和宿主策略 |
+| 本地机制 | S04 工具、hooks、权限和 MCP | todo、subagent、skills、compaction、memory、task graph、后台 bash、cron、teams 和 worktrees |
+| 事件来源 | 用户输入和工具结果 | 用户输入、工具结果、cron prompt、后台通知和 team events |
+
+---
+
+## 试一下
 
 ```sh
 cd learn-claude-code
 python s15_integrated_harness/code.py
 ```
 
-Try:
+可以试：
 
-1. `Inspect this repository and tell me which Python files matter most.`
-2. `Search the connected documentation for agent loop guidance.`
-3. `Refactor the authentication module and login page in parallel in separate worktrees. Show me each plan before editing.`
-4. `Remind me about the meeting in 3 minutes.`
-5. `Install the dependencies in the background while you read README.md.`
+1. `检查这个仓库，告诉我哪些 Python 文件最重要。`
+2. `从已连接的文档中查一下 agent loop 的相关说明。`
+3. `请在独立的 worktree 中并行重构认证模块和登录页，修改前先把各自的计划给我看。`
+4. `3 分钟后提醒我开会。`
+5. `在后台安装依赖，同时继续阅读 README.md。`
 
-Watch for:
+观察重点：
 
-- whether each tool call passes through hooks/permission
-- whether MCP tools appear on the next round after `connect_mcp`
-- whether a bash call with `run_in_background=true` returns a background placeholder
-- whether cron automatically reminds you when the time arrives
-- whether teammates submit plans and pause before approval
-- whether an idle teammate atomically claims only one ready task
-- whether every teammate file tool switches to the claimed task's `cwd`
-- whether completion keeps the task `cwd` through the rest of the turn and releases it at IDLE
+- 工具调用前是否经过 hooks/permission
+- `connect_mcp` 后下一轮是否出现 MCP 工具
+- 设置 `run_in_background=true` 的 bash 调用是否返回 background placeholder
+- 到点是不是自动提醒开会
+- 队友是否提交 plan，并在 approval 前暂停
+- idle 队友是否只原子认领一个就绪 task
+- 队友所有文件工具是否都切换到已认领 task 的 `cwd`
+- 完成任务后是否在本轮剩余工具调用中保持 task `cwd`，并在 IDLE 时释放
 
 ---
 
-## Next
+## 接下来
 
-[s16 Workflow Runtime](../s16_workflow_runtime/) adds a `Workflow` tool to this host. A workflow keeps a fixed orchestration path in code and records progress so the same run can resume.
+[s16 Workflow Runtime](../s16_workflow_runtime/) 会在这个 host 中加入 `Workflow` 工具。Workflow 把固定的编排路径写在代码中，并记录运行进度，使同一次运行可以继续执行。
 
 <!-- translation-sync: zh@v14, en@v14, ja@v14 -->

@@ -321,9 +321,7 @@ flowchart TD
 ```
 learn-claude-code/
   s01_agent_loop/          # 每章一个文件夹
-    README.md              #   默认英文文档（完整叙事）
-    README.zh.md           #   中文译本
-    README.ja.md           #   日文译本
+    README.md              #   中文文档（完整叙事）
     code.py                #   独立可运行代码
     images/                #   SVG 流程图
   s02_tool_use/

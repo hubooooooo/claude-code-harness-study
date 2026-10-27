@@ -1,45 +1,43 @@
-# s03: Permission — Check Permissions Before Execution
-
-[English](README.md) · [中文](README.zh.md) · [日本語](README.ja.md)
+# s03: Permission — 执行前做权限判断
 
 s01 → s02 → `s03` → [s04](../s04_hooks/) → s05 → ... → s16 → s17
-> *"Check permissions before executing"* — The permission pipeline decides which operations need approval.
+> *"工具执行前先做权限判断"* — 权限管线决定哪些操作需要审批。
 >
-> **Harness Layer**: Permission — a gate before tool execution.
+> **Harness 层**: 权限 — 在工具执行前加一道门。
 
 ---
 
-## The Problem
+## 问题
 
-s02's Agent has 5 tools. File tools are protected by `safe_path`, but bash is unrestricted. Ask it to "clean up the project," and it might run `rm -rf /`.
+s02 的 Agent 有 5 个工具。file tools 受 `safe_path` 保护，但 bash 不受限制。让它"清理一下项目"，可能执行 `rm -rf /`。
 
-Safety can't rely on trusting the model — it needs code: a check before every tool execution.
-
----
-
-## The Solution
-
-![Permission Overview](images/permission-overview.en.svg)
-
-s02's loop is fully preserved. The only change is inserting `check_permission()` before tool execution — each tool call passes through three gates in a fixed order: hard deny first, then soft ask, and if neither matches, allow.
-
-The three gates correspond to three decisions:
-
-| Gate | Purpose | On Match |
-|------|---------|----------|
-| 1. Deny List | Permanently forbidden operations (`rm -rf /`, `sudo`) | Denied immediately, not executed |
-| 2. Rule Matching | Context-dependent operations (reading/writing outside workspace, `rm` files) | Passed to Gate 3 |
-| 3. User Approval | After Gate 2 matches, pauses for user confirmation | User decides allow or deny |
-
-None of the three gates match → execute directly. Most routine operations take this path.
+安全边界由代码负责，判断发生在工具执行之前。
 
 ---
 
-## How It Works
+## 解决方案
 
-![Permission Pipeline](images/permission-pipeline.en.svg)
+![Permission Overview](images/permission-overview.svg)
 
-**Gate 1**: A hard deny list. Check first; if matched, return a block message. This list uses simple string matching to show where the permission gate sits; it is not a complete security boundary.
+s02 的循环完全保留。唯一的变动是在工具执行前插入 `check_permission()`。每个工具调用依次经过三道闸门：硬拒绝优先，软询问次之，都没命中就放行。
+
+三道闸门对应三种决策：
+
+| 闸门 | 作用 | 命中后 |
+|------|------|--------|
+| 1. 拒绝列表 | 永远禁止的操作（`rm -rf /`、`sudo`） | 直接拒绝，不执行 |
+| 2. 规则匹配 | 取决于上下文的操作（读/写工作区外、`rm` 文件） | 交给闸门 3 |
+| 3. 用户审批 | 闸门 2 命中后，暂停等用户确认 | 用户决定允许或拒绝 |
+
+三道都没命中 → 直接执行。大部分日常操作走这条路。
+
+---
+
+## 工作原理
+
+![Permission Pipeline](images/permission-pipeline.svg)
+
+**闸门 1**：一张硬拒绝表，先查，命中就返回阻止信息。这张表使用简单字符串匹配来说明权限闸门的位置，不能视为完整的安全边界。
 
 ```python
 DENY_LIST = [
@@ -54,7 +52,7 @@ def check_deny_list(command: str) -> str | None:
     return None
 ```
 
-**Gate 2**: Rule matching — describes "when to ask the user." Each rule specifies a tool and a check condition.
+**闸门 2**负责规则匹配，用来描述"什么时候需要问用户"。每条规则指定工具和检查条件。
 
 ```python
 PERMISSION_RULES = [
@@ -77,7 +75,7 @@ def check_rules(tool_name: str, args: dict) -> str | None:
     return None
 ```
 
-**Gate 3**: After a rule matches, pause for user input.
+**闸门 3**：规则命中后，暂停等用户输入。
 
 ```python
 def ask_user(tool_name: str, args: dict, reason: str) -> str:
@@ -87,18 +85,18 @@ def ask_user(tool_name: str, args: dict, reason: str) -> str:
     return "allow" if choice in ("y", "yes") else "deny"
 ```
 
-**All three gates chained together**, inserted before tool execution:
+**三道闸门串在一起**，插在工具执行之前：
 
 ```python
 def check_permission(block) -> bool:
-    # Gate 1: Hard deny
+    # 闸门 1: 硬拒绝
     if block.name == "bash":
         reason = check_deny_list(block.input.get("command", ""))
         if reason:
             print(f"\n⛔ {reason}")
             return False
 
-    # Gate 2 + 3: Rule matching → User approval
+    # 闸门 2 + 3: 规则匹配 → 用户审批
     reason = check_rules(block.name, block.input)
     if reason:
         decision = ask_user(block.name, block.input, reason)
@@ -107,50 +105,50 @@ def check_permission(block) -> bool:
 
     return True
 
-# In agent_loop — s02's loop with just one line added:
+# 在 agent_loop 中——s02 的循环只加了一行：
 for block in tool_calls:
-    if not check_permission(block):           # ← NEW
+    if not check_permission(block):           # ← 新增
         results.append({... "content": "Permission denied."})
         continue
-    output = TOOL_HANDLERS[block.name](**block.input)  # s02 original
+    output = TOOL_HANDLERS[block.name](**block.input)  # s02 原有
     results.append(...)
 ```
 
 ---
 
-## Changes from s02
+## 相对 s02 的变更
 
-| Component | Before (s02) | After (s03) |
-|-----------|-------------|-------------|
-| Security model | None (trust the model) | Three-gate permission pipeline |
-| New functions | — | check_deny_list, check_rules, ask_user, check_permission |
-| Loop | Executes all tools directly | Inserts check_permission() before execution |
+| 组件 | 之前 (s02) | 之后 (s03) |
+|------|-----------|-----------|
+| 安全模型 | 无（信任模型） | 三道闸门权限管线 |
+| 新函数 | — | check_deny_list, check_rules, ask_user, check_permission |
+| 循环 | 直接执行所有工具 | 执行前插入 check_permission() |
 
 ---
 
-## Try It
+## 试一下
 
 ```sh
 cd learn-claude-code
 python s03_permission/code.py
 ```
 
-Try these prompts:
+试试这些 prompt：
 
-1. `Create a file called test.txt in the current directory` (should pass through)
-2. `Delete the file test.txt` (bash + rm triggers Gate 2)
-3. `What files are in the current directory?` (read-only, all pass)
-4. `Try to write a file to /etc/something` (writing outside workspace triggers Gate 2)
+1. `Create a file called test.txt in the current directory`（应该直接通过）
+2. `Delete the file test.txt`（bash + rm 会触发闸门 2）
+3. `What files are in the current directory?`（只读，全部通过）
+4. `Try to write a file to /etc/something`（写工作区外，触发闸门 2）
 
-What to watch for: Which operations pass through? Which need your confirmation? Which are denied outright?
+观察重点：哪些操作直接通过？哪些需要你确认？哪些被直接拒绝？
 
 ---
 
-## What's Next
+## 接下来
 
-Permission checks are in place — but every check is hardcoded as `check_permission()` inside the loop. What if you want to add logging before and after each tool execution? What if you want to auto-trigger a git commit after certain operations? Scattering this extension logic throughout the loop makes it bloat.
+当前权限检查每次都在循环里硬编码 `check_permission()`。如果我想在每次工具执行前后加日志？如果想在某些操作后自动触发 git commit？这些扩展逻辑散落在 loop 里，循环很快就会膨胀。
 
-→ s04 Hooks: Add hooks to the loop. Extension logic hangs on hooks; the loop stays clean.
+s04 Hooks → 给循环加钩子，扩展逻辑挂在钩子上，循环保持干净。
 
 
 <!-- translation-sync: zh@v1, en@v1, ja@v1 -->

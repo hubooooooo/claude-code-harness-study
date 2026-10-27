@@ -1,34 +1,32 @@
-# s06: Subagent — Give a Subtask Its Own Context
-
-[English](README.md) · [中文](README.zh.md) · [日本語](README.ja.md)
+# s06: Subagent — 给子任务一段独立上下文
 
 s01 → s02 → s03 → s04 → s05 → `s06` → [s07](../s07_skill_loading/) → s08 → ... → s16 → s17
 
-> A subagent starts with a fresh `messages[]`. Its final text returns to the parent; its intermediate conversation does not.
+> Subagent 从全新的 `messages[]` 开始。最终文本返回父循环，中间对话不会进入父上下文。
 >
-> **Harness Layer**: Delegation — Run a focused task in a separate conversation context.
+> **Harness 层**: 委派 — 在另一段对话上下文中处理一个明确的子任务。
 
 ---
 
-## The Problem
+## 问题
 
-The Agent is fixing a bug. It reads many files to trace the call chain, and every tool call and result stays in the parent's `messages[]`. Once the call chain is understood, most of those intermediate details are no longer needed, but they still occupy context.
-
----
-
-## The Solution
-
-![Subagent Overview](images/subagent-overview.en.svg)
-
-Calling `task` synchronously runs a nested agent loop with a fresh `messages[]`. When that loop finishes, its final text becomes the tool result in the parent conversation.
-
-This is message isolation, not process or filesystem isolation. Parent and subagent run in the same Python process and share `WORKDIR`, so writes and commands still affect the same workspace. The subagent has the five base tools but no `task`, and its tool calls use the same permission and lifecycle hooks as the parent.
+Agent 在修一个 bug。为了追踪调用链，它读取了许多文件；每次工具调用和结果都会留在父循环的 `messages[]` 中。调用链已经弄清以后，多数中间细节不再需要，却仍然占用上下文。
 
 ---
 
-## How It Works
+## 解决方案
 
-**run_subagent** creates the fresh message list, runs the nested loop, and returns the final text:
+![Subagent Overview](images/subagent-overview.svg)
+
+调用 `task` 时，会同步运行一个使用全新 `messages[]` 的嵌套 Agent Loop。循环结束后，它的最终文本会成为父对话中的工具结果。
+
+这里隔离的是消息，不是进程或文件系统。父 Agent 与子 Agent 共享 `WORKDIR`，写文件和命令仍会影响同一个工作区。子 Agent 拥有五个基础工具，但没有 `task`；它的工具调用与父 Agent 使用同一组权限和生命周期 Hooks。
+
+---
+
+## 工作原理
+
+**run_subagent** 创建新的消息列表，运行嵌套循环，并返回最终文本：
 
 ```python
 SUB_TOOLS = list(BASE_TOOLS)  # no task tool
@@ -57,7 +55,7 @@ def run_subagent(prompt: str) -> str:
     return "Subagent stopped after 30 turns without a final answer."
 ```
 
-The main Agent calls it just like any other tool:
+主 Agent 调用时，跟调其他工具一样：
 
 ```python
 TASK_TOOL = {
@@ -74,42 +72,42 @@ TOOLS = [*BASE_TOOLS, TASK_TOOL]
 TOOL_HANDLERS = {**BASE_HANDLERS, "task": run_subagent}
 ```
 
-The boundary is:
+实际边界如下：
 
-| Decision | Choice | Reason |
-|----------|--------|--------|
-| Conversation | Fresh `messages[]` | Parent history is not copied into the subagent |
-| Execution | Same process and `WORKDIR` | Filesystem changes remain visible to both loops |
-| Return value | Final text only | Child tool calls and results are not copied into parent messages |
-| Delegation depth | No `task` in `SUB_TOOLS` | This lesson permits one delegation level |
-| Tool policy | Shared Hooks | Parent and subagent use the same permission checks |
+| 决策 | 选择 | 原因 |
+|------|------|------|
+| 对话 | 全新的 `messages[]` | 不把父对话复制给子 Agent |
+| 执行 | 同一进程和 `WORKDIR` | 两个循环都能看到文件系统修改 |
+| 返回值 | 只返回最终文本 | 子 Agent 的工具调用和结果不进入父消息列表 |
+| 委派深度 | `SUB_TOOLS` 中没有 `task` | 本章只允许一层委派 |
+| 工具策略 | 共享 Hooks | 父子循环使用相同的权限检查 |
 
-The parent dispatches `task` through the same handler map as its other tools. The subagent uses `SUB_SYSTEM`, `SUB_TOOLS`, and its own local `messages` list.
+父 Agent 与其他工具一样，通过 handler map 分发 `task`。子 Agent 使用 `SUB_SYSTEM`、`SUB_TOOLS` 和自己的局部 `messages` 列表。
 
 ---
 
-## Try It
+## 试一下
 
 ```sh
 cd learn-claude-code
 python s06_subagent/code.py
 ```
 
-Try these prompts:
+试试这些 prompt：
 
-1. `Use a subtask to find what testing framework this project uses` (sub-Agent reads files, main Agent receives only the conclusion)
+1. `Use a subtask to find what testing framework this project uses`（子 Agent 去读文件，主 Agent 只收结论）
 2. `Delegate: read all .py files in s01_agent_loop/ and summarize what each one does`
 3. `Use a task to create s06_subagent/example/string_tools.py with a slugify(text: str) function, then verify it from the parent agent`
 
-What to watch for: Do `[Subagent started]` / `[Subagent done]` appear? Do subagent tool calls print as `[sub] ...`? Does the parent continue with only the final text returned by `task`?
+观察重点：是否出现 `[Subagent started]` / `[Subagent done]`？子 Agent 的工具调用是否以 `[sub] ...` 输出？父 Agent 是否只接收到 `task` 返回的最终文本？
 
 ---
 
-## What's Next
+## 接下来
 
-The Agent can now break tasks apart. But different tasks require different knowledge: editing frontend components needs React conventions, writing SQL needs table schemas. Stuffing all this knowledge into the system prompt would blow up the context.
+Agent 现在能拆任务了。但每个任务需要的知识不一样：改 Python 脚本需要知道 PEP 8 规范，写 SQL 需要知道表结构。这些知识全塞进 system prompt，上下文直接爆了。
 
-→ s07 Skill Loading: Inject skills on demand instead of piling documents into the system prompt. Load only when needed, as natural as reading a file.
+s07 Skill Loading → 技能按需注入，不在 system prompt 里堆文档。用到的时候才加载，和读文件一样自然。
 
 
 <!-- translation-sync: zh@v2, en@v2, ja@v2 -->

@@ -1,38 +1,36 @@
-# s05: TodoWrite — An Agent Without a Plan Drifts Off Course
-
-[English](README.md) · [中文](README.zh.md) · [日本語](README.ja.md)
+# s05: TodoWrite — 没有计划的 Agent，做着做着就偏了
 
 s01 → s02 → s03 → s04 → `s05` → [s06](../s06_subagent/) → s07 → ... → s16 → s17
 
-> *"An agent without a plan goes wherever the wind blows"* — List the steps first, then execute. Complex tasks are less likely to miss steps.
+> *"没有计划的 agent 走哪算哪"* — 先列步骤再动手，长任务更不容易漏项。
 >
-> **Harness Layer**: Planning — Let the Agent think before it acts.
+> **Harness 层**: 规划 — 让 Agent 在动手之前先想清楚。
 
 ---
 
-## The Problem
+## 问题
 
-Give the Agent a complex task: "Rename all Python files to snake_case, run tests, and fix failures."
+给 Agent 一个复杂任务："把所有 Python 文件改成 snake_case 命名，然后跑测试，修好失败。"
 
-The Agent starts working, renames 3 files, runs a test, finds 2 failures, starts fixing. While fixing, it forgets the original goal was "rename to snake_case", the test failures have consumed all its attention.
+Agent 开始干活，改了 3 个文件，跑了个测试，发现 2 个失败，开始修。修着修着，它忘了最初是"改成 snake_case"，测试失败把注意力全吸走了。
 
-The longer the conversation, the worse it gets: tool results keep filling the context, diluting the system prompt's influence. A 10-step refactoring: after steps 1-3, the Agent starts improvising because steps 4-10 have been pushed out of its attention.
-
----
-
-## The Solution
-
-![Todo Overview](images/todo-overview.en.svg)
-
-S05 keeps the tool dispatch, permissions, and hooks from S04, then adds `todo_write` and a reminder counter. `todo_write` only updates planning state; the existing tools still perform the work.
-
-The new tool uses the same `TOOL_HANDLERS[block.name]` dispatch path. After three consecutive tool-use rounds without `todo_write`, the harness adds a reminder to that round's tool results.
+对话越长越严重：工具结果不断填满上下文，系统提示的影响力被稀释。一个 10 步重构，做完 1-3 步就开始即兴发挥，因为 4-10 步已经被挤出注意力了。
 
 ---
 
-## How It Works
+## 解决方案
 
-**TodoManager** owns the in-memory list, validates updates, and renders the state returned to the model. `run_todo_write` also prints that state in the terminal:
+![Todo Overview](images/todo-overview.svg)
+
+S05 保留 S04 的工具分发、权限检查和 Hooks，再加入 `todo_write` 与 reminder 计数器。`todo_write` 只更新计划状态，实际工作仍由原有工具完成。
+
+新工具仍通过 `TOOL_HANDLERS[block.name]` 分发。连续三个工具调用轮次没有使用 `todo_write` 时，Harness 会把 reminder 追加到第三轮的工具结果中。
+
+---
+
+## 工作原理
+
+**TodoManager** 持有内存中的任务列表，负责校验更新，并把渲染结果返回给模型。`run_todo_write` 同时把这份状态打印到终端：
 
 ```python
 class TodoManager:
@@ -59,9 +57,9 @@ def run_todo_write(todos: list | str) -> str:
     return output
 ```
 
-An update may contain at most 20 items, each item needs non-empty `content`, and only one item may be `in_progress`. The string input path accepts JSON or a Python list representation without using `eval`.
+一次更新最多包含 20 项；每项都必须有非空的 `content`；同一时间只能有一个 `in_progress`。字符串输入可以是 JSON，也可以是 Python 列表表示，解析过程不使用 `eval`。
 
-The tool definition joins the other 5 in the dispatch map:
+工具定义和其他 5 个工具一起加入 dispatch map：
 
 ```python
 TOOLS = [
@@ -70,7 +68,7 @@ TOOLS = [
     {"name": "write_file", ...},
     {"name": "edit_file",  ...},
     {"name": "glob",       ...},
-    # s05: new entry
+    # s05: 新增一条
     {"name": "todo_write", "description": "Create and manage a task list ...",
      "input_schema": {
          "type": "object",
@@ -93,7 +91,7 @@ TOOLS = [
 TOOL_HANDLERS["todo_write"] = run_todo_write
 ```
 
-**Reminder**: after three tool-use rounds without `todo_write`, the reminder is appended to the third round's results and the counter resets:
+**Reminder**：连续三个工具调用轮次没有使用 `todo_write` 时，reminder 会追加到第三轮的结果中，随后计数器清零：
 
 ```python
 rounds_since_todo = 0 if used_todo else rounds_since_todo + 1
@@ -105,45 +103,45 @@ if rounds_since_todo >= 3:
     rounds_since_todo = 0
 ```
 
-Typical flow when the Agent receives a task: first call `todo_write` to list all steps (all `pending`) → pick one step, set it to `in_progress` → complete it, set to `completed` → look at the next `pending` → continue.
+Agent 收到任务后的典型流程：先调 `todo_write` 列出所有步骤（全 `pending`）→ 做一个步骤，改成 `in_progress` → 做完改成 `completed` → 看下一个 `pending` → 继续。
 
-**Key insight**: todo_write doesn't give the Agent any additional **execution capability**. What it adds is **planning capability**.
-
----
-
-## Changes from s04
-
-| Component | Before (s04) | After (s05) |
-|-----------|-------------|-------------|
-| Tool count | 5 (bash, read, write, edit, glob) | 6 (+todo_write) |
-| Planning | None | Stateful TODO list + reminder |
-| SYSTEM prompt | Generic prompt | Added "plan before executing" guidance |
-| Loop | Tool dispatch and hooks | Same dispatch path, plus rounds_since_todo and reminder injection |
+**关键洞察**：todo_write 不给 Agent 增加任何**执行能力**。它增加的是**规划能力**。
 
 ---
 
-## Try It
+## 相对 s04 的变更
+
+| 组件 | 之前 (s04) | 之后 (s05) |
+|------|-----------|-----------|
+| 工具数量 | 5 (bash, read, write, edit, glob) | 6 (+todo_write) |
+| 规划能力 | 无 | 带状态的 TODO 列表 + reminder |
+| SYSTEM 提示 | 通用提示 | 加入 "先计划再执行" 引导 |
+| 循环 | 工具分发与 Hooks | 保留分发路径，加入 rounds_since_todo 和 reminder 注入 |
+
+---
+
+## 试一下
 
 ```sh
 cd learn-claude-code
 python s05_todo_write/code.py
 ```
 
-Try these prompts:
+试试这些 prompt：
 
-1. `Refactor s05_todo_write/example/hello.py: add type hints, docstrings, and a main guard` (should list 3 steps first, then execute)
+1. `Refactor s05_todo_write/example/hello.py: add type hints, docstrings, and a main guard`（先列 3 步再执行）
 2. `Create a Python package under s05_todo_write/example/demo_pkg with __init__.py, utils.py, and tests/test_utils.py`
 3. `Review Python files under s05_todo_write/example and fix any style issues`
 
-What to watch for: Was the first tool call `todo_write`? How many TODO steps were listed? Did statuses move from `pending` to `in_progress` / `completed` during execution?
+观察重点：第一次工具调用是不是 `todo_write`？TODO 列了几步？执行过程中状态有没有从 `pending` 变成 `in_progress` / `completed`？
 
 ---
 
-## What's Next
+## 接下来
 
-The Agent can plan now. But if a task is too large, say "refactor the entire auth module", a TODO list alone isn't enough. That task is itself a collection of dozens of subtasks that would drown in a single conversation's context.
+Agent 能计划了。但如果一个任务太大，比如"重构整个认证模块"，光靠 TODO 列表不够。这个任务本身就是几十个小任务的集合，放在同一个对话里会被上下文淹没。
 
-→ s06 Subagent: Break large tasks into subtasks, each handled by an independent Agent with its own clean context, no cross-contamination.
+s06 Subagent → 把大任务拆成子任务，每个子任务派一个独立的 Agent。它们有自己的干净上下文，不会互相污染。
 
 
 <!-- translation-sync: zh@v1, en@v1, ja@v1 -->

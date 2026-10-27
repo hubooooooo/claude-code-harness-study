@@ -1,18 +1,16 @@
-# s07: Skill Loading — Load Skills When Needed
-
-[English](README.md) · [中文](README.zh.md) · [日本語](README.ja.md)
+# s07: Skill Loading — 用到时再加载
 
 s01 → s02 → s03 → s04 → s05 → s06 → `s07` → [s08](../s08_context_compact/) → s09 → ... → s16 → s17
 
-> The system prompt contains the skill catalog; `load_skill` returns the full `SKILL.md`.
+> system prompt 保存技能目录；`load_skill` 返回完整的 `SKILL.md`。
 >
-> **Harness Layer**: Knowledge loading — show the model which skills exist, then load one by name.
+> **Harness 层**：知识加载 — 让模型先知道有哪些技能，再按名称读取内容。
 
 ---
 
-## The Problem
+## 问题
 
-Suppose a project has a React component specification, a SQL style guide, and an API design document. We want the Agent to follow these rules during development, so the most direct approach is to put all of them into the system prompt:
+假设某个项目有一套 React 组件规范、一份 SQL 风格指南和一份 API 设计文档。我们希望 Agent 在开发过程中遵守这些规范，最直接的做法就是把它们全部放进 system prompt：
 
 ```python
 SYSTEM = (
@@ -23,26 +21,26 @@ SYSTEM = (
 )
 ```
 
-This approach lets the Agent read every specification, but it fixes all three documents in the system prompt instead of selecting only the one needed for the current task. Every LLM call sends the full text of all three documents to the model. When the task only changes React components, only the React specification is relevant; the SQL style guide and API design document still consume input tokens and context-window space that could hold code, conversation, and tool results.
+这种做法能让 Agent 读到所有规范，但问题在于，三份文档被固定放进了 system prompt，无法根据当前任务只选择需要的那一份。每次调用 LLM 时，三份文档的全文都会一起发送给模型。当前任务只修改 React 组件时，实际需要的只有 React 组件规范；SQL 风格指南和 API 设计文档与任务无关，却仍然占用输入 token 和上下文窗口，留给代码、对话和工具结果的空间也会变少。
 
 ---
 
-## The Solution
+## 解决方案
 
-![Skill Overview](images/skill-overview.en.svg)
+![Skill Overview](images/skill-overview.svg)
 
-At startup, `SkillLoader` scans `skills/*/SKILL.md`, reads `name` and `description` from YAML frontmatter, and adds that catalog to the system prompt. When the model needs the full instructions, it calls `load_skill(name)`; the returned `SKILL.md` is appended to the message list as a `tool_result`.
+启动时，`SkillLoader` 扫描 `skills/*/SKILL.md`，读取 YAML frontmatter 中的 `name` 和 `description`，并把这份目录加入 system prompt。模型需要完整说明时，调用 `load_skill(name)`；返回的 `SKILL.md` 作为 `tool_result` 追加到消息列表。
 
-| Content | Model input | Added |
-|---------|-------------|-------|
-| Skill name and description | system prompt | At startup |
-| Full `SKILL.md` | `tool_result` | When `load_skill` is called |
+| 内容 | 进入模型的位置 | 何时加入 |
+|------|----------------|----------|
+| 技能名称和描述 | system prompt | 启动时 |
+| 完整 `SKILL.md` | `tool_result` | 调用 `load_skill` 时 |
 
 ---
 
-## How It Works
+## 工作原理
 
-Each skill is a directory containing `SKILL.md`:
+每个技能是一个包含 `SKILL.md` 的目录：
 
 ```text
 skills/
@@ -52,7 +50,7 @@ skills/
   pdf/SKILL.md
 ```
 
-### Scan Skills
+### 扫描技能
 
 ```python
 class SkillLoader:
@@ -80,14 +78,14 @@ class SkillLoader:
             }
 ```
 
-`catalog()` returns only names and descriptions:
+`catalog()` 只输出名称和描述：
 
 ```text
 - code-review: Perform thorough code reviews...
 - pdf: Process PDF files...
 ```
 
-### Build the System Prompt
+### 组装 system prompt
 
 ```python
 def build_system_prompt() -> str:
@@ -99,9 +97,9 @@ def build_system_prompt() -> str:
     )
 ```
 
-This function combines the fixed Agent instructions with the catalog found at startup.
+固定的 Agent 指令和扫描得到的技能目录在这里组成实际传给模型的 system prompt。
 
-### Load Full Content
+### 加载完整内容
 
 ```python
 def load(self, name: str) -> str:
@@ -112,32 +110,32 @@ def load(self, name: str) -> str:
     return f"Error: Unknown skill '{name}'. Available: {available}"
 ```
 
-`name` looks up the startup registry; it is not interpreted as a file path. After the tool returns, the existing Agent Loop appends its content as a new `tool_result` message.
+`name` 用于查询启动时建立的注册表，不会被当作文件路径。工具返回后，原有 Agent Loop 会把内容作为新的 `tool_result` 消息追加。
 
 ---
 
-## Try It
+## 试一下
 
 ```sh
 cd learn-claude-code
 python s07_skill_loading/code.py
 ```
 
-Try these prompts:
+试试这些 prompt：
 
 1. `What skills are available?`
 2. `Load the code-review skill and follow its instructions`
 3. `Review README.md and load the relevant skill first`
 
-Check that the system prompt contains only the catalog and that the full `SKILL.md` appears after `load_skill` is called.
+观察 system prompt 中是否只有技能目录，以及调用 `load_skill` 后是否出现完整的 `SKILL.md` 内容。
 
 ---
 
-## What's Next
+## 接下来
 
-As tool calls accumulate, `messages[]` retains earlier file contents and tool results.
+随着工具调用增加，`messages[]` 会积累较早的文件内容和工具结果。
 
-→ s08 Context Compact: shorten earlier messages and keep context available for later calls.
+s08 Context Compact → 缩短较早的消息，为后续调用保留上下文空间。
 
 
 <!-- translation-sync: zh@v6, en@v6, ja@v6 -->

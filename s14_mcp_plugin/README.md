@@ -1,40 +1,38 @@
-# s14: MCP Tools — Discover and Invoke External Tools
-
-[English](README.md) · [中文](README.zh.md) · [日本語](README.ja.md)
+# s14: MCP Tools — 发现并调用外部工具
 
 [s04](../s04_hooks/) → `s14` → [s15](../s15_integrated_harness/) → s16 → s17
 
-> **Harness layer**: MCP Tools — connect to services, discover tools, and add them to the agent loop.
+> **Harness 层**：MCP Tools — 连接服务、发现工具，并把它们加入 Agent 的工具循环。
 
 ---
 
-## The Problem
+## 问题
 
-The base tools in earlier chapters are written directly in `code.py`. We could integrate a documentation system and deployment platform by adding `search_docs`, `deploy_status`, and `trigger_deploy`, but every service would require another set of tool definitions, parameter schemas, and call handlers.
+前面的基础工具都直接写在 `code.py` 里。接入文档系统和部署平台时，我们还可以继续手写 `search_docs`、`deploy_status` 和 `trigger_deploy`，但每增加一个服务，都要重新维护工具定义、参数格式和调用代码。
 
-MCP separates those responsibilities. A server provides a tool list and invocation endpoint. The harness connects to it, assigns model-facing names, applies permission checks, and gives the discovered tools to the model.
-
----
-
-## The Solution
-
-![MCP Architecture](images/mcp-architecture.en.svg)
-
-This chapter starts from s04's five base tools and hooks, then adds three parts:
-
-- `MCPClient` stores the tool definitions and call handlers returned by a server.
-- `connect_mcp` connects to one server and obtains its tool list.
-- `assemble_tool_pool` combines the base tools with tools from every connected server.
-
-The `docs` and `deploy` servers are in-process stand-ins for `tools/list`, `tools/call`, and a dynamic tool pool. This chapter does not implement a real MCP transport.
+MCP 把这部分拆成两个角色：server 提供工具列表和调用入口，Harness 负责连接、命名、权限检查，并把发现的工具交给模型。
 
 ---
 
-## How It Works
+## 解决方案
 
-### 1. The base agent loop stays the same
+![MCP Architecture](images/mcp-architecture.svg)
 
-Before each model call, the harness assembles the current tool pool:
+本章从 s04 的五个基础工具和 Hooks 出发，增加三个部分：
+
+- `MCPClient` 保存 server 返回的工具定义和调用入口。
+- `connect_mcp` 连接一个 server，并取得它的工具列表。
+- `assemble_tool_pool` 把基础工具与已经连接的 MCP 工具组装到同一个工具池。
+
+课程里的 `docs` 和 `deploy` 是进程内模拟 server，用来展示 `tools/list`、`tools/call` 和动态工具池。真实 MCP transport 不在本章实现。
+
+---
+
+## 工作原理
+
+### 1. 基础 Agent Loop 不需要改变
+
+每轮调用模型前，Harness 组装当前工具池：
 
 ```python
 def agent_loop(messages: list):
@@ -50,9 +48,9 @@ def agent_loop(messages: list):
         ...
 ```
 
-After a new server connects, the next `assemble_tool_pool()` call adds its tools to the model input. Tool results are still appended to messages as `tool_result` blocks.
+连接新 server 后，下一轮 `assemble_tool_pool()` 会把新工具加入模型输入。工具执行后，结果仍作为 `tool_result` 追加到 messages。
 
-### 2. MCPClient stores discovery results and call handlers
+### 2. MCPClient 保存发现结果和调用入口
 
 ```python
 class MCPClient:
@@ -70,9 +68,9 @@ class MCPClient:
             return f"MCP error: {type(error).__name__}: {error}"
 ```
 
-`register()` represents the discovered tool list. `call_tool()` represents the invocation boundary. Errors return to the model instead of terminating the agent loop.
+`register()` 对应课程里的工具发现结果，`call_tool()` 对应调用入口。错误会返回给模型，不会直接结束 Agent Loop。
 
-### 3. connect_mcp only connects and discovers
+### 3. connect_mcp 只负责连接和发现
 
 ```python
 def connect_mcp(name: str) -> str:
@@ -86,22 +84,22 @@ def connect_mcp(name: str) -> str:
     ...
 ```
 
-Initially, the model sees the five base tools and `connect_mcp`. After `connect_mcp(name="docs")`, the harness stores the docs client. The next model call also sees:
+开始时，模型只看到五个基础工具和 `connect_mcp`。调用 `connect_mcp(name="docs")` 后，Harness 保存 docs client。下一轮模型调用会看到：
 
 ```text
 mcp__docs__search
 mcp__docs__get_version
 ```
 
-### 4. Prefixes separate tools from different servers
+### 4. 前缀区分不同 server 的同名工具
 
-Several servers may expose `search` or `status`. The harness uses:
+多个 server 都可能提供 `search` 或 `status`。Harness 使用：
 
 ```text
 mcp__{server}__{tool}
 ```
 
-`normalize_mcp_name()` replaces characters outside the model tool-name alphabet with underscores. Tool-pool assembly also checks normalized-name collisions and the 64-character limit:
+`normalize_mcp_name()` 把不适合模型工具名的字符替换为下划线。组装工具池时还会检查规范化后的名称冲突和 64 字符长度限制：
 
 ```python
 prefixed = f"mcp__{safe_server}__{safe_tool}"
@@ -109,9 +107,9 @@ if prefixed in origins:
     raise ValueError("MCP tool name collision after normalization")
 ```
 
-As a result, `docs.one/get.version` and `docs_one/get_version` cannot silently map to the same name.
+因此 `docs.one/get.version` 和 `docs_one/get_version` 不会悄悄映射到同一个名字。
 
-### 5. Tool definitions and handlers enter the pool together
+### 5. 工具定义和 handler 一起加入工具池
 
 ```python
 tools.append({
@@ -125,11 +123,11 @@ handlers[prefixed] = (
 )
 ```
 
-The model sees the prefixed name. The handler calls `MCPClient` with the server's original tool name. Default arguments capture the current client and tool so every lambda does not point to the last item in the loop.
+模型看到带前缀的名字；handler 仍使用 server 原始工具名调用 `MCPClient`。默认参数保存当前 client 和 tool，避免循环里的 lambda 全部指向最后一个工具。
 
-### 6. The host decides permissions
+### 6. 权限由宿主配置决定
 
-An MCP server may provide `readOnlyHint` or `destructiveHint`, but those hints come from the server and are not authorization. This chapter uses a host-side policy:
+MCP server 可以提供 `readOnlyHint` 或 `destructiveHint`，但这些信息来自 server，不能直接作为授权依据。本章使用宿主侧策略：
 
 ```python
 MCP_HOST_POLICY = {
@@ -140,49 +138,49 @@ MCP_HOST_POLICY = {
 }
 ```
 
-`permission_hook()` looks up this policy using the normalized tool name. An unconfigured external tool requires confirmation by default. A description containing `readOnly` does not make a tool trusted.
+`permission_hook()` 根据规范化后的工具名查询这份策略。未配置的外部工具默认需要用户确认；即使 description 写着 `readOnly`，也不会自动放行。
 
-### 7. Input errors stay at the tool boundary
+### 7. 工具输入错误留在工具边界内
 
-The model may omit a required argument or send a field the server does not accept. Both `execute_tool()` and `MCPClient.call_tool()` catch those errors and return an error `tool_result`:
+模型可能漏传参数，也可能传入 server 不接受的字段。`execute_tool()` 和 `MCPClient.call_tool()` 都会捕获异常，并返回错误 `tool_result`：
 
 ```text
 MCP error: TypeError: <lambda>() missing 1 required argument: 'query'
 ```
 
-The model can correct its arguments on the next turn without terminating the lesson script.
+模型可以在下一轮修正参数，而不是让课程脚本直接退出。
 
 ---
 
-## What Changed from s04
+## 相对 s04 的变化
 
-| Component | s04 | s14 |
+| 组件 | s04 | s14 |
 |---|---|---|
-| Base tools | Five fixed tools | Unchanged |
-| Tool source | Definitions in `code.py` | Base tools plus discovered MCP tools |
-| Tool pool | Fixed `TOOLS` | Built each turn by `assemble_tool_pool()` |
-| External tool names | None | `mcp__{server}__{tool}` |
-| Permission | Shell and path checks | Adds a host-side MCP policy |
-| MCP transport | None | In-process server stand-ins demonstrate the boundary |
+| 基础工具 | 五个固定工具 | 保持不变 |
+| 工具来源 | `code.py` 中的定义 | 基础工具加动态发现的 MCP 工具 |
+| 工具池 | 固定 `TOOLS` | 每轮由 `assemble_tool_pool()` 组装 |
+| 外部工具名 | 无 | `mcp__{server}__{tool}` |
+| 权限 | Shell 和路径检查 | 增加宿主侧 MCP 策略 |
+| MCP transport | 无 | 使用进程内模拟 server 展示协议边界 |
 
-This chapter does not carry Task, Background, Cron, Team, or Worktree. They join MCP in the s15 Integrated Harness.
+本章不带入 Task、Background、Cron、Team 或 Worktree。它们会在 s15 的 Integrated Harness 中与 MCP 合并。
 
 ---
 
-## Try It Out
+## 试一下
 
 ```sh
 cd learn-claude-code
 python s14_mcp_plugin/code.py
 ```
 
-Enter:
+输入：
 
 ```text
-Connect to the docs server, search for agent hooks, and tell me the current documentation API version.
+连接 docs server，搜索 agent hooks，并告诉我当前文档 API 版本。
 ```
 
-A typical tool trace is:
+一次典型工具轨迹是：
 
 ```text
 connect_mcp(name="docs")
@@ -190,18 +188,18 @@ mcp__docs__search(query="agent hooks")
 mcp__docs__get_version()
 ```
 
-Then enter:
+再输入：
 
 ```text
-Connect to the deploy server and check the web service status. Do not trigger a deployment.
+连接 deploy server，查看 web 服务状态，不要触发部署。
 ```
 
-`status` runs under the host policy. `trigger` requires user confirmation.
+`status` 会按宿主策略直接执行；`trigger` 需要用户确认。
 
 ---
 
-## What's Next
+## 接下来
 
-MCP is still an independent course branch here. s15 Integrated Harness combines the base tools, hooks, skills, context, memory, tasks, background work, cron, teams, and MCP in one runtime.
+目前，MCP 还是一条独立的课程分支。s15 Integrated Harness 会把基础工具、Hooks、Skills、Context、Memory、Task、Background、Cron、Teams 和 MCP 放进同一个运行时。
 
 <!-- translation-sync: zh@v9, en@v9, ja@v9 -->

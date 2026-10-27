@@ -1,47 +1,45 @@
-# s11: Background Tasks — Slow Operations Go to the Background
-
-[English](README.md) · [中文](README.zh.md) · [日本語](README.ja.md)
+# s11: Background Tasks — 慢操作放后台
 
 s01 → ... → s09 → s10 → `s11` → [s12](../s12_cron_scheduler/) → s13 → ... → s16 → s17
 
-> *"Slow operations go to the background, the Agent Loop continues"* — Background threads run commands, and later turns collect completed results.
+> *"慢操作放后台，Agent Loop 继续运行"* — 后台线程执行命令，后续轮次收集完成结果。
 >
-> **Harness Layer**: Background — Async execution, doesn't block the main loop.
+> **Harness 层**: 后台 — 异步执行, 不阻塞主循环。
 
 ---
 
-## The Problem
+## 问题
 
-Reading a file or running `git status` usually returns quickly, so synchronous execution causes little noticeable delay. Installing dependencies, running a full test suite, or building a project can take several minutes. Until the command returns, the Harness cannot process the next tool call in the current response or start the next model turn.
+读取文件或运行 `git status` 通常很快，同步执行时等待并不明显。但安装依赖、执行完整测试或构建项目可能持续几分钟。在命令返回前，Harness 无法处理当前响应中的下一个工具调用，也不能进入下一轮。
 
-If later work does not depend on that command, there is no need to block it. For example, after starting a full test suite, the Agent could inspect documentation or organize other files while the tests run.
+如果后续工作并不依赖这个命令，继续等待就没有必要。例如，Agent 启动完整测试后，本来还可以检查文档或整理其他文件，但同步执行会让整个 Agent Loop 停在这次 Bash 调用上。
 
-S11 addresses this by running slow Bash commands in the background, allowing the Agent Loop to continue and collect completed results on a later turn.
+S11 要解决的问题是：让耗时的 Bash 命令在后台执行，使 Agent Loop 可以继续处理其他工作，并在后续轮次收集完成结果。
 
 ---
 
-## The Solution
+## 解决方案
 
-![Background Tasks Overview](images/background-tasks-overview.en.svg)
+![Background Tasks Overview](images/background-tasks-overview.svg)
 
-This chapter sends slow operations to background threads. The current tool call first returns a placeholder `tool_result`, allowing the Agent Loop to continue. At the start of a later turn, completed results are collected and added to the conversation as notifications.
+本章把慢操作放入后台线程。当前工具调用先返回一个占位 `tool_result`，Agent Loop 可以继续运行；后续轮次开始时再收集已经完成的结果，以通知形式加入对话。
 
-Sync vs Background:
+同步 vs 后台：
 
-| | Sync (s04) | Background (s11) |
+| | 同步 (s04) | 后台 (s11) |
 |---|---|---|
-| Slow operations | Current tool call blocks | Background thread executes |
-| Agent Loop | Waits for the command to return | Continues after the placeholder result |
-| Result | Returned after the command finishes | Returns `bg_id` first; collects the result on a later turn |
-| Decision criteria | — | bash `run_in_background` parameter |
+| 慢操作 | 当前工具调用被阻塞 | 后台线程执行 |
+| Agent Loop | 等待命令返回 | 收到占位结果后继续运行 |
+| 结果 | 命令结束后返回 | 先返回 `bg_id`，后续轮次收集结果 |
+| 判断标准 | — | bash 的 `run_in_background` 参数 |
 
 ---
 
-## How It Works
+## 工作原理
 
-### should_run_background: Explicit Request
+### should_run_background: 显式请求
 
-The model requests background execution through the bash tool's `run_in_background` parameter. Only bash calls with the parameter explicitly set to `true` enter this path. Other calls still run synchronously.
+模型通过 bash 工具的 `run_in_background` 参数请求后台执行。只有参数明确为 `true`，并且工具是 bash 时，才会进入后台执行路径。其他调用仍然同步执行。
 
 ```python
 def should_run_background(tool_name: str, tool_input: dict) -> bool:
@@ -51,11 +49,11 @@ def should_run_background(tool_name: str, tool_input: dict) -> bool:
     )
 ```
 
-The Harness no longer guesses from keywords such as `install`, `build`, or `test`. The tool call chooses the execution mode explicitly.
+不再根据 `install`、`build` 或 `test` 等关键词猜测。是否进入后台由工具调用明确决定。
 
-### BackgroundManager: Background Execution and Lifecycle
+### BackgroundManager: 后台执行与生命周期
 
-`BackgroundManager` owns task state and the completion queue. `start()` registers a task, starts a daemon thread, and returns `bg_id` immediately:
+`BackgroundManager` 保存任务状态和完成队列。`start()` 先登记任务，再启动 daemon 线程，并立即返回 `bg_id`：
 
 ```python
 class BackgroundManager:
@@ -78,22 +76,22 @@ class BackgroundManager:
             self._ready.append(task_id)
 ```
 
-A non-zero exit code or worker exception becomes `failed`. The shell starts in its own process group. When the command finishes, times out, or the Agent exits through the normal or `SIGTERM` path, the runtime stops that original group. This is lifecycle cleanup, not a sandbox: a process that creates another session can leave the group.
+命令以非零状态退出或 worker 抛出异常时，任务会进入 `failed`。Shell 会在独立的进程组中启动；命令完成、超时，或 Agent 经正常路径、`SIGTERM` 退出时，运行时会停止原进程组。这只是生命周期清理，并不是沙箱；另建 session 的进程仍可能离开该进程组。
 
-### collect_background_results: Notification Collection
+### collect_background_results: 通知收集
 
-At the start of a later turn, `collect()` removes completed results from the queue and formats them as `<task_notification>` messages:
+后续轮次开始时，`collect()` 从完成队列中取出结果，并格式化为 `<task_notification>` 通知：
 
 ```python
 def collect_background_results() -> list[str]:
     return BACKGROUND.collect()
 ```
 
-Notifications don't reuse the original `tool_use_id`. The original tool call was already answered with a placeholder `tool_result`; when the completed result is collected, it is added as an independent event in `task_notification` format. One `tool_use` still gets exactly one `tool_result`.
+通知不复用原始 `tool_use_id`。原始 tool call 已经用占位 `tool_result` 回复了；后续收集完成结果时，会用 `task_notification` 格式把它作为独立事件加入对话。一个 `tool_use` 仍然只对应一个 `tool_result`。
 
-### Loop Integration
+### 循环中的集成
 
-Before each LLM call, the Agent Loop collects completed background results. `execute_tool()` still runs `PreToolUse` on the main thread before choosing synchronous or background execution:
+每次调用 LLM 前，Agent Loop 先收集已经完成的后台结果。`execute_tool()` 仍然在主线程执行 `PreToolUse`，然后再选择同步或后台执行：
 
 ```python
 while True:
@@ -113,9 +111,9 @@ def execute_tool(block) -> str:
     return output
 ```
 
-Slow operations first return a placeholder tool_result with `bg_id`. A completed task does not wake the Agent by itself; `inject_background_results()` collects it the next time the Agent Loop runs.
+慢操作先返回一个带 `bg_id` 的占位 tool_result。后台结果不会主动唤醒 Agent；下一次进入 Agent Loop 时，`inject_background_results()` 才会收集已经完成的结果。
 
-### Putting It Together
+### 合起来跑
 
 ```
 Turn 1:
@@ -133,46 +131,46 @@ Turn 3:
   → LLM sees: config file + install notification in one message
 ```
 
-While npm install ran in the background, the Agent Loop continued with read_file.
+npm install 在后台运行时，Agent Loop 继续执行了 read_file。
 
 ---
 
-## What s11 Adds
+## 本章新增了什么
 
-| Component | s04 Kernel | s11 |
-|-----------|-------------|-------------|
-| Execution model | All synchronous | Slow ops to background thread + notification injection |
+| 组件 | S04 Kernel | S11 |
+|------|-----------|-----------|
+| 执行模型 | 全部同步 | 慢操作后台线程 + 通知注入 |
 | bash schema | `command` | `command` + `run_in_background` |
-| New functions | — | `should_run_background`, `start_background_task`, `collect_background_results`, `inject_background_results` |
-| New types | — | `BackgroundManager` |
-| Notification format | — | `<task_notification>` (doesn't reuse tool_use_id) |
-| Loop behavior | Tools execute synchronously | Explicit background execution, completed results collected on later turns |
-| Tools | 5 | 5 (one parameter added to the bash schema) |
+| 新函数 | — | `should_run_background`, `start_background_task`, `collect_background_results`, `inject_background_results` |
+| 新类型 | — | `BackgroundManager` |
+| 通知格式 | — | `<task_notification>`（不复用 tool_use_id） |
+| 循环行为 | 工具同步执行 | 显式后台执行，后续轮次收集完成结果 |
+| 工具 | 5 | 5（bash schema 增加一个参数） |
 
 ---
 
-## Try It
+## 试一下
 
 ```sh
 cd learn-claude-code
 python s11_background_tasks/code.py
 ```
 
-Try these prompts:
+试试这些 prompt：
 
 1. `Run pip list in the background and find all Python files in this directory`
 2. `Run npm install (use run_in_background) and while waiting, read package.json`
 3. `Run a short sleep in the background, then list all Markdown files`
 
-What to observe: After explicitly setting `run_in_background`, is the command dispatched to the background? Is a `bg_id` returned? Are completed results collected in `<task_notification>` format on a later turn?
+观察重点：显式设置 `run_in_background` 后，命令有没有被送到后台？`bg_id` 是否返回？后续轮次有没有以 `<task_notification>` 格式收集完成结果？
 
 ---
 
-## What's Next
+## 接下来
 
-Background tasks solved "slow operations don't block." But what if you want to do something on a schedule? Like "run tests every morning at 9am" or "check server status every 5 minutes."
+后台任务解决了"慢操作不阻塞"。但如果想定时做某件事呢？比如"每天早上 9 点跑测试"、"每 5 分钟检查一次服务器状态"。
 
-s12 Cron Scheduler → Give the agent an alarm clock.
+s12 Cron Scheduler → 给 Agent 装一个闹钟。
 
 
 <!-- translation-sync: zh@v7, en@v7, ja@v7 -->

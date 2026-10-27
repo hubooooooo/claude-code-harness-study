@@ -1,38 +1,36 @@
-# s02: Tool Use — Add a Tool, Add Just One Line
-
-[English](README.md) · [中文](README.zh.md) · [日本語](README.ja.md)
+# s02: Tool Use — 多加一个工具，只加一行
 
 s01 → `s02` → [s03](../s03_permission/) → s04 → ... → s16 → s17
-> *"Add a tool, add just one handler"* — The loop stays the same. Register the new tool in the dispatch map and you're done.
+> *"加一个工具, 只加一个 handler"* — 循环不用动, 新工具注册进 dispatch map 就行。
 >
-> **Harness Layer**: Tool Dispatch — Expanding the model's reach.
+> **Harness 层**: 工具分发 — 扩展模型能触达的边界。
 
 ---
 
-## Only One Tool: Bash
+## 只有 bash 一个工具
 
-The s01 Agent has only one tool: bash. To read a file, `cat`; to write, `echo "..." > file.py`; to edit, `sed`.
+s01 的 Agent 只有一个 bash 工具。读文件要 `cat`，写文件要 `echo "..." > file.py`，改文件要 `sed`。
 
-The model thinks "read this file" but has to spell out `cat path/to/file`. An extra layer of translation that wastes tokens and invites errors.
-
----
-
-## Overview: Tool Dispatch
-
-![Tool Dispatch](images/tool-dispatch.en.svg)
-
-The s01 loop is fully preserved (LLM call, `tool_use` block check, message append — not a single word changed). The only change is in that one line of tool execution: `run_bash()` is replaced with `TOOL_HANDLERS[block.name]()` dispatch lookup.
-
-Adding a tool to the Agent requires just two things:
-
-1. **Define the tool**: Add one entry to the `TOOLS` array
-2. **Register the handler**: Add one mapping in the `TOOL_HANDLERS` dict
+模型想的是"读这个文件"，却要拼出 `cat path/to/file`。多了一层翻译，浪费 token，还容易拼错。
 
 ---
 
-## From 1 Tool to 5 Tools
+## 全局视角：工具分发
 
-s01 had only bash:
+![Tool Dispatch](images/tool-dispatch.svg)
+
+s01 的循环完全保留（LLM 调用、`tool_use` block 判断、消息追加）。唯一的变动在工具执行那 1 行：`run_bash()` 替换为 `TOOL_HANDLERS[block.name]()` 查表分发。
+
+给 Agent 加一个工具只需要做两件事：
+
+1. **定义工具**：在 `TOOLS` 数组里加一条描述
+2. **注册处理函数**：在 `TOOL_HANDLERS` 字典里加一个映射
+
+---
+
+## 从 1 个工具到 5 个工具
+
+s01 只有一个 bash：
 
 ```python
 TOOLS = [{"name": "bash", ...}]
@@ -40,7 +38,7 @@ TOOLS = [{"name": "bash", ...}]
 def run_bash(command): ...
 ```
 
-s02 expands to 5 tools, each independently defined:
+s02 加到 5 个，每个工具都是独立定义：
 
 ```python
 TOOLS = [
@@ -52,7 +50,7 @@ TOOLS = [
 ]
 ```
 
-Each tool has its own implementation function:
+每个工具有自己的实现函数：
 
 ```python
 def run_read(path, limit=None):
@@ -79,7 +77,7 @@ def run_glob(pattern):
 
 ---
 
-## Tool Dispatch
+## 工具分发
 
 ```python
 TOOL_HANDLERS = {
@@ -90,70 +88,70 @@ TOOL_HANDLERS = {
     "glob":       run_glob,
 }
 
-# Only one line changed in the loop — from hardcoded run_bash to dispatch lookup:
+# 循环里只改了一行——从硬编码 run_bash 变成查表：
 for block in tool_calls:
-    handler = TOOL_HANDLERS[block.name]    # lookup
-    output = handler(**block.input)         # call
+    handler = TOOL_HANDLERS[block.name]    # 查表
+    output = handler(**block.input)         # 调用
     results.append(...)
 ```
 
-Adding a tool = one entry in `TOOLS` array + one line in `TOOL_HANDLERS` dict. The loop stays the same.
+加一个工具 = 在 `TOOLS` 数组加一条 + 在 `TOOL_HANDLERS` 字典加一行。循环不变。
 
 ---
 
-## Multiple Tool Calls
+## 多个工具调用
 
-The model often returns multiple tool_use calls at once — "read a.py and b.py, then list all .py files".
+模型经常一次返回多个 tool_use："读一下 a.py 和 b.py，然后列出所有 .py 文件"。
 
-Calls are executed one by one in their original `response.content` order.
-
----
-
-## Quick Reference
-
-| Concept | One-Liner |
-|---------|-----------|
-| TOOL_HANDLERS | Tool name → handler function dict. Add a tool = add one mapping line |
-| Tool Definition | JSON schema telling the model "what I can do" |
-| Multiple tool calls | Model may return multiple tool_use at once; calls execute in their original order |
-| Loop Unchanged | s01's `while True` loop — not a single line changed |
+这些调用按照 `response.content` 中的原始顺序逐个执行。
 
 ---
 
-## Changes from s01
+## 速查
 
-| Component | Before (s01) | After (s02) |
-|-----------|-------------|-------------|
-| Tool count | 1 (bash) | 5 (+read, write, edit, glob) |
-| Tool execution | Hardcoded `run_bash()` | TOOL_HANDLERS dispatch lookup |
-| Path safety | None | safe_path validation (file tools only) |
-| Loop | `while True` + `tool_use` block | Identical to s01 |
+| 概念 | 一句话 |
+|------|--------|
+| TOOL_HANDLERS | 工具名 → 处理函数的字典。加工具 = 加一行映射 |
+| 工具定义 | 告诉模型"我能做什么"的 JSON schema |
+| 多工具调用 | 模型可一次返回多个 tool_use，并按原始顺序逐个执行 |
+| 循环不变 | s01 的 `while True` 循环一行都没改 |
 
 ---
 
-## Try It
+## 相对 s01 的变更
+
+| 组件 | 之前 (s01) | 之后 (s02) |
+|------|-----------|-----------|
+| 工具数量 | 1 (bash) | 5 (+read, write, edit, glob) |
+| 工具执行 | 硬编码 `run_bash()` | TOOL_HANDLERS 查表分发 |
+| 路径安全 | 无 | safe_path 校验（仅 file tools） |
+| 循环 | `while True` + `tool_use` block | 与 s01 完全一致 |
+
+---
+
+## 试一下
 
 ```sh
 cd learn-claude-code
 python s02_tool_use/code.py
 ```
 
-Try these prompts:
+试试这些 prompt：
 
 1. `Read the file README.md and tell me what this project is about`
 2. `Create a file called test.py that prints "hello", then read it back`
 3. `Find all Python files in this directory`
 4. `Read both README.md and requirements.txt, then create a summary file`
 
-What to watch for: When does the model call just one tool, and when does it call multiple at once? Are multiple tool calls executed in the correct order?
+观察重点：模型什么时候只调一个工具，什么时候一次调多个？多个工具调用的顺序和结果是否正确？
 
 ---
 
-## What's Next
+## 接下来
 
-The Agent now has 5 specialized tools. File tools are protected by `safe_path`, but bash is unrestricted — `rm -rf /` still runs.
+现在 Agent 有 5 个专用工具。file tools 受 `safe_path` 保护，但 bash 不受限制，`rm -rf /` 还是能跑。
 
-→ s03 Permission: Add a gate before tool execution — is this operation safe? Does it need user approval?
+s03 Permission → 在工具执行之前加一道门：这个操作安全吗？需要用户批准吗？
 
 
-<!-- translation-sync: zh@v1, en@v1, ja@v1 -->
+<!-- translation-sync: zh@v1, en@v0, ja@v0 -->
