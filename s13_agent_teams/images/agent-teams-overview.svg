@@ -13,8 +13,8 @@
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#0d9488"/>
     </marker>
     <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#1e3a5f"/>
-      <stop offset="100%" stop-color="#2563eb"/>
+      <stop offset="0%" stop-color="#111111"/>
+      <stop offset="100%" stop-color="#111111"/>
     </linearGradient>
   </defs>
 
@@ -24,8 +24,9 @@
   <!-- 标题栏 -->
   <rect x="0" y="0" width="760" height="48" fill="url(#header)" rx="8"/>
   <rect x="0" y="40" width="760" height="8" fill="url(#header)"/>
+  <rect x="0" y="45" width="760" height="3" fill="#00e75e"/>
   <text x="380" y="23" fill="#ffffff" font-size="15" font-weight="700" text-anchor="middle">Agent 团队 — 一套团队运行框架 (Team Harness)</text>
-  <text x="380" y="40" fill="#bfdbfe" font-size="10" text-anchor="middle">Agent Teams — one team harness: lead, mailboxes, teammates, task board, worktrees</text>
+  <text x="380" y="40" fill="#b3b3b3" font-size="10" text-anchor="middle">Agent Teams — one team harness: lead, mailboxes, teammates, task board, worktrees</text>
 
   <!-- ===== 用户 ===== -->
   <rect x="28" y="80" width="140" height="62" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
