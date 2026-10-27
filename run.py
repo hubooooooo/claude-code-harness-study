@@ -10,6 +10,7 @@ Mac 用户：双击「启动.command」即可（自动装依赖 + 引导填 key�
     python run.py s03          # 同上
     python run.py agent_loop   # 按目录关键词运行
     python run.py setkey        # 修改已保存的 API Key
+    python run.py web          # 打开课程网页（讲解 + 图示 + 代码对比）
     python run.py s16 demo     # 运行 s16 的 demo 模式（透传剩余参数）
     python run.py s17 "目标"    # 运行 s17 并直接提交一个目标
 
@@ -274,9 +275,34 @@ def show_menu():
     for num, folder, title, desc in LESSONS:
         print(f"  {_green(num):>12}  {title:<22} {desc}")
     print(_cyan("=" * 60))
-    print("  输入编号(如 3)、s03 运行；输入 key 修改 API Key；q 退出程序。")
+    print("  输入编号(如 3)、s03 运行；输入 web 打开课程网页；key 修改 API Key；q 退出程序。")
     print("  在课程里输入 q = 退出本节课，回到这个菜单。")
     print(_cyan("=" * 60))
+
+
+def load_web_server():
+    sys.path.insert(0, str(ROOT / "web"))
+    import server
+    return server
+
+
+def run_web(extra_args: list[str]) -> int:
+    """启动课程网页（只用标准库，不需要依赖和 key）。"""
+    return load_web_server().serve(open_browser="--no-browser" not in extra_args)
+
+
+_web_url: Optional[str] = None
+
+
+def open_web_from_menu() -> None:
+    """菜单里输入 web：后台启动课程网页并打开浏览器，菜单继续可用。"""
+    global _web_url
+    if _web_url is None:
+        _httpd, _web_url = load_web_server().start(open_browser=True)
+    else:
+        import webbrowser
+        webbrowser.open(_web_url)
+    print(_green(f"课程网页：{_web_url}（退出程序后网页随之关闭）"))
 
 
 def main(argv: list[str]) -> int:
@@ -290,6 +316,9 @@ def main(argv: list[str]) -> int:
 
     if argv and argv[0] in ("setkey", "key"):
         return 0 if prompt_for_key() else 1
+
+    if argv and argv[0] in ("web", "site"):
+        return run_web(argv[1:])
 
     # 直接指定章节
     if argv:
@@ -323,6 +352,9 @@ def main(argv: list[str]) -> int:
             continue
         if choice.lower() in ("key", "setkey"):
             prompt_for_key()
+            continue
+        if choice.lower() in ("web", "site"):
+            open_web_from_menu()
             continue
         lesson = find_lesson(choice)
         if lesson is None:

@@ -201,6 +201,8 @@ def agent_loop(messages):
 
 ## 零基础学生使用流程（推荐 Mac）
 
+> **只想看课**：直接打开课程网页 <https://hubooooooo.github.io/claude-code-harness-study/>，每节课的讲解、图示、新增代码对比和运行回放都在里面，不用安装任何东西。想亲手运行代码，再按下面的步骤操作。
+
 1. 打开项目 GitHub 页面，点右上角绿色 `Code` → `Download ZIP`，下载后解压。
 2. 进入解压后的文件夹，双击 `启动.command`。
    - 如果提示“无法打开/来自身份不明的开发者”：按住 `Control` 点按 `启动.command`，选“打开”，再点“打开”。
@@ -215,6 +217,11 @@ def agent_loop(messages):
    - 课程里输入 `q`：退出当前章节，回到菜单；
    - 菜单里输入 `q`：退出整个程序。
 6. 第二次以后，仍然双击 `启动.command`，即可直接进入课程。
+7. 想用网页上课：在 `run >>` 菜单里输入 `web` 回车，浏览器会打开课程网页。每节课有四个标签：
+   - 「讲解」：README 和图示；
+   - 「代码」：本课相对它所基于的章节新增的代码，用绿色高亮；
+   - 「回放」：一次真实运行的录像，一步步看每次发给模型的 `messages[]` 和模型的返回，不需要 key；
+   - 「运行」：在你的电脑上直接运行本课代码，边跑边看（需要 key，在一份临时副本里运行，不会改动项目文件）。
 
 **Windows 用户**：目前自动安装脚本优先支持 Mac。Windows 请先到 https://www.python.org/downloads/ 安装 Python 3.11 或更高版本，安装时勾选 `Add Python to PATH`，然后在项目文件夹打开终端运行：
 
@@ -236,6 +243,7 @@ python3 run.py
 # 高级用法：
 python run.py 3               # 直接运行指定章节（3 / s03 / agent_loop 均可）
 python run.py s16 demo        # s16 附带的 demo / resume 模式
+python run.py web             # 打开课程网页（讲解 / 代码对比 / 运行回放 / 网页里直接运行）
 python s01_agent_loop/code.py # 各章代码仍可独立运行
 ```
 
@@ -330,6 +338,8 @@ learn-claude-code/
   s15_integrated_harness/
   s16_workflow_runtime/
   s17_goal_loop/           # 终点章
+  web/                     # 课程网页（直接读取各章 README / 图 / code.py）
+    replay/                #   运行回放：录制脚本 record.py、场景 scenarios.json、录好的 traces/
   skills/                  # s07 使用的 skill 文件
   tests/
 ```

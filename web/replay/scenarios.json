@@ -1,0 +1,293 @@
+{
+  "s01": {
+    "dir": "s01_agent_loop",
+    "title": "让 Agent 写一个 hello.py",
+    "note": "观察：模型调用工具时循环继续，不再调用工具时循环结束。",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "Create a file called hello.py that prints \"Hello, World!\", then run it to check the output."
+          }
+        ]
+      }
+    ]
+  },
+  "s02": {
+    "dir": "s02_tool_use",
+    "title": "写一个文件再读回来",
+    "note": "观察：模型按名字选择不同工具，循环通过 TOOL_HANDLERS 查表分发。",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "Create a file called test.py that prints \"hello\", then read it back"
+          }
+        ]
+      }
+    ]
+  },
+  "s03": {
+    "dir": "s03_permission",
+    "title": "普通操作直接放行，删除操作先问人",
+    "note": "回放中所有权限确认都回答了 n（拒绝），观察被拒后模型收到的 tool_result。",
+    "approve": "n",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "Create a file called test.txt in the current directory"
+          },
+          {
+            "send": "Delete the file test.txt"
+          }
+        ]
+      }
+    ]
+  },
+  "s04": {
+    "dir": "s04_hooks",
+    "title": "钩子在工具执行前后触发",
+    "note": "观察终端里的 [HOOK] 日志；权限确认回答 n，由 PreToolUse 钩子拦下。",
+    "approve": "n",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "Read the first 20 lines of README.md"
+          },
+          {
+            "send": "Delete the file requirements.txt"
+          }
+        ]
+      }
+    ]
+  },
+  "s05": {
+    "dir": "s05_todo_write",
+    "title": "多步任务：先列计划，再逐项完成",
+    "note": "观察：第一次工具调用是 todo_write，执行中 TODO 状态逐项变化。",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "Create s05_todo_write/example/wordcount.py with a count_words(text) function and a small CLI that prints the word count of a file, add tests in s05_todo_write/example/test_wordcount.py, then run only those tests. Keep it small: no need to explore the rest of the repository."
+          }
+        ]
+      }
+    ]
+  },
+  "s06": {
+    "dir": "s06_subagent",
+    "title": "把调研交给子 Agent",
+    "note": "观察：子 Agent 从全新的 messages[] 开始，父 Agent 只收到它的最终文本。",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "Use a subtask to find what testing framework this project uses"
+          }
+        ]
+      }
+    ]
+  },
+  "s07": {
+    "dir": "s07_skill_loading",
+    "title": "按需加载 code-review 技能",
+    "note": "观察：system prompt 里只有技能目录，调用 load_skill 后完整 SKILL.md 才进入 tool_result。",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "Load the code-review skill, then use it to review only the agent_loop function in s01_agent_loop/code.py. Read the file once, do not run any commands, and report at most 3 findings."
+          }
+        ]
+      }
+    ]
+  },
+  "s08": {
+    "dir": "s08_context_compact",
+    "title": "连续读取 5 个 README，旧结果被替换成占位符",
+    "note": "观察右侧 messages[]：较早的长结果变成 [Earlier tool result omitted.]。",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "请逐个用 read_file 分别读取 s01_agent_loop、s02_tool_use、s03_permission、s04_hooks、s05_todo_write 的 README.md（每次只读一个文件），然后比较它们的一级标题，并总结这些标题的命名规律。"
+          }
+        ]
+      }
+    ]
+  },
+  "s09": {
+    "dir": "s09_memory",
+    "title": "记住偏好，重启后召回",
+    "note": "两次独立运行：第一次只是顺口提到偏好，回合结束时 extract_memories 把它提取成记忆；第二次在新会话里召回。",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "By the way, I prefer tabs for indentation in all my code. Quick question: what is 2 + 3?"
+          }
+        ]
+      },
+      {
+        "steps": [
+          {
+            "send": "What indentation style do I prefer?"
+          }
+        ]
+      }
+    ]
+  },
+  "s10": {
+    "dir": "s10_task_system",
+    "title": "建任务图，认领并完成一个任务",
+    "note": "观察：任务带 blockedBy 依赖，完成上游任务后下游任务解锁。",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "Create tasks: setup database schema, create API endpoints (depends on schema), write tests (depends on endpoints), write docs (depends on schema)"
+          },
+          {
+            "send": "Claim the first unblocked task and complete it"
+          },
+          {
+            "send": "List tasks again — which ones are now unblocked?"
+          }
+        ]
+      }
+    ]
+  },
+  "s11": {
+    "dir": "s11_background_tasks",
+    "title": "慢命令放后台，Agent 继续干别的",
+    "note": "观察：run_in_background 立即返回 bg_id，结果在后续轮次以 task_notification 送回。",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "Run `sleep 3 && echo done` in the background, and meanwhile list all Markdown files in this directory"
+          },
+          {
+            "sleep": 5
+          },
+          {
+            "send": "Did the background command finish? What did it print?"
+          }
+        ]
+      }
+    ]
+  },
+  "s12": {
+    "dir": "s12_cron_scheduler",
+    "title": "创建每分钟执行的定时任务",
+    "note": "观察：到点后调度线程把 prompt 放进 cron_queue，Agent 空闲时自动执行。",
+    "runs": [
+      {
+        "final_timeout": 120,
+        "steps": [
+          {
+            "send": "Schedule \"run date\" every minute (session only)."
+          },
+          {
+            "sleep": 70
+          },
+          {
+            "send": "List all cron jobs.",
+            "no_prompt": true
+          },
+          {
+            "send": "Cancel the cron job you just created."
+          }
+        ]
+      }
+    ]
+  },
+  "s13": {
+    "dir": "s13_agent_teams",
+    "title": "主控 Agent 组建团队并行完成一个小功能",
+    "note": "观察：任务板、消息总线和队友线程；回放较长，可以用时间轴跳着看。",
+    "runs": [
+      {
+        "final_timeout": 900,
+        "steps": [
+          {
+            "send": "在 s13_agent_teams/example/ 下做一个小的 wordcount 工具，拆到共享任务板并行完成：配置（config.py，提供默认参数）、核心实现（wordcount.py，这个任务使用 worktree）、测试（test_wordcount.py，依赖前两项）。保持接口简单，最后汇总结果。"
+          },
+          {
+            "send": "开始吧"
+          },
+          {
+            "wait_for": "[all teammates shut down]",
+            "timeout": 900
+          }
+        ]
+      }
+    ],
+    "git_init": true
+  },
+  "s14": {
+    "dir": "s14_mcp_plugin",
+    "title": "连接 MCP 服务并调用外部工具",
+    "note": "观察：connect_mcp 之后，下一次请求的工具列表里出现 mcp__docs__ 工具；触发部署需要确认（回答 n）。",
+    "approve": "n",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "连接 docs server，搜索 agent hooks，并告诉我当前文档 API 版本。"
+          },
+          {
+            "send": "连接 deploy server，查看 web 服务状态，不要触发部署。"
+          }
+        ]
+      }
+    ]
+  },
+  "s15": {
+    "dir": "s15_integrated_harness",
+    "title": "完整 Harness：连接文档服务并查资料",
+    "note": "观察：同一个循环里，钩子、权限、记忆召回和 MCP 工具一起工作；connect_mcp 之后工具池里多出文档工具。",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "从已连接的文档中查一下 agent loop 的相关说明。"
+          }
+        ]
+      }
+    ]
+  },
+  "s16": {
+    "dir": "s16_workflow_runtime",
+    "title": "一次 Workflow 调用跑完 review-changes 工作流",
+    "note": "观察：一次 Workflow 工具调用，背后由脚本编排多个子 Agent 并行审查、再逐条验证。第一次运行有子 Agent 输出被截断导致失败，主模型用 resume_from_run_id 续跑，已完成的步骤直接命中 journal 缓存。",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "不要读取任何文件，直接调用 Workflow 工具运行保存好的 review-changes。args.changes 填这段改动说明：tools.py 新增 run_read(path)，直接 return open(path).read()；新增 run_bash(command)，用 subprocess.run(command, shell=True, capture_output=True, text=True) 执行并只返回 stdout。完成后用中文简要总结审查结论。"
+          }
+        ]
+      }
+    ],
+    "model": "minimax-m3.1-flash",
+    "approve": "y"
+  },
+  "s17": {
+    "dir": "s17_goal_loop",
+    "title": "设定目标，判断器决定何时停止",
+    "note": "观察：主模型想结束时，判断器单独调用一次模型，未达标就把理由追加回 messages[] 继续。",
+    "runs": [
+      {
+        "steps": [
+          {
+            "send": "/goal 当前目录下存在 hello.py，并且运行 python3 hello.py 输出 Hello, Goal!"
+          }
+        ]
+      }
+    ]
+  }
+}
