@@ -50,6 +50,7 @@ def load_course_module(module_name: str, module_path: Path, temp_cwd: Path):
     sys.modules["anthropic"] = fake_anthropic
     sys.modules["dotenv"] = fake_dotenv
     sys.modules["yaml"] = fake_yaml
+    sys.modules[spec.name] = module
     try:
         os.chdir(temp_cwd)
         os.environ["MODEL_ID"] = "test-model"
@@ -57,6 +58,7 @@ def load_course_module(module_name: str, module_path: Path, temp_cwd: Path):
         return module
     finally:
         os.chdir(previous_cwd)
+        sys.modules.pop(spec.name, None)
         if previous_model_id is None:
             os.environ.pop("MODEL_ID", None)
         else:

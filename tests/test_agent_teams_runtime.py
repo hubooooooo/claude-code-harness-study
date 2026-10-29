@@ -469,6 +469,7 @@ class AgentTeamsRuntimeTests(unittest.TestCase):
                         f"os.environ['ANTHROPIC_API_KEY'] = 'test-key'\n"
                         f"spec = importlib.util.spec_from_file_location('lesson', {str(lesson_path)!r})\n"
                         "lesson = importlib.util.module_from_spec(spec)\n"
+                        "sys.modules['lesson'] = lesson\n"
                         "spec.loader.exec_module(lesson)\n"
                         f"lesson.run_bash({command!r}, run_in_background=True)\n"
                         "time.sleep(10)\n"

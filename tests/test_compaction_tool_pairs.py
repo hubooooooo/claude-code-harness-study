@@ -38,6 +38,7 @@ def load_module(name: str, path: Path, temp_cwd: Path):
 
     sys.modules["anthropic"] = fake_anthropic
     sys.modules["dotenv"] = fake_dotenv
+    sys.modules[name] = module
     os.environ["MODEL_ID"] = "test-model"
     os.environ["ANTHROPIC_API_KEY"] = "test-key"
     try:
@@ -46,6 +47,7 @@ def load_module(name: str, path: Path, temp_cwd: Path):
         return module
     finally:
         os.chdir(previous_cwd)
+        sys.modules.pop(name, None)
         if previous_anthropic is None:
             sys.modules.pop("anthropic", None)
         else:

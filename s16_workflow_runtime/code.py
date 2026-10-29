@@ -420,7 +420,14 @@ class ExecutionLimits:
 
     def __init__(self):
         self.agents = 0
-        self.semaphore = asyncio.Semaphore(CONCURRENCY)
+        self._semaphore = None
+
+    @property
+    def semaphore(self):
+        # Created on first use: Python 3.9 binds a Semaphore to the loop it is built in.
+        if self._semaphore is None:
+            self._semaphore = asyncio.Semaphore(CONCURRENCY)
+        return self._semaphore
 
     def claim_agent(self):
         self.agents += 1

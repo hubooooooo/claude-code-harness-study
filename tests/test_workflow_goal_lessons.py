@@ -22,7 +22,11 @@ def load_lesson(name: str, script: Path):
     if spec is None or spec.loader is None:
         raise RuntimeError(f"unable to load {script}")
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    sys.modules[name] = module
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        sys.modules.pop(name, None)
     return module
 
 
@@ -249,16 +253,17 @@ def test_active_workflow_run_rejects_concurrent_resume(
     monkeypatch.setattr(workflow, "STORE", tmp_path)
     run_id = "wf_slow-test_0000000000001a7b"
     monkeypatch.setattr(workflow, "create_run_id", lambda _meta: run_id)
-    started = asyncio.Event()
-    release = asyncio.Event()
     meta = {"name": "slow-test", "description": "hold the run open"}
 
-    async def slow_workflow(_ctx, _args):
-        started.set()
-        await release.wait()
-        return {"invocation": 1}
-
     async def exercise():
+        started = asyncio.Event()
+        release = asyncio.Event()
+
+        async def slow_workflow(_ctx, _args):
+            started.set()
+            await release.wait()
+            return {"invocation": 1}
+
         first = asyncio.create_task(
             workflow.WorkflowTool().call(meta, slow_workflow)
         )
