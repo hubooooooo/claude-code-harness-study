@@ -1,4 +1,4 @@
-// 运行回放：播放 web/replay/traces/<章节>.json（由 web/replay/record.py 录制）。
+// 运行记录的显示：把章节进程的运行事件整理成一步步的卡片和 messages[]，供「运行」页使用。
 (function () {
   "use strict";
 
@@ -179,94 +179,5 @@
       <div class="ctx-list">${last.msgs.map((m, k) => msgItem(m, k, k >= last.keep)).join("")}</div>`;
   }
 
-  window.Replay = { prepare, fromRaw, stepHtml, ctxHtml, esc };
-
-  window.renderReplay = async function (lesson, panel, fetchText, startStep) {
-    let trace;
-    try {
-      trace = JSON.parse(await fetchText(`replay/traces/${lesson.id}.json`));
-    } catch (e) {
-      panel.innerHTML = `<div class="prose"><p>这一课的运行回放还没有录制。</p>
-        <p class="loading">录制方法：在项目根目录准备好 <code>.env</code>，运行 <code>.venv/bin/python web/replay/record.py ${lesson.id}</code>。</p></div>`;
-      return;
-    }
-
-    const { llms, steps } = prepare(trace);
-
-    let cur = 0;
-    let timer = null;
-
-    panel.innerHTML = `
-      <div class="rp-head">
-        <div><div class="rp-title">${esc(trace.title || "运行回放")}</div>
-          <div class="rp-note">${esc(trace.note || "")}</div></div>
-        <div class="rp-meta">真实运行录制 · ${esc(trace.recorded || "")} · ${llms.length} 次模型调用</div>
-      </div>
-      <div class="rp-controls">
-        <button data-act="first" title="回到开头">⏮</button>
-        <button data-act="prev" title="上一步（←）">◀</button>
-        <button data-act="play" class="play" title="播放 / 暂停（空格）">▶ 播放</button>
-        <button data-act="next" title="下一步（→）">▶</button>
-        <button data-act="last" title="跳到结尾">⏭</button>
-        <span class="rp-count" id="rpCount"></span>
-      </div>
-      <div class="rp-timeline" id="rpTimeline">${steps.map((s, i) =>
-        `<button class="dot ${s.t}" data-i="${i}" title="${i + 1}"></button>`).join("")}</div>
-      <div class="rp-grid">
-        <section class="rp-step" id="rpStep"></section>
-        <aside class="rp-ctx" id="rpCtx"></aside>
-      </div>
-      <div class="rp-legend"><span class="dot user"></span>学生输入 <span class="dot llm"></span>模型调用
-        <span class="dot console"></span>终端输出 <span class="dot approval"></span>权限确认</div>`;
-
-    const $step = panel.querySelector("#rpStep");
-    const $ctx = panel.querySelector("#rpCtx");
-    const $count = panel.querySelector("#rpCount");
-    const $play = panel.querySelector("[data-act=play]");
-    const dots = panel.querySelectorAll("#rpTimeline .dot");
-
-    function show(i) {
-      cur = Math.max(0, Math.min(steps.length - 1, i));
-      const s = steps[cur];
-      $step.className = `rp-step ${s.t}`;
-      $step.innerHTML = stepHtml(s, trace, llms);
-      $ctx.innerHTML = ctxHtml(steps, cur);
-      $count.textContent = `第 ${cur + 1} / ${steps.length} 步`;
-      dots.forEach((d, k) => { d.classList.toggle("on", k === cur); d.classList.toggle("past", k < cur); });
-      // 只滚动右侧列表，让最新的消息可见，不带动整个页面
-      const list = $ctx.querySelector(".ctx-list");
-      if (list) list.scrollTop = list.scrollHeight;
-    }
-
-    function stop() { clearInterval(timer); timer = null; $play.textContent = "▶ 播放"; }
-    function play() {
-      if (cur >= steps.length - 1) show(0);
-      $play.textContent = "⏸ 暂停";
-      timer = setInterval(() => (cur >= steps.length - 1 ? stop() : show(cur + 1)), 1800);
-    }
-
-    panel.querySelector(".rp-controls").addEventListener("click", (e) => {
-      const act = e.target.closest("button")?.dataset.act;
-      if (!act) return;
-      if (act === "play") return timer ? stop() : play();
-      stop();
-      show({ first: 0, prev: cur - 1, next: cur + 1, last: steps.length - 1 }[act]);
-    });
-    panel.querySelector("#rpTimeline").addEventListener("click", (e) => {
-      const d = e.target.closest(".dot");
-      if (d) { stop(); show(Number(d.dataset.i)); }
-    });
-    const onKey = (e) => {
-      if (!document.body.contains(panel) || !panel.querySelector("#rpStep")) {
-        document.removeEventListener("keydown", onKey);
-        return stop();
-      }
-      if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
-      if (e.key === "ArrowRight") { stop(); show(cur + 1); }
-      else if (e.key === "ArrowLeft") { stop(); show(cur - 1); }
-      else if (e.key === " ") { e.preventDefault(); timer ? stop() : play(); }
-    };
-    document.addEventListener("keydown", onKey);
-    show(startStep || 0);
-  };
+  window.TraceView = { prepare, fromRaw, stepHtml, ctxHtml, esc };
 })();

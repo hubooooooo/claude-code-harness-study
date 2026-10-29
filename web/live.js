@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  const { prepare, fromRaw, stepHtml, ctxHtml, esc } = window.Replay;
+  const { prepare, fromRaw, stepHtml, ctxHtml, esc } = window.TraceView;
   const sessions = {}; // 切换标签后回来还能接着看：lesson -> { id, raw }
   const STATE = {
     running: ["运行中…", "run"],
@@ -25,7 +25,7 @@
 
   async function suggestions(lesson, fetchText) {
     try {
-      const all = JSON.parse(await fetchText("replay/scenarios.json"));
+      const all = JSON.parse(await fetchText("live_prompts.json"));
       const sc = all[lesson.id];
       return sc ? sc.runs.flatMap((r) => r.steps.filter((s) => s.send).map((s) => s.send)) : [];
     } catch (e) {

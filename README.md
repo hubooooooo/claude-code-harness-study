@@ -339,7 +339,8 @@ learn-claude-code/
   s16_workflow_runtime/
   s17_goal_loop/           # 终点章
   web/                     # 课程网页（直接读取各章 README / 图 / code.py）
-    replay/                #   运行回放：录制脚本 record.py、场景 scenarios.json、录好的 traces/
+    viz.js                 #   回放：每章一段机制动画
+    live_hook/             #   「运行」页的事件记录钩子；live_prompts.json 是各章的推荐提问
   skills/                  # s07 使用的 skill 文件
   tests/
 ```

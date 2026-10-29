@@ -3,7 +3,7 @@ web/live.py — 课程网页里的「实时运行」：在本机启动章节进�
 
 - 每一课有一个独立工作区（系统临时目录里的仓库副本），模型执行的命令不会改到真实项目；
   同一课多次运行共用这个工作区（s09 记忆、s10 任务等需要跨运行保留），网页上可以重置。
-- 运行事件由 web/replay/hook/sitecustomize.py 记录，和录制回放是同一套格式。
+- 运行事件由 web/live_hook/sitecustomize.py 记录，写成 JSON Lines 交给网页显示。
 - 同一时间只运行一个章节进程；关闭课程网页服务时会一起结束。
 """
 
@@ -21,7 +21,7 @@ from pathlib import Path
 
 WEB = Path(__file__).resolve().parent
 ROOT = WEB.parent
-HOOK_DIR = WEB / "replay" / "hook"
+HOOK_DIR = WEB / "live_hook"
 WORKSPACES = Path(tempfile.gettempdir()) / "learn-claude-code-web"
 PROMPT_RE = re.compile(r">>\s*$")
 APPROVAL_RE = re.compile(r"\[y/N\]\s*$")
@@ -36,8 +36,27 @@ def _load(name, path):
 
 
 launcher = _load("run_launcher", ROOT / "run.py")
-recorder = _load("replay_record", WEB / "replay" / "record.py")
 LESSON_DIRS = {num: folder for num, folder, _title, _desc in launcher.LESSONS}
+
+
+def read_env() -> dict:
+    env = {}
+    path = ROOT / ".env"
+    if path.exists():
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                env[key.strip()] = value.strip().strip("'\"")
+    return env
+
+
+def make_sandbox() -> Path:
+    tmp = Path(tempfile.mkdtemp(prefix="learn-claude-code-"))
+    ignore = shutil.ignore_patterns(".git", ".venv", ".env", "web", "__pycache__", ".pytest_cache",
+                                    ".memory", ".tasks", ".transcripts", ".task_outputs", ".scheduled_tasks.json")
+    shutil.copytree(ROOT, tmp / "learn-claude-code", ignore=ignore)
+    return tmp / "learn-claude-code"
 
 
 def status() -> dict:
@@ -58,7 +77,7 @@ def workspace(lesson: str, reset: bool = False) -> Path:
         shutil.rmtree(path.parent, ignore_errors=True)
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
-        sandbox = recorder.make_sandbox()
+        sandbox = make_sandbox()
         shutil.move(str(sandbox), str(path))
         shutil.rmtree(sandbox.parent, ignore_errors=True)
     return path
@@ -71,7 +90,7 @@ class Session:
         self.cwd = workspace(lesson, reset)
         self.trace = self.cwd.parent / f"run-{self.id}.jsonl"
         chapter_dir = self.cwd / LESSON_DIRS[lesson]
-        env = {**os.environ, **recorder.read_env(),
+        env = {**os.environ, **read_env(),
                "PYTHONPATH": str(HOOK_DIR),
                "PYTHONUNBUFFERED": "1",
                "PYTHONIOENCODING": "utf-8",

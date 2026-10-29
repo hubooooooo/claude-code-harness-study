@@ -86,13 +86,13 @@ def test_live_api_rejects_requests_from_other_sites():
         httpd.server_close()
 
 
-def test_every_chapter_has_a_recorded_replay_without_local_paths():
+def test_every_chapter_has_live_prompts_and_an_animation():
     import json
 
-    scenarios = json.loads((ROOT / "web" / "replay" / "scenarios.json").read_text(encoding="utf-8"))
+    prompts = json.loads((ROOT / "web" / "live_prompts.json").read_text(encoding="utf-8"))
+    viz = (ROOT / "web" / "viz.js").read_text(encoding="utf-8")
     for lesson_id, chapter in [(c[:3], c) for c in CHAPTERS]:
-        assert scenarios[lesson_id]["dir"] == chapter
-        text = (ROOT / "web" / "replay" / "traces" / f"{lesson_id}.json").read_text(encoding="utf-8")
-        trace = json.loads(text)
-        assert any(e["t"] == "llm" for e in trace["events"])
-        assert "/var/folders" not in text and "/Users/" not in text
+        assert prompts[lesson_id]["dir"] == chapter
+        assert any(step.get("send") for run in prompts[lesson_id]["runs"] for step in run["steps"])
+        assert f"VIZ.{lesson_id} = {{" in viz
+

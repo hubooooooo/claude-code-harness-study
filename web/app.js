@@ -9,7 +9,7 @@
   const TABS = [
     { id: "learn", label: "讲解" },
     { id: "code", label: "代码", note: "本章新增高亮" },
-    { id: "replay", label: "回放", note: "一步步看真实运行" },
+    { id: "replay", label: "回放", note: "动画看懂机制" },
     { id: "live", label: "运行", note: "在你的电脑上跑一次" },
   ];
   const CONTEXT = 3; // “只看改动”时，改动前后保留的上下文行数
@@ -55,12 +55,12 @@
     const lesson = byId[parts[0]];
     if (!lesson) return { lesson: null };
     const tab = TABS.some((t) => t.id === parts[1]) ? parts[1] : "learn";
-    return { lesson, tab, step: Number(parts[2]) || 1 };
+    return { lesson, tab };
   }
 
   async function route() {
     document.body.classList.remove("nav-open");
-    const { lesson, tab, step } = parseHash();
+    const { lesson, tab } = parseHash();
     window.scrollTo(0, 0);
     if (!lesson) {
       renderToc(null);
@@ -86,7 +86,7 @@
     }).catch(() => {});
     try {
       if (tab === "code") await renderCode(lesson, panel);
-      else if (tab === "replay") await window.renderReplay(lesson, panel, fetchText, step - 1);
+      else if (tab === "replay") await window.renderReplay(lesson, panel);
       else if (tab === "live") await window.renderLive(lesson, panel, fetchText);
       else await renderLearn(lesson, panel);
     } catch (e) {

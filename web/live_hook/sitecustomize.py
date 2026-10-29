@@ -1,5 +1,5 @@
 """
-录制钩子：由 web/replay/record.py 通过 PYTHONPATH 注入到被录制的章节进程里。
+运行记录钩子：由 web/live.py 通过 PYTHONPATH 注入到章节进程里。
 Python 启动时会自动导入 sitecustomize，只有设置了 REPLAY_TRACE 才会生效。
 
 记录三类事件（按发生顺序写入 JSONL）：
