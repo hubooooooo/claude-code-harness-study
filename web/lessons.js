@@ -28,3 +28,12 @@ window.STAGES = [
   { label: "协作与扩展",               from: 13, to: 15 },
   { label: "编排与目标",               from: 16, to: 17 },
 ];
+
+// 学完 17 章之后的「产品经理决策」篇：不是章节，没有代码和动画，只渲染 guide/ 下的文档。
+window.GUIDES = [
+  { id: "guide", file: "guide/README.md", tag: "选型", zh: "选型篇", en: "Choosing Your Harness", tip: "走哪条路、用哪些部件、规则怎么定" },
+  { id: "guide-case", file: "guide/case-knowledge-base.md", tag: "案例", zh: "案例：企业知识库助手", en: "Case · Knowledge Base", tip: "低代码验证，再换通用框架；只读 Agent" },
+  { id: "guide-cs", file: "guide/case-customer-service.md", tag: "案例", zh: "案例：跨境电商售后客服", en: "Case · Customer Service", tip: "厂商开发包；Agent 要替公司退款" },
+  { id: "guide-code", file: "guide/case-coding-agent.md", tag: "案例", zh: "案例：研发团队引入编程 Agent", en: "Case · Coding Agent", tip: "直接买成品；产品经理定配置" },
+  { id: "guide-report", file: "guide/case-daily-report.md", tag: "案例", zh: "案例：竞品和舆情日报", en: "Case · Daily Report", tip: "大部分环节不该用 Agent" },
+];

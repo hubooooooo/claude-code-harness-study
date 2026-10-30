@@ -6,6 +6,11 @@
   const LESSONS = window.LESSONS;
   const STAGES = window.STAGES;
   const byId = Object.fromEntries(LESSONS.map((l) => [l.id, l]));
+  const GUIDES = window.GUIDES || [];
+  const byGuide = Object.fromEntries(GUIDES.map((g) => [g.id, g]));
+  const byGuideFile = Object.fromEntries(GUIDES.map((g) => [g.file.split("/").pop(), g]));
+  // 侧栏和卡片已经有「案例」标签，标题里不再重复
+  const guideName = (g) => g.zh.replace(/^案例：/, "");
   const TABS = [
     { id: "learn", label: "讲解" },
     { id: "code", label: "代码", note: "本章新增高亮" },
@@ -52,6 +57,7 @@
   // ---------- 路由：#/  #/s03  #/s03/code ----------
   function parseHash() {
     const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
+    if (byGuide[parts[0]]) return { guide: byGuide[parts[0]] };
     const lesson = byId[parts[0]];
     if (!lesson) return { lesson: null };
     const tab = TABS.some((t) => t.id === parts[1]) ? parts[1] : "learn";
@@ -60,8 +66,9 @@
 
   async function route() {
     document.body.classList.remove("nav-open");
-    const { lesson, tab } = parseHash();
+    const { lesson, tab, guide } = parseHash();
     window.scrollTo(0, 0);
+    if (guide) return renderGuide(guide);
     if (!lesson) {
       renderToc(null);
       renderHome();
@@ -108,6 +115,17 @@
         }
       }
     }
+    if (GUIDES.length) {
+      html += `<div class="toc-stage">学完之后 · 产品经理决策</div>`;
+      for (const g of GUIDES) {
+        const on = g.id === activeId;
+        html += `<a class="toc-item${on ? " active" : ""}" href="#/${g.id}"><span class="num">${esc(g.tag)}</span><span>${esc(guideName(g))}</span></a>`;
+        if (on && sections && sections.length) {
+          html += `<div class="toc-sub">${sections.map((s) =>
+            `<a href="#/${g.id}" data-sec="${s.id}">${esc(s.text)}</a>`).join("")}</div>`;
+        }
+      }
+    }
     $toc.innerHTML = html;
     const active = $toc.querySelector(".toc-item.active");
     if (active) active.scrollIntoView({ block: "nearest" });
@@ -148,7 +166,15 @@
           <div class="zh">${esc(l.zh)}</div>
           <div class="en">${esc(l.en)}</div>
           <div class="tip">${esc(l.tip)}</div>
-        </a>`).join("")}</div></section>`).join("");
+        </a>`).join("")}</div></section>`).join("") + (GUIDES.length ? `<section class="stage-block">
+      <div class="stage-title">学完之后 · 产品经理决策</div>
+      <div class="cards">${GUIDES.map((g) => `
+        <a class="card" href="#/${g.id}">
+          <div class="num">${esc(g.tag)}</div>
+          <div class="zh">${esc(guideName(g))}</div>
+          <div class="en">${esc(g.en)}</div>
+          <div class="tip">${esc(g.tip)}</div>
+        </a>`).join("")}</div></section>` : "");
     $main.innerHTML = `<div class="home">
       <div class="hero"><div class="hero-watermark">17</div>
         <span class="pill">LEARN CLAUDE CODE</span>
@@ -177,7 +203,9 @@
     article.querySelectorAll("a[href]").forEach((a) => {
       const href = a.getAttribute("href");
       const m = href.match(/^\.\.\/(s\d\d)_[^/]*\/?$/) || href.match(/^\.\/(s\d\d)_[^/]*\/?$/);
-      if (m && byId[m[1]]) a.setAttribute("href", `#/${m[1]}`);
+      const g = /^\.\.\/guide\//.test(href) && byGuideFile[href.split("/").pop()];
+      if (g) a.setAttribute("href", `#/${g.id}`);
+      else if (m && byId[m[1]]) a.setAttribute("href", `#/${m[1]}`);
       else if (/^https?:/.test(href)) a.target = "_blank";
       else if (!href.startsWith("#")) a.setAttribute("href", `${ROOT}${lesson.dir}/${href}`);
     });
@@ -185,6 +213,16 @@
       const lang = (el.className.match(/language-(\w+)/) || [])[1];
       if (lang && hljs.getLanguage(lang)) hljs.highlightElement(el);
     });
+    // 「产品经理视角」一节单独成块，和技术讲解区分开
+    const pmHead = [...article.querySelectorAll("h2")].find((h) => h.textContent.trim() === "产品经理视角");
+    if (pmHead) {
+      const box = document.createElement("section");
+      box.className = "pm-view";
+      pmHead.before(box);
+      box.append(pmHead);
+      // 收进下一个 h2 或分隔线之前的所有内容
+      for (let n = box.nextSibling; n && !/^(H2|HR)$/.test(n.nodeName); n = box.nextSibling) box.append(n);
+    }
     const sections = [];
     article.querySelectorAll("h2, h3").forEach((h, i) => {
       h.id = `sec-${i}`;
@@ -199,7 +237,51 @@
     const link = (l, cls, dir) => l
       ? `<a class="${cls}" href="#/${l.id}/${tab}"><div class="dir">${dir}</div><div class="t">${l.id.toUpperCase()} ${esc(l.zh)}</div></a>`
       : `<span style="flex:1"></span>`;
-    return `<nav class="pager">${link(prev, "prev", "← 上一课")}${link(next, "next", "下一课 →")}</nav>`;
+    // 最后一课之后接着读选型篇
+    const after = !next && GUIDES[0]
+      ? `<a class="next" href="#/${GUIDES[0].id}"><div class="dir">学完了，接着读 →</div><div class="t">${esc(GUIDES[0].zh)}</div></a>` : "";
+    return `<nav class="pager">${link(prev, "prev", "← 上一课")}${after || link(next, "next", "下一课 →")}</nav>`;
+  }
+
+  // ---------- 产品经理决策篇（guide/ 下的文档） ----------
+  async function renderGuide(guide) {
+    document.title = `${guide.zh} · Agent Harness 课程`;
+    renderToc(guide.id);
+    const gi = GUIDES.indexOf(guide);
+    $main.innerHTML = `<div class="hero"><div class="hero-watermark">PM</div>
+      <span class="pill">学完之后 · 产品经理决策</span>
+      <h1>${esc(guide.zh)}</h1>
+      <div class="en"><b>${esc(guide.en)}</b> · ${esc(guide.tip)}</div></div>
+      <div class="panel" id="panel"><p class="loading">加载中…</p></div>`;
+    const panel = document.getElementById("panel");
+    try {
+      const md = await fetchText(`${ROOT}${guide.file}`);
+      const body = md.replace(/^# .*\n/, "");
+      const prev = GUIDES[gi - 1] || LESSONS[LESSONS.length - 1];
+      const next = GUIDES[gi + 1];
+      const prevHref = GUIDES[gi - 1] ? `#/${prev.id}` : `#/${prev.id}/learn`;
+      const prevName = GUIDES[gi - 1] ? prev.zh : `${prev.id.toUpperCase()} ${prev.zh}`;
+      panel.innerHTML = `<article class="prose guide">${marked.parse(body)}</article>
+        <nav class="pager"><a class="prev" href="${prevHref}"><div class="dir">← 上一篇</div><div class="t">${esc(prevName)}</div></a>
+        ${next ? `<a class="next" href="#/${next.id}"><div class="dir">下一篇 →</div><div class="t">${esc(next.zh)}</div></a>` : '<span style="flex:1"></span>'}</nav>`;
+      const article = panel.querySelector(".prose");
+      article.querySelectorAll("a[href]").forEach((a) => {
+        const href = a.getAttribute("href");
+        const g = byGuideFile[href.split("/").pop()];
+        const m = href.match(/(s\d\d)_[^/]*\/?$/);
+        if (g) a.setAttribute("href", `#/${g.id}`);
+        else if (m && byId[m[1]]) a.setAttribute("href", `#/${m[1]}`);
+        else if (/^https?:/.test(href)) { a.target = "_blank"; a.rel = "noopener"; }
+      });
+      const sections = [];
+      article.querySelectorAll("h2, h3").forEach((h, i) => {
+        h.id = `sec-${i}`;
+        if (h.tagName === "H2") sections.push({ id: h.id, text: h.textContent });
+      });
+      renderToc(guide.id, sections);
+    } catch (e) {
+      panel.innerHTML = loadError(e);
+    }
   }
 
   // ---------- 代码（与基准章节对比） ----------

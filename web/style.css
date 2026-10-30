@@ -61,7 +61,7 @@ button { font: inherit; color: inherit; }
   color: var(--text-secondary);
   transition: background .15s, color .15s;
 }
-.toc-item .num { font-family: var(--mono); font-size: 12px; color: var(--text-meta); }
+.toc-item .num { font-family: var(--mono); font-size: 12px; color: var(--text-meta); white-space: nowrap; flex-shrink: 0; }
 .toc-item:hover { background: var(--bg-soft); color: var(--text); }
 .toc-item.active { background: var(--text); color: #fff; }
 .toc-item.active .num { color: var(--accent); }
@@ -183,6 +183,31 @@ button { font: inherit; color: inherit; }
 .pager .dir { font-size: 12px; color: var(--text-meta); font-family: var(--mono); letter-spacing: 1px; }
 .pager .t { font-weight: 600; margin-top: 2px; }
 .pager .next { text-align: right; }
+
+/* 选型篇的表格：第一列是部件或方案名，不折行 */
+.prose.guide td:first-child { white-space: nowrap; }
+
+/* 每章末尾的「产品经理视角」：浅绿底色的独立块 */
+.pm-view {
+  margin: 56px 0 0; padding: 28px 32px 20px;
+  background: var(--accent-soft);
+  border: 1px solid #c4f3d6; border-radius: var(--radius);
+}
+.pm-view h2 { margin-top: 0; display: flex; align-items: center; gap: 10px; }
+.pm-view h2::before {
+  content: "PM"; font: 700 12px/1 var(--mono); letter-spacing: 1px;
+  color: #fff; background: var(--text); padding: 5px 8px; border-radius: 6px;
+}
+.pm-view h3 { font-size: 17px; margin-top: 26px; }
+.pm-view table { display: table; }
+.pm-view td { background: #fff; }
+.pm-view td:first-child { white-space: nowrap; font-weight: 600; }
+.pm-view blockquote { border-left-color: var(--text); }
+.pm-view blockquote p { color: var(--text); font-size: 16.5px; }
+@media (max-width: 640px) {
+  .pm-view { padding: 20px 16px 12px; margin-left: -4px; margin-right: -4px; }
+  .pm-view table { display: block; } /* 窄屏下表格横向滚动 */
+}
 
 /* ===== 代码对比 ===== */
 .code-toolbar {
