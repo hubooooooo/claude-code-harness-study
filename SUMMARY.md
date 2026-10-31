@@ -1,47 +1,50 @@
 # 项目摘要
 
 ## 项目名称
-**Learn Claude Code -- 真正的 Agent Harness 工程**
+**Learn Claude Code：亲手造一遍 Agent Harness，学会做 AI 产品判断**
 
 ## 项目定位
-这是一个从 0 到 1 的 **Agent Harness（代理运行环境/载具）** 工程教学仓库。核心哲学是：**Agency（智能）来自模型训练，Agent 产品 = 模型 + Harness（载具）**。学校教你如何构建让模型能够感知、推理和行动的"载具"，而不是训练模型本身。
+一门写给 AI 零基础的同学和准 AI 产品经理的课程。
 
-## 核心理念
-- **模型是驾驶者，Harness 是载具** —— 智能来自模型，环境提供行动空间
-- **反对"提示词水管工"** —— 批判用 if-else、节点图等过程式逻辑拼凑 LLM 的做法，认为那不是真正的 Agent
-- **Harness 组成**：Tools（工具）+ Knowledge（知识）+ Observation（观察）+ Action Interfaces（行动接口）+ Permissions（权限）
+- **用自研的方式学**：照着 Claude Code，从一个循环开始，把 Agent 的部件亲手造一遍。
+- **学会的是判断**：拿到一个产品需求，能说清楚该不该用 Agent、走哪条路、用哪些部件、规则怎么定。
 
-## 教学内容：17 个递进式课程
+自研是学习方法，不是对产品路线的推荐。真做产品时，要在「直接用成品、用厂商开发包、用通用框架、用低代码平台、完全自研」五条路里，按需求、团队、模型和合规限制来选。
 
-| 阶段 | 章节 | 主题 |
-|---|---|---|
-| 基础能力 | s01–s04 | Agent Loop、Tool Use、Permission、Hooks |
-| 复杂任务 | s05–s08 | TodoWrite、Subagent、Skill Loading、Context Compact |
-| 跨会话记忆 | s09 | Memory |
-| 长期运行 | s10–s12 | Task System、Background Tasks、Cron Scheduler |
-| 团队协作 | s13 | Agent Teams |
-| 外部扩展 | s07, s14–s15 | Skill Loading、MCP Plugin、集成 Harness |
-| 编排闭环 | s16–s17 | Workflow Runtime、Goal Loop |
+## 核心概念
+- **Agent 产品 = 模型 + Harness + 产品**：模型负责思考（司机），Harness 让模型能动手干活（车），产品是用户看到的界面、流程和收费方式。
+- **这门课只讲 Harness 这一层**，并且教产品经理判断每个部件要不要用、规则怎么定。
+- **最小可行 Harness**：从最少的部件开始，出现明确的症状再加。
+
+## 课程结构
+
+| 部分 | 内容 |
+|---|---|
+| 开始之前 | 第 0 课 · 导读（`guide/intro.md`）、名词表（`guide/glossary.md`） |
+| 第一段 · 部件篇 | s01–s14，每章一个部件；每章开头有「本章要学会的判断」，章末有「产品经理视角」 |
+| 第二段 · 总装 | s15：不加新部件，把 s01–s14 装成一个完整系统 |
+| 第三段 · 进阶 | s16 往总装好的系统里加工作流；s17 讲什么时候才算真正做完 |
+| 决策实战 | 选型篇（`guide/README.md`）、4 个案例、练习（`guide/practice.md`）和参考答案（`guide/practice-answers.md`） |
+
+共 17 章：16 个部件（含 s01 循环）+ 1 章总装。
 
 ## 依赖（requirements.txt）
-- `anthropic>=0.25.0` — Anthropic API 客户端，用于调用 Claude 模型
-- `python-dotenv>=1.0.0` — 环境变量管理（加载 `.env` 文件）
-- `pyyaml>=6.0` — YAML 解析，用于配置/技能文件
+- `anthropic>=0.25.0`：调用模型的客户端
+- `python-dotenv>=1.0.0`：从 `.env` 读取 API Key 等配置
+- `pyyaml>=6.0`：解析 s07 使用的技能文件
 
 ## 项目结构
-- `s01_agent_loop/` ~ `s17_goal_loop/` — 17 章主线，每章含中文 README、可运行 code.py 和 SVG 图示
-- `skills/` — s07 使用的技能文件
-- `tests/` — 测试
+- `s01_agent_loop/` ~ `s17_goal_loop/`：17 章，每章有中文 README、可运行的 code.py 和 SVG 图示
+- `guide/`：导读、名词表、选型篇、4 个案例、练习和参考答案
+- `web/`：课程网页
+- `skills/`：s07 使用的技能文件
+- `tests/`：测试
 
 ## 快速开始
 ```sh
-git clone https://github.com/<你的用户名>/<你的仓库名>
 python3 run.py                # 自动装依赖 + 引导填 key + 选择章节
-python run.py 3               # 直接运行指定章节
+python3 run.py web            # 打开课程网页
 ```
-
-## 愿景
-将 Agent Harness 模式泛化到所有领域（农业、医疗、制造、教育…），"用真正的 Agent 铺满宇宙"。
 
 ## 许可证
 MIT

@@ -7,6 +7,16 @@ s01 → s02 → s03 → s04 → s05 → s06 → s07 → `s08` → [s09](../s09_m
 > **Harness 层**：压缩让有限的上下文持续服务于长任务。
 
 
+## 本章要学会的判断
+
+- **它解决什么**：对话越来越长、快装不下时，腾出空间，又不丢关键信息。
+- **什么时候需要它**：任务一长，模型开始忘掉前面的内容，成本飙升，甚至报错超长。
+- **你要拍板的规则**：什么必须原文保留（用户的要求、金额、承诺）；多长开始压缩；完整记录要不要存档。
+
+> 代码看不懂可以先跳过，到网页上看「回放」动画。详细的判断方法在本章末尾的「产品经理视角」。
+
+---
+
 Agent 持续工作时，读过的文件、执行过的命令和模型回复都会留在 `messages` 中。消息越积越多，最终会超过模型能够接收的上下文长度。
 
 本节将实现一条四步压缩管线。它先整理可以恢复的工具结果，空间仍然不足时再总结历史。
@@ -166,7 +176,7 @@ def estimate_chars(messages):
 ```python
 def compact_history(messages, active_request):
     transcript = self.write_transcript(messages)
-    print(f"[transcript saved: {transcript}]")
+    print(f"[对话记录已存档：{transcript}]")
     summary = self.summarize_history(messages)
     return [self.summary_message(
         "Compacted", active_request, summary, transcript)]
@@ -324,7 +334,7 @@ python s08_context_compact/code.py
 说明它们分别怎样管理当前上下文和持久记忆。
 ```
 
-当读取结果使 `estimate_chars(messages)` 超过 50000 时，终端会打印 `[auto compact]` 和 transcript 路径。后续调用使用 `[Compacted]` 摘要继续完成比较。
+当读取结果使 `estimate_chars(messages)` 超过 50000 时，终端会打印 `[自动压缩：…]` 和存档路径。后续调用使用 `[Compacted]` 摘要继续完成比较。
 
 观察 `.transcripts/` 和 `.task_outputs/tool-results/`，可以分别看到历史留档与大结果转存。
 
@@ -383,7 +393,7 @@ python s08_context_compact/code.py
 - 让用户能看到、能修正摘要。
 - 用长对话的任务完成率来衡量。
 
-> 17 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
+> 16 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
 
 ---
 

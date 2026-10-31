@@ -8,6 +8,16 @@ s01 → s02 → s03 → `s04` → [s05](../s05_todo_write/) → s06 → ... → 
 
 ---
 
+## 本章要学会的判断
+
+- **它解决什么**：在工具执行前后留插口，统一加日志、合规检查、计费，不用每个工具各写一遍。
+- **什么时候需要它**：要统一做审计留痕、敏感词过滤、计费这类「每次都要做」的事。
+- **你要拍板的规则**：哪些时机必须留痕；哪些检查有权否决执行。
+
+> 代码看不懂可以先跳过，到网页上看「回放」动画。详细的判断方法在本章末尾的「产品经理视角」。
+
+---
+
 ## 问题
 
 s03 的 Agent 有权限检查了。但每次加一个新检查，比如"记录每次 bash 调用"、"操作后自动 git add"，都要修改 `agent_loop` 函数。
@@ -82,7 +92,7 @@ def trigger_hooks(event: str, *args):
 ```python
 def context_inject_hook(query: str) -> str | None:
     """Inject current working directory info into every prompt."""
-    print(f"\033[90m[HOOK] UserPromptSubmit: working in {WORKDIR}\033[0m")
+    print(f"\033[90m[钩子] UserPromptSubmit：工作目录 {WORKDIR}\033[0m")
     return None   # return None = no modification, let prompt through
 
 register_hook("UserPromptSubmit", context_inject_hook)
@@ -105,23 +115,23 @@ def permission_hook(block):
     if block.name == "bash":
         for pattern in DENY_LIST:
             if pattern in block.input.get("command", ""):
-                return "Permission denied by deny list"
+                return "权限被拒绝：命中黑名单"
     if block.name in ("read_file", "write_file", "edit_file"):
         path = block.input.get("path", "")
         if not (WORKDIR / path).resolve().is_relative_to(WORKDIR):
-            choice = input("   Allow? [y/N] ").strip().lower()
+            choice = input("   允许执行吗？[y/N] ").strip().lower()
             if choice not in ("y", "yes"):
-                return "Permission denied by user"
+                return "权限被拒绝：用户不允许"
     return None
 
 # PreToolUse: 日志
 def log_hook(block):
-    print(f"[HOOK] {block.name}(...)")
+    print(f"[钩子] {block.name}(...)")
 
 # PostToolUse: 大文件提醒
 def large_output_hook(block, output):
     if len(str(output)) > 100000:
-        print(f"[HOOK] ⚠ Large output from {block.name}")
+        print(f"[钩子] 输出很长，来自 {block.name}")
 
 register_hook("PreToolUse", permission_hook)
 register_hook("PreToolUse", log_hook)
@@ -136,7 +146,7 @@ def summary_hook(messages: list) -> str | None:
     tool_count = sum(1 for m in messages
                      for b in (m.get("content") if isinstance(m.get("content"), list) else [])
                      if isinstance(b, dict) and b.get("type") == "tool_result")
-    print(f"\033[90m[HOOK] Stop: session used {tool_count} tool calls\033[0m")
+    print(f"\033[90m[钩子] Stop：这次会话共调用了 {tool_count} 次工具\033[0m")
     return None   # return None = allow stop, return string = force continuation
 
 register_hook("Stop", summary_hook)
@@ -170,7 +180,7 @@ for block in tool_calls:
         continue
 
     handler = TOOL_HANDLERS.get(block.name)
-    output = handler(**block.input) if handler else f"Unknown: {block.name}"
+    output = handler(**block.input) if handler else f"未知工具：{block.name}"
 
     trigger_hooks("PostToolUse", block, output)
 
@@ -208,7 +218,7 @@ python s04_hooks/code.py
 2. `Create a file called test.txt`（通过后观察 PostToolUse 是否触发）
 3. `Delete all temporary files in /tmp`（bash + rm 触发权限 hook）
 
-观察重点：每次工具执行前，是否出现了 `[HOOK]` 日志？权限被拒时，是 hook 拦截的还是循环里硬编码的？
+观察重点：每次工具执行前，是否出现了 `[钩子]` 日志？权限被拒时，是 hook 拦截的还是循环里硬编码的？
 
 ---
 
@@ -266,7 +276,7 @@ python s04_hooks/code.py
 - 定期抽查覆盖率。
 - 选型时就要确认方案支持钩子。
 
-> 17 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
+> 16 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
 
 ---
 

@@ -8,6 +8,16 @@ s01 → s02 → s03 → s04 → s05 → `s06` → [s07](../s07_skill_loading/) �
 
 ---
 
+## 本章要学会的判断
+
+- **它解决什么**：把要读大量资料的子任务交给另一个 Agent，只带回结论，主对话不会被挤满。
+- **什么时候需要它**：某个子任务要读很多东西，但最后只需要一个结论。
+- **你要拍板的规则**：哪类任务允许派出去；子 Agent 能用哪些工具（通常只读）；最多派几个；结果按什么格式交回。
+
+> 代码看不懂可以先跳过，到网页上看「回放」动画。详细的判断方法在本章末尾的「产品经理视角」。
+
+---
+
 ## 问题
 
 Agent 在修一个 bug。为了追踪调用链，它读取了许多文件；每次工具调用和结果都会留在父循环的 `messages[]` 中。调用链已经弄清以后，多数中间细节不再需要，却仍然占用上下文。
@@ -99,7 +109,7 @@ python s06_subagent/code.py
 2. `Delegate: read all .py files in s01_agent_loop/ and summarize what each one does`
 3. `Use a task to create s06_subagent/example/string_tools.py with a slugify(text: str) function, then verify it from the parent agent`
 
-观察重点：是否出现 `[Subagent started]` / `[Subagent done]`？子 Agent 的工具调用是否以 `[sub] ...` 输出？父 Agent 是否只接收到 `task` 返回的最终文本？
+观察重点：是否出现 `[子 Agent 开始]` / `[子 Agent 结束]`？子 Agent 的工具调用是否以 `[子] ...` 输出？父 Agent 是否只接收到 `task` 返回的最终文本？
 
 ---
 
@@ -156,7 +166,7 @@ python s06_subagent/code.py
 - 代价是费用和排查难度。
 - 用主对话长度、总费用和结论准确率来衡量值不值。
 
-> 17 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
+> 16 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
 
 ---
 

@@ -7,6 +7,16 @@ s01 → s02 → `s03` → [s04](../s04_hooks/) → s05 → ... → s16 → s17
 
 ---
 
+## 本章要学会的判断
+
+- **它解决什么**：Agent 动手之前，先判断这件事能不能做、要不要先问人。
+- **什么时候需要它**：有不可撤销、花钱或对外的操作：删数据、发邮件、付款、对客户说话。
+- **你要拍板的规则**：三档清单：直接放行 / 先问人 / 绝对禁止；谁有权批准；被拒绝后怎么告诉用户。
+
+> 代码看不懂可以先跳过，到网页上看「回放」动画。详细的判断方法在本章末尾的「产品经理视角」。
+
+---
+
 ## 问题
 
 s02 的 Agent 有 5 个工具。file tools 受 `safe_path` 保护，但 bash 不受限制。让它"清理一下项目"，可能执行 `rm -rf /`。
@@ -48,7 +58,7 @@ DENY_LIST = [
 def check_deny_list(command: str) -> str | None:
     for pattern in DENY_LIST:
         if pattern in command:
-            return f"Blocked: '{pattern}' is on the deny list"
+            return f"已拦截：'{pattern}' 在黑名单里"
     return None
 ```
 
@@ -59,12 +69,12 @@ PERMISSION_RULES = [
     {
         "tools": ["read_file", "write_file", "edit_file"],
         "check": lambda args: not (WORKDIR / args.get("path", "")).resolve().is_relative_to(WORKDIR),
-        "message": "Access outside workspace",
+        "message": "要访问工作区以外的路径",
     },
     {
         "tools": ["bash"],
         "check": lambda args: any(kw in args.get("command", "") for kw in ["rm ", "> /etc/", "chmod 777"]),
-        "message": "Potentially destructive command",
+        "message": "可能有破坏性的命令",
     },
 ]
 
@@ -80,8 +90,8 @@ def check_rules(tool_name: str, args: dict) -> str | None:
 ```python
 def ask_user(tool_name: str, args: dict, reason: str) -> str:
     print(f"\n⚠  {reason}")
-    print(f"   Tool: {tool_name}({args})")
-    choice = input("   Allow? [y/N] ").strip().lower()
+    print(f"   工具：{tool_name}({args})")
+    choice = input("   允许执行吗？[y/N] ").strip().lower()
     return "allow" if choice in ("y", "yes") else "deny"
 ```
 
@@ -108,7 +118,7 @@ def check_permission(block) -> bool:
 # 在 agent_loop 中——s02 的循环只加了一行：
 for block in tool_calls:
     if not check_permission(block):           # ← 新增
-        results.append({... "content": "Permission denied."})
+        results.append({... "content": "权限被拒绝，没有执行。"})
         continue
     output = TOOL_HANDLERS[block.name](**block.input)  # s02 原有
     results.append(...)
@@ -206,7 +216,7 @@ python s03_permission/code.py
 - 合并确认：先给出整个计划，让用户一次确认。
 - 高风险操作保持确认，必要时还要二次确认。
 
-> 17 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
+> 16 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
 
 ---
 

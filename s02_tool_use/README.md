@@ -7,6 +7,16 @@ s01 → `s02` → [s03](../s03_permission/) → s04 → ... → s16 → s17
 
 ---
 
+## 本章要学会的判断
+
+- **它解决什么**：给模型一双手：查数据、读写文件、执行操作。
+- **什么时候需要它**：光靠模型自己的知识不够，要去查、去改、去动手。
+- **你要拍板的规则**：给哪些工具（越少越好）；哪些只读、哪些能写；工具说明由谁写、谁审。
+
+> 代码看不懂可以先跳过，到网页上看「回放」动画。详细的判断方法在本章末尾的「产品经理视角」。
+
+---
+
 ## 只有 bash 一个工具
 
 s01 的 Agent 只有一个 bash 工具。读文件要 `cat`，写文件要 `echo "..." > file.py`，改文件要 `sed`。
@@ -61,14 +71,14 @@ def run_read(path, limit=None):
 
 def run_write(path, content):
     safe_path(path).write_text(content)
-    return f"Wrote {len(content)} bytes to {path}"
+    return f"已写入（{len(content)} 字节）：{path}"
 
 def run_edit(path, old_text, new_text):
     text = safe_path(path).read_text()
     if old_text not in text:
-        return "Error: text not found"
+        return "错误：找不到要替换的文字"
     safe_path(path).write_text(text.replace(old_text, new_text, 1))
-    return f"Edited {path}"
+    return f"已修改 {path}"
 
 def run_glob(pattern):
     import glob as g
@@ -200,7 +210,7 @@ python s02_tool_use/code.py
 - 不给：直接改数据库、群发消息。
 - 先少后多，上线后看使用数据再加。
 
-> 17 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
+> 16 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
 
 ---
 

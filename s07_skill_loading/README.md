@@ -8,6 +8,16 @@ s01 → s02 → s03 → s04 → s05 → s06 → `s07` → [s08](../s08_context_c
 
 ---
 
+## 本章要学会的判断
+
+- **它解决什么**：有好几套专门的操作规范时，先只给模型看目录，用到哪套再展开哪套。
+- **什么时候需要它**：规范一多，全塞进提示词太长，还会互相干扰。
+- **你要拍板的规则**：技能由谁写、谁审、多久更新；目录里的描述怎么写，模型才会在对的时候用上。
+
+> 代码看不懂可以先跳过，到网页上看「回放」动画。详细的判断方法在本章末尾的「产品经理视角」。
+
+---
+
 ## 问题
 
 假设某个项目有一套 React 组件规范、一份 SQL 风格指南和一份 API 设计文档。我们希望 Agent 在开发过程中遵守这些规范，最直接的做法就是把它们全部放进 system prompt：
@@ -91,7 +101,7 @@ class SkillLoader:
 def build_system_prompt() -> str:
     return (
         f"You are a coding agent at {WORKDIR}. Use tools to solve tasks. "
-        "Act, don't explain.\n\n"
+        "Act, don't explain. Always answer in Chinese.\n\n"
         f"Skills available:\n{SKILL_LOADER.catalog()}\n\n"
         "Use load_skill to read the full instructions when a skill applies."
     )
@@ -183,7 +193,7 @@ python s07_skill_loading/code.py
 - 规范之间冲突时，定好优先级。
 - 用使用率和合规率衡量效果。
 
-> 17 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
+> 16 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
 
 ---
 

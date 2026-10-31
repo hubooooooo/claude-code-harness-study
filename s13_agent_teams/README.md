@@ -8,6 +8,17 @@ s01 → ... → [s10](../s10_task_system/) → `s13` → [s14](../s14_mcp_plugin
 
 ---
 
+## 本章要学会的判断
+
+- **它解决什么**：任务大到一个 Agent 处理不完时，让多个 Agent 分工协作。
+- **什么时候需要它**：任务能拆成边界清楚、可以同时做的几块。
+- **你要拍板的规则**：最多几个队友；各自的权限边界；结果冲突谁来裁决；总预算。
+- **提醒**：这是成本和复杂度最高的部件，绝大多数产品用不上。
+
+> 代码看不懂可以先跳过，到网页上看「回放」动画。详细的判断方法在本章末尾的「产品经理视角」。
+
+---
+
 ## 问题
 
 假设我们让 Agent 重构整个后端，工作涉及配置加载、认证和测试。一个 Agent 可以依次处理，但总耗时更长，早期细节也会逐渐离开上下文。
@@ -379,17 +390,17 @@ Lead：我建议按 config、auth 和 tests 三个方向分工。
 
 s13 >> 开始吧
 
-[task] config created
-[task] auth created → worktree auth-refactor
-[task] tests created
-[claim] alice → config (cwd: repository)
-[claim] bob → auth (cwd: .worktrees/auth-refactor)
-[teammate] alice spawned
-[teammate] bob spawned
-[complete] auth
-[bus] bob → lead (result) ...
-[bus] bob → lead (idle_notification) ...
-[wake: 2 team events → new turn]
+[建任务] config
+[建任务] auth（工作树 auth-refactor）
+[建任务] tests
+[认领] config -> 进行中（负责人：alice）
+[认领] auth -> 进行中（负责人：bob，工作目录 .worktrees/auth-refactor）
+[队友] alice 已启动
+[队友] bob 已启动
+[完成] auth
+[信箱] bob -> lead：(result) ...
+[信箱] bob -> lead：(idle_notification) ...
+[唤醒：2 条团队事件 -> 新一轮]
 Lead：我已收到认证任务的结果，接下来继续协调其余工作。
 ```
 
@@ -498,7 +509,7 @@ Lead 提出团队方案后回复：
 - 小范围试点，看交付时间、费用、质量三个数。
 - 定好队友上限和冲突的裁决规则。
 
-> 17 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
+> 16 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
 
 ---
 
