@@ -70,7 +70,7 @@
 
   function cleanConsole(text) {
     return text.replace(ANSI, "").split("\n")
-      .filter((ln) => !/^\s*\S*\s?>>\s*$/.test(ln) && !/^\s*Allow\? \[y\/N\]\s*$/.test(ln))
+      .filter((ln) => !/^\s*\S*\s?>>\s*$/.test(ln) && !/^\s*(Allow\?|允许执行吗？) \[y\/N\]\s*$/.test(ln))
       .join("\n").replace(/\n{3,}/g, "\n\n").trim();
   }
 
@@ -129,7 +129,7 @@
     if (s.t === "approval") {
       const yes = /^y/i.test(s.text);
       return `<div class="card-k">权限确认</div>
-        <p>程序在执行工具前停下来问人：<code>${esc(s.prompt || "Allow? [y/N]")}</code></p>
+        <p>程序在执行工具前停下来问人：<code>${esc(s.prompt || "允许执行吗？[y/N]")}</code></p>
         <div class="rp-answer ${yes ? "yes" : "no"}">回答 ${esc(s.text)} · ${yes ? "允许执行" : "拒绝执行"}</div>`;
     }
     if (s.t === "console") {
@@ -179,5 +179,5 @@
       <div class="ctx-list">${last.msgs.map((m, k) => msgItem(m, k, k >= last.keep)).join("")}</div>`;
   }
 
-  window.TraceView = { prepare, fromRaw, stepHtml, ctxHtml, esc };
+  window.TraceView = { prepare, fromRaw, stepHtml, ctxHtml, esc, blockText, short };
 })();

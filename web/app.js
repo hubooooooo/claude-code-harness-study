@@ -11,6 +11,12 @@
   const byGuideFile = Object.fromEntries(GUIDES.map((g) => [g.file.split("/").pop(), g]));
   // 侧栏和卡片已经有「案例」标签，标题里不再重复
   const guideName = (g) => g.zh.replace(/^案例：/, "");
+  // 导读排在 s01 之前，其余文档排在 s17 之后
+  const BEFORE = GUIDES.filter((g) => g.stage === "before");
+  const AFTER = GUIDES.filter((g) => g.stage !== "before");
+  const GROUP = { before: "开始之前", after: "学完之后 · 决策实战" };
+  // 全站阅读顺序，底部翻页按它走
+  const SEQ = [...BEFORE, ...LESSONS, ...AFTER];
   const TABS = [
     { id: "learn", label: "讲解" },
     { id: "code", label: "代码", note: "本章新增高亮" },
@@ -66,6 +72,8 @@
 
   async function route() {
     document.body.classList.remove("nav-open");
+    slides = null;
+    $slidebar.hidden = true;
     const { lesson, tab, guide } = parseHash();
     window.scrollTo(0, 0);
     if (guide) return renderGuide(guide);
@@ -102,8 +110,22 @@
   }
 
   // ---------- 侧栏 ----------
+  function tocGuides(list, label, activeId, sections) {
+    if (!list.length) return "";
+    let html = `<div class="toc-stage">${esc(label)}</div>`;
+    for (const g of list) {
+      const on = g.id === activeId;
+      html += `<a class="toc-item${on ? " active" : ""}" href="#/${g.id}"><span class="num">${esc(g.tag)}</span><span>${esc(guideName(g))}</span></a>`;
+      if (on && sections && sections.length) {
+        html += `<div class="toc-sub">${sections.map((s) =>
+          `<a href="#/${g.id}" data-sec="${s.id}">${esc(s.text)}</a>`).join("")}</div>`;
+      }
+    }
+    return html;
+  }
+
   function renderToc(activeId, sections) {
-    let html = "";
+    let html = tocGuides(BEFORE, GROUP.before, activeId, sections);
     for (const st of STAGES) {
       html += `<div class="toc-stage">${esc(st.label)}</div>`;
       for (const l of LESSONS.slice(st.from - 1, st.to)) {
@@ -115,17 +137,7 @@
         }
       }
     }
-    if (GUIDES.length) {
-      html += `<div class="toc-stage">学完之后 · 产品经理决策</div>`;
-      for (const g of GUIDES) {
-        const on = g.id === activeId;
-        html += `<a class="toc-item${on ? " active" : ""}" href="#/${g.id}"><span class="num">${esc(g.tag)}</span><span>${esc(guideName(g))}</span></a>`;
-        if (on && sections && sections.length) {
-          html += `<div class="toc-sub">${sections.map((s) =>
-            `<a href="#/${g.id}" data-sec="${s.id}">${esc(s.text)}</a>`).join("")}</div>`;
-        }
-      }
-    }
+    html += tocGuides(AFTER, GROUP.after, activeId, sections);
     $toc.innerHTML = html;
     const active = $toc.querySelector(".toc-item.active");
     if (active) active.scrollIntoView({ block: "nearest" });
@@ -157,8 +169,20 @@
   }, { passive: true });
 
   // ---------- 首页 ----------
+  function homeGuides(list, label) {
+    return list.length ? `<section class="stage-block">
+      <div class="stage-title">${esc(label)}</div>
+      <div class="cards">${list.map((g) => `
+        <a class="card" href="#/${g.id}">
+          <div class="num">${esc(g.tag)}</div>
+          <div class="zh">${esc(guideName(g))}</div>
+          <div class="en">${esc(g.en)}</div>
+          <div class="tip">${esc(g.tip)}</div>
+        </a>`).join("")}</div></section>` : "";
+  }
+
   function renderHome() {
-    const stages = STAGES.map((st) => `<section class="stage-block">
+    const stages = homeGuides(BEFORE, GROUP.before) + STAGES.map((st) => `<section class="stage-block">
       <div class="stage-title">${esc(st.label)}</div>
       <div class="cards">${LESSONS.slice(st.from - 1, st.to).map((l) => `
         <a class="card" href="#/${l.id}">
@@ -166,20 +190,12 @@
           <div class="zh">${esc(l.zh)}</div>
           <div class="en">${esc(l.en)}</div>
           <div class="tip">${esc(l.tip)}</div>
-        </a>`).join("")}</div></section>`).join("") + (GUIDES.length ? `<section class="stage-block">
-      <div class="stage-title">学完之后 · 产品经理决策</div>
-      <div class="cards">${GUIDES.map((g) => `
-        <a class="card" href="#/${g.id}">
-          <div class="num">${esc(g.tag)}</div>
-          <div class="zh">${esc(guideName(g))}</div>
-          <div class="en">${esc(g.en)}</div>
-          <div class="tip">${esc(g.tip)}</div>
-        </a>`).join("")}</div></section>` : "");
+        </a>`).join("")}</div></section>`).join("") + homeGuides(AFTER, GROUP.after);
     $main.innerHTML = `<div class="home">
       <div class="hero"><div class="hero-watermark">17</div>
         <span class="pill">LEARN CLAUDE CODE</span>
-        <h1>从一个循环开始，造一个 Agent Harness</h1>
-        <p class="lead">17 节课，从一个 <strong>while 循环</strong>出发，一步步加上工具、权限、钩子、规划、记忆、任务、团队和 MCP，最后拼成完整的 Agent 运行框架。每节课都有<strong>讲解</strong>、<strong>图示</strong>和<strong>本章新增代码对比</strong>。</p>
+        <h1>亲手造一遍 Agent&nbsp;Harness，学会做产品判断</h1>
+        <p class="lead">写给 AI 零基础的同学和准 AI 产品经理。<strong>用自研的方式学</strong>：照着 Claude Code，从一个循环出发，把 16 个部件亲手造一遍，再在 s15 装成一个整体。<strong>学会的是判断</strong>：拿到一个需求，能说清楚该走哪条路、用哪些部件、规则怎么定。代码可以只看回放，每章末尾的<strong>「产品经理视角」</strong>是重点。第一次来，先读<a href="#/${BEFORE[0] ? BEFORE[0].id : "s01"}">第 0 课 · 导读</a>。</p>
       </div>
       <div class="panel">${stages}</div></div>`;
   }
@@ -213,43 +229,137 @@
       const lang = (el.className.match(/language-(\w+)/) || [])[1];
       if (lang && hljs.getLanguage(lang)) hljs.highlightElement(el);
     });
-    // 「产品经理视角」一节单独成块，和技术讲解区分开
-    const pmHead = [...article.querySelectorAll("h2")].find((h) => h.textContent.trim() === "产品经理视角");
-    if (pmHead) {
-      const box = document.createElement("section");
-      box.className = "pm-view";
-      pmHead.before(box);
-      box.append(pmHead);
-      // 收进下一个 h2 或分隔线之前的所有内容
-      for (let n = box.nextSibling; n && !/^(H2|HR)$/.test(n.nodeName); n = box.nextSibling) box.append(n);
-    }
+    // 开头的「本章要学会的判断」和末尾的「产品经理视角」各自单独成块，和技术讲解区分开
+    boxSection(article, "本章要学会的判断", "pm-brief");
+    boxSection(article, "产品经理视角", "pm-view");
+    tidyTables(article);
     const sections = [];
     article.querySelectorAll("h2, h3").forEach((h, i) => {
       h.id = `sec-${i}`;
       if (h.tagName === "H2") sections.push({ id: h.id, text: h.textContent });
     });
     renderToc(lesson.id, sections);
+    if (teach) startSlides(article, lesson);
   }
 
-  function pager(lesson, tab) {
-    const i = index(lesson.id);
-    const prev = LESSONS[i - 1], next = LESSONS[i + 1];
-    const link = (l, cls, dir) => l
-      ? `<a class="${cls}" href="#/${l.id}/${tab}"><div class="dir">${dir}</div><div class="t">${l.id.toUpperCase()} ${esc(l.zh)}</div></a>`
+  // 表格：外面套一层可以横向滑动的框，滑不到头时边缘显示阴影提示；
+  // 记下列数（窄屏下列多的表保持最小宽度，横向滑动看）；
+  // 同一页里表头相同的几张表统一列宽，上下对齐。
+  function tidyTables(article) {
+    const groups = new Map();
+    article.querySelectorAll("table").forEach((t) => {
+      const box = document.createElement("div");
+      box.className = "table-box";
+      box.innerHTML = '<div class="table-wrap"></div>';
+      t.before(box);
+      box.firstChild.append(t);
+      box.firstChild.addEventListener("scroll", () => tableShadow(box), { passive: true });
+      const heads = [...t.rows[0].cells].map((c) => c.textContent.trim());
+      t.dataset.cols = heads.length >= 5 ? "many" : String(heads.length);
+      // 第一列都是短标签（部件名、档位、方案名）时不折行；有整句话时照常折行
+      if ([...t.rows].every((r) => r.cells[0] && r.cells[0].textContent.trim().length <= 12)) t.classList.add("key-first");
+      const key = heads.join("|");
+      groups.set(key, [...(groups.get(key) || []), t]);
+    });
+    for (const tables of groups.values()) {
+      if (tables.length < 2) continue;
+      const widths = [...tables[0].rows[0].cells].map(() => 0);
+      for (const t of tables) [...t.rows[0].cells].forEach((c, i) => { widths[i] = Math.max(widths[i], c.getBoundingClientRect().width); });
+      const total = widths.reduce((a, b) => a + b, 0);
+      if (!total) continue;
+      const cols = widths.map((w) => `<col style="width:${(w / total * 100).toFixed(2)}%">`).join("");
+      tables.forEach((t) => { t.insertAdjacentHTML("afterbegin", `<colgroup>${cols}</colgroup>`); t.classList.add("aligned"); });
+    }
+    article.querySelectorAll(".table-box").forEach(tableShadow);
+  }
+
+  function tableShadow(box) {
+    const w = box.firstChild;
+    box.classList.toggle("more-left", w.scrollLeft > 2);
+    box.classList.toggle("more-right", w.scrollLeft + w.clientWidth < w.scrollWidth - 2);
+  }
+  window.addEventListener("resize", () => document.querySelectorAll(".table-box").forEach(tableShadow), { passive: true });
+
+  function boxSection(article, title, className) {
+    const head = [...article.querySelectorAll("h2")].find((h) => h.textContent.trim() === title);
+    if (!head) return;
+    const box = document.createElement("section");
+    box.className = className;
+    head.before(box);
+    box.append(head);
+    // 收进下一个 h2 或分隔线之前的所有内容
+    for (let n = box.nextSibling; n && !/^(H2|HR)$/.test(n.nodeName); n = box.nextSibling) box.append(n);
+  }
+
+  // 底部翻页：按 SEQ 找前后一篇，章节和文档之间也能接上
+  function pager(item, tab) {
+    const i = SEQ.indexOf(item);
+    return `<nav class="pager">${pageLink(item, SEQ[i - 1], "prev", tab)}${pageLink(item, SEQ[i + 1], "next", tab)}</nav>`;
+  }
+
+  function pageLink(from, to, cls, tab) {
+    if (!to) return cls === "prev"
+      ? `<a class="prev" href="#/"><div class="dir">← 返回</div><div class="t">课程首页</div></a>`
       : `<span style="flex:1"></span>`;
-    // 最后一课之后接着读选型篇
-    const after = !next && GUIDES[0]
-      ? `<a class="next" href="#/${GUIDES[0].id}"><div class="dir">学完了，接着读 →</div><div class="t">${esc(GUIDES[0].zh)}</div></a>` : "";
-    return `<nav class="pager">${link(prev, "prev", "← 上一课")}${after || link(next, "next", "下一课 →")}</nav>`;
+    const isDoc = !!byGuide[to.id], fromDoc = !!byGuide[from.id];
+    const href = isDoc ? `#/${to.id}` : `#/${to.id}/${tab || "learn"}`;
+    const title = isDoc ? to.zh : `${to.id.toUpperCase()} ${to.zh}`;
+    const dir = cls === "prev" ? (isDoc ? "← 上一篇" : "← 上一课")
+      : isDoc ? (fromDoc ? "下一篇 →" : "学完了，接着读 →")
+      : (fromDoc ? "开始上课 →" : "下一课 →");
+    return `<a class="${cls}" href="${href}"><div class="dir">${dir}</div><div class="t">${esc(title)}</div></a>`;
   }
 
-  // ---------- 产品经理决策篇（guide/ 下的文档） ----------
+  // 导读、名词表这类「开始之前」的页面：表格变卡片，每节带序号，步骤带圆形数字，看起来不那么密
+  function decorateIntro(article) {
+    article.querySelectorAll("hr").forEach((h) => h.remove());
+    // 整段加粗的话：第一段是大字引言，后面的是小节标题
+    let leads = 0;
+    article.querySelectorAll("p > strong:only-child").forEach((st) => {
+      const para = st.parentElement;
+      if (para.textContent.trim() !== st.textContent.trim()) return; // 段落里还有别的字，不算
+      para.classList.add(leads++ ? "g-sub" : "g-lead");
+    });
+    // 列数不多的表格改成卡片
+    article.querySelectorAll("table").forEach((t) => {
+      const heads = [...t.rows[0].cells].map((c) => c.textContent.trim());
+      if (heads.length > 4 || t.rows.length < 2) return;
+      const grid = document.createElement("div");
+      grid.className = `g-cards cols-${heads.length}`;
+      for (const row of [...t.rows].slice(1)) {
+        const cells = [...row.cells];
+        const card = document.createElement("div");
+        card.className = "g-card";
+        card.innerHTML = `<div class="g-card-t">${cells[0].innerHTML}</div>` + cells.slice(1).map((c, k) =>
+          `<div class="g-card-l">${heads.length > 2 && heads[k + 1] ? `<span>${esc(heads[k + 1])}</span>` : ""}${c.innerHTML}</div>`).join("");
+        grid.append(card);
+      }
+      t.replaceWith(grid);
+    });
+    // 每个 h2 一节，带两位序号
+    let sec = null, n = 0;
+    for (const node of [...article.children]) {
+      if (node.tagName === "H2") {
+        n += 1;
+        sec = document.createElement("section");
+        sec.className = "g-sec" + (/三个问题/.test(node.textContent) ? " g-ask" : "");
+        sec.dataset.n = String(n).padStart(2, "0");
+        article.append(sec);
+      }
+      if (sec) sec.append(node);
+    }
+    // 结尾那句「从 s01 开始」做成按钮
+    const cta = article.querySelector(".g-sec:last-child p:last-child a");
+    if (cta) cta.classList.add("g-cta");
+  }
+
+  // ---------- 导读与决策实战（guide/ 下的文档） ----------
   async function renderGuide(guide) {
     document.title = `${guide.zh} · Agent Harness 课程`;
     renderToc(guide.id);
-    const gi = GUIDES.indexOf(guide);
-    $main.innerHTML = `<div class="hero"><div class="hero-watermark">PM</div>
-      <span class="pill">学完之后 · 产品经理决策</span>
+    const before = guide.stage === "before";
+    $main.innerHTML = `<div class="hero"><div class="hero-watermark">${before ? "00" : "PM"}</div>
+      <span class="pill">${esc(before ? GROUP.before : GROUP.after)}</span>
       <h1>${esc(guide.zh)}</h1>
       <div class="en"><b>${esc(guide.en)}</b> · ${esc(guide.tip)}</div></div>
       <div class="panel" id="panel"><p class="loading">加载中…</p></div>`;
@@ -257,14 +367,9 @@
     try {
       const md = await fetchText(`${ROOT}${guide.file}`);
       const body = md.replace(/^# .*\n/, "");
-      const prev = GUIDES[gi - 1] || LESSONS[LESSONS.length - 1];
-      const next = GUIDES[gi + 1];
-      const prevHref = GUIDES[gi - 1] ? `#/${prev.id}` : `#/${prev.id}/learn`;
-      const prevName = GUIDES[gi - 1] ? prev.zh : `${prev.id.toUpperCase()} ${prev.zh}`;
-      panel.innerHTML = `<article class="prose guide">${marked.parse(body)}</article>
-        <nav class="pager"><a class="prev" href="${prevHref}"><div class="dir">← 上一篇</div><div class="t">${esc(prevName)}</div></a>
-        ${next ? `<a class="next" href="#/${next.id}"><div class="dir">下一篇 →</div><div class="t">${esc(next.zh)}</div></a>` : '<span style="flex:1"></span>'}</nav>`;
+      panel.innerHTML = `<article class="prose guide${guide.stage === "before" ? " intro" : ""}">${marked.parse(body)}</article>${pager(guide, "learn")}`;
       const article = panel.querySelector(".prose");
+      if (guide.stage === "before") decorateIntro(article);
       article.querySelectorAll("a[href]").forEach((a) => {
         const href = a.getAttribute("href");
         const g = byGuideFile[href.split("/").pop()];
@@ -273,12 +378,14 @@
         else if (m && byId[m[1]]) a.setAttribute("href", `#/${m[1]}`);
         else if (/^https?:/.test(href)) { a.target = "_blank"; a.rel = "noopener"; }
       });
+      tidyTables(article);
       const sections = [];
       article.querySelectorAll("h2, h3").forEach((h, i) => {
         h.id = `sec-${i}`;
         if (h.tagName === "H2") sections.push({ id: h.id, text: h.textContent });
       });
       renderToc(guide.id, sections);
+      if (teach) startSlides(article, guide);
     } catch (e) {
       panel.innerHTML = loadError(e);
     }
@@ -399,6 +506,103 @@
       renderCode(lesson, panel);
     }));
   }
+
+  // ---------- 上课模式：大字号、收起代码、按小节一页一页讲 ----------
+  // 每个 h2 / h3 开一页；带框的小节（本章要学会的判断、产品经理视角）翻到它的 h3 时，框标题跟着显示。
+  // 讲到最后一页再往后翻，进入下一篇的第一页；往前翻则进入上一篇的最后一页。
+  const TEACH_KEY = "course-teach-mode";
+  const FOLD = /\blanguage-(python|bash|sh|json)\b/; // 程序代码默认收起；text 图示照常显示
+  const $teachBtns = document.querySelectorAll("[data-teach]");
+  const $slidebar = document.getElementById("slidebar");
+  let teach = localStorage.getItem(TEACH_KEY) === "1";
+  let slides = null;
+  let enterAtEnd = false;
+
+  function applyTeach() {
+    document.body.classList.toggle("teach", teach);
+    $teachBtns.forEach((b) => {
+      b.textContent = teach ? "退出上课模式" : "上课模式";
+      b.setAttribute("aria-pressed", String(teach));
+    });
+  }
+
+  function startSlides(article, item) {
+    article.querySelectorAll("pre").forEach((pre) => {
+      const code = pre.querySelector("code");
+      if (!code || !FOLD.test(code.className)) return;
+      const fold = document.createElement("details");
+      fold.className = "code-fold";
+      fold.innerHTML = "<summary>代码已收起，点开查看</summary>";
+      pre.before(fold);
+      fold.append(pre);
+    });
+    const units = [];
+    for (const n of [...article.children]) {
+      if (n.tagName === "SECTION") for (const c of [...n.children]) units.push({ node: c, box: n });
+      else units.push({ node: n, box: null });
+    }
+    const pages = [[]];
+    let boxHead = null;
+    for (const { node, box } of units) {
+      if (node.tagName === "HR") { node.hidden = true; continue; }
+      if (/^H[23]$/.test(node.tagName)) {
+        if (pages[pages.length - 1].length) pages.push([]);
+        if (node.tagName === "H2") boxHead = box ? node : null;
+        else if (box && boxHead) pages[pages.length - 1].push(boxHead);
+      }
+      pages[pages.length - 1].push(node);
+    }
+    // 开头没有标题的引言太短，并进下一页
+    if (pages.length > 1 && !pages[0].some((n) => /^H[23]$/.test(n.tagName))) pages.splice(0, 2, [...pages[0], ...pages[1]]);
+    const boxes = [...new Set(units.filter((u) => u.box).map((u) => u.box))];
+    slides = { pages, boxes, item, all: units.map((u) => u.node).filter((n) => n.tagName !== "HR") };
+    showSlide(enterAtEnd ? pages.length - 1 : 0);
+    enterAtEnd = false;
+  }
+
+  function showSlide(i) {
+    slides.i = i;
+    const on = new Set(slides.pages[i]);
+    slides.all.forEach((n) => { n.hidden = !on.has(n); });
+    slides.boxes.forEach((b) => { b.hidden = ![...b.children].some((c) => on.has(c)); });
+    window.scrollTo(0, 0);
+    const { item, pages } = slides;
+    const name = byGuide[item.id] ? item.zh : `${item.id.toUpperCase()} ${item.zh}`;
+    $slidebar.innerHTML = `<button type="button" data-go="-1">← 上一页</button>
+      <span class="where">${esc(name)} · ${i + 1} / ${pages.length}</span>
+      <button type="button" data-go="1">下一页 →</button>`;
+    $slidebar.hidden = false;
+  }
+
+  function go(step) {
+    if (!slides) return;
+    const j = slides.i + step;
+    if (j >= 0 && j < slides.pages.length) return showSlide(j);
+    const to = SEQ[SEQ.indexOf(slides.item) + step];
+    if (!to) return;
+    enterAtEnd = step < 0;
+    location.hash = byGuide[to.id] ? `#/${to.id}` : `#/${to.id}/learn`;
+  }
+
+  $teachBtns.forEach((b) => b.addEventListener("click", () => {
+    teach = !teach;
+    localStorage.setItem(TEACH_KEY, teach ? "1" : "0");
+    applyTeach();
+    route();
+  }));
+  $slidebar.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-go]");
+    if (b) go(Number(b.dataset.go));
+  });
+  document.addEventListener("keydown", (e) => {
+    if (!slides || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+    // 焦点在按钮或「展开代码」上时，空格留给它自己
+    if (e.key === " " && /^(BUTTON|SUMMARY|A)$/.test(e.target.tagName)) return;
+    if (["ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); go(1); }
+    else if (["ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); go(-1); }
+  });
+  applyTeach();
 
   // ---------- 启动 ----------
   document.getElementById("menuBtn").addEventListener("click", () => document.body.classList.toggle("nav-open"));

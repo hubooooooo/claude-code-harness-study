@@ -7,7 +7,7 @@
       {
         "steps": [
           {
-            "send": "Create a file called hello.py that prints \"Hello, World!\", then run it to check the output."
+            "send": "新建一个 hello.py，让它打印 \"Hello, World!\"，然后运行它检查输出。"
           }
         ]
       }
@@ -21,7 +21,7 @@
       {
         "steps": [
           {
-            "send": "Create a file called test.py that prints \"hello\", then read it back"
+            "send": "新建一个 test.py，让它打印 \"hello\"，然后把文件内容读回来。"
           }
         ]
       }
@@ -36,10 +36,10 @@
       {
         "steps": [
           {
-            "send": "Create a file called test.txt in the current directory"
+            "send": "在当前目录新建一个 test.txt 文件"
           },
           {
-            "send": "Delete the file test.txt"
+            "send": "删除 test.txt 这个文件"
           }
         ]
       }
@@ -54,10 +54,10 @@
       {
         "steps": [
           {
-            "send": "Read the first 20 lines of README.md"
+            "send": "读取 README.md 的前 20 行"
           },
           {
-            "send": "Delete the file requirements.txt"
+            "send": "删除 requirements.txt 这个文件"
           }
         ]
       }
@@ -71,7 +71,7 @@
       {
         "steps": [
           {
-            "send": "Create s05_todo_write/example/wordcount.py with a count_words(text) function and a small CLI that prints the word count of a file, add tests in s05_todo_write/example/test_wordcount.py, then run only those tests. Keep it small: no need to explore the rest of the repository."
+            "send": "在 s05_todo_write/example/wordcount.py 里写一个 count_words(text) 函数，再加一个简单的命令行入口，打印某个文件的词数；在 s05_todo_write/example/test_wordcount.py 里写测试，然后只运行这几个测试。保持小巧，不需要查看仓库里的其他文件。"
           }
         ]
       }
@@ -85,7 +85,7 @@
       {
         "steps": [
           {
-            "send": "Use a subtask to find what testing framework this project uses"
+            "send": "用一个子任务去查一下这个项目用的是什么测试框架"
           }
         ]
       }
@@ -99,7 +99,7 @@
       {
         "steps": [
           {
-            "send": "Load the code-review skill, then use it to review only the agent_loop function in s01_agent_loop/code.py. Read the file once, do not run any commands, and report at most 3 findings."
+            "send": "加载 code-review 技能，然后只用它审查 s01_agent_loop/code.py 里的 agent_loop 函数。文件只读一次，不要运行任何命令，最多报告 3 条发现。"
           }
         ]
       }
@@ -127,14 +127,14 @@
       {
         "steps": [
           {
-            "send": "By the way, I prefer tabs for indentation in all my code. Quick question: what is 2 + 3?"
+            "send": "顺便说一下，我所有代码都习惯用 Tab 缩进。问个小问题：2 + 3 等于几？"
           }
         ]
       },
       {
         "steps": [
           {
-            "send": "What indentation style do I prefer?"
+            "send": "我习惯用哪种缩进？"
           }
         ]
       }
@@ -148,13 +148,13 @@
       {
         "steps": [
           {
-            "send": "Create tasks: setup database schema, create API endpoints (depends on schema), write tests (depends on endpoints), write docs (depends on schema)"
+            "send": "创建这些任务：设计数据库表结构；创建 API 接口（依赖表结构）；写测试（依赖 API 接口）；写文档（依赖表结构）"
           },
           {
-            "send": "Claim the first unblocked task and complete it"
+            "send": "认领第一个没有被阻塞的任务并完成它"
           },
           {
-            "send": "List tasks again — which ones are now unblocked?"
+            "send": "再列一次任务，现在哪些任务解除阻塞了？"
           }
         ]
       }
@@ -168,13 +168,13 @@
       {
         "steps": [
           {
-            "send": "Run `sleep 3 && echo done` in the background, and meanwhile list all Markdown files in this directory"
+            "send": "在后台运行 `sleep 3 && echo done`，同时列出这个目录下所有的 Markdown 文件"
           },
           {
             "sleep": 5
           },
           {
-            "send": "Did the background command finish? What did it print?"
+            "send": "后台那条命令跑完了吗？它输出了什么？"
           }
         ]
       }
@@ -189,17 +189,17 @@
         "final_timeout": 120,
         "steps": [
           {
-            "send": "Schedule \"run date\" every minute (session only)."
+            "send": "安排一个定时任务：每分钟执行一次「运行 date 命令」，只在本次会话有效。"
           },
           {
             "sleep": 70
           },
           {
-            "send": "List all cron jobs.",
+            "send": "列出所有定时任务。",
             "no_prompt": true
           },
           {
-            "send": "Cancel the cron job you just created."
+            "send": "取消你刚才创建的定时任务。"
           }
         ]
       }
@@ -220,7 +220,7 @@
             "send": "开始吧"
           },
           {
-            "wait_for": "[all teammates shut down]",
+            "wait_for": "[所有队友已关闭]",
             "timeout": 900
           }
         ]

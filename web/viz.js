@@ -808,6 +808,8 @@
   };
 
   window.renderReplay = async function (lesson, panel) {
+    // 有新版（具体任务 + 角色泳道 + 真实代码）的章节先用新版
+    if (window.renderStory && (await window.renderStory(lesson, panel))) return;
     if (!renderViz(lesson.id, panel)) panel.innerHTML = '<p class="loading">这一课的动画还没有做好。</p>';
   };
 })();

@@ -12,21 +12,28 @@
 <header class="topbar">
   <button class="menu-btn" id="menuBtn" aria-label="打开目录">☰</button>
   <a class="topbar-title" href="#/">Agent Harness 课程</a>
+  <button class="teach-toggle" data-teach type="button" aria-pressed="false">上课模式</button>
 </header>
 
 <aside class="sidebar" id="sidebar">
   <a class="brand" href="#/" aria-label="课程首页"><img src="assets/logo.svg" alt="课程 Logo"></a>
   <nav class="toc" id="toc" aria-label="课程目录"></nav>
+  <div class="sidebar-foot"><button class="teach-toggle" data-teach type="button" aria-pressed="false">上课模式</button></div>
 </aside>
 <div class="scrim" id="scrim"></div>
 
 <main class="main" id="main" tabindex="-1"></main>
+
+<!-- 上课模式的底部翻页条；开关在侧栏底部和顶栏右侧 -->
+<nav class="slidebar" id="slidebar" aria-label="上课翻页" hidden></nav>
 
 <script src="vendor/marked.min.js"></script>
 <script src="vendor/highlight.min.js"></script>
 <script src="vendor/diff.min.js"></script>
 <script src="lessons.js"></script>
 <script src="trace-view.js"></script>
+<script src="chat.js"></script>
+<script src="story.js"></script>
 <script src="viz.js"></script>
 <script src="live.js"></script>
 <script src="app.js"></script>
