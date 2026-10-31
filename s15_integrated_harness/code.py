@@ -379,7 +379,7 @@ def claim_task(task_id: str, owner: str = "agent") -> str:
         save_task(task)
         teammate_assignments[owner] = {"task_id": task.id, "cwd": cwd}
         advance_assignment_version(owner)
-    print(f"  \033[36m[claim] {task.subject} -> in_progress (owner: {owner})\033[0m")
+    print(f"  \033[36m[认领] {task.subject} -> 进行中（负责人：{owner}）\033[0m")
     return f"Claimed {task.id} ({task.subject})"
 
 
@@ -405,11 +405,11 @@ def complete_task(task_id: str, owner: str = "agent") -> str:
         save_task(task)
         unblocked = [t.subject for t in list_tasks()
                      if t.status == "pending" and t.blockedBy and can_start(t.id)]
-    print(f"  \033[32m[complete] {task.subject}\033[0m")
+    print(f"  \033[32m[完成] {task.subject}\033[0m")
     msg = f"Completed {task.id} ({task.subject})"
     if unblocked:
         msg += f"\nUnblocked: {', '.join(unblocked)}"
-        print(f"  \033[33m[unblocked] {', '.join(unblocked)}\033[0m")
+        print(f"  \033[33m[解除阻塞] {', '.join(unblocked)}\033[0m")
     return msg
 
 
@@ -452,7 +452,7 @@ def _run_git(args: list[str], cwd: Path | None = None) -> tuple[bool, str]:
     except (OSError, subprocess.TimeoutExpired) as exc:
         return False, f"{type(exc).__name__}: {exc}"
     output = (result.stdout + result.stderr).strip()
-    return result.returncode == 0, output or "(no output)"
+    return result.returncode == 0, output or "(没有输出)"
 
 
 def run_git(args: list[str], cwd: Path | None = None) -> tuple[bool, str]:
@@ -636,7 +636,7 @@ def create_worktree(name: str, task_id: str) -> str:
                     f"{path} on branch '{branch}', but task binding failed: "
                     f"{exc}. Git data was retained for manual recovery.")
 
-    print(f"  \033[33m[worktree] created: {name} at {path}\033[0m")
+    print(f"  \033[33m[工作树] 已创建：{name}，位于 {path}\033[0m")
     return f"Worktree '{name}' created at {path} for task {task_id}"
 
 
@@ -675,7 +675,7 @@ def remove_worktree(name: str, discard_changes: bool = False) -> str:
         )
         if not ok:
             return f"Error: Cannot verify worktree '{name}' status: {status}"
-        if status != "(no output)" and not discard_changes:
+        if status != "(没有输出)" and not discard_changes:
             changed = len([line for line in status.splitlines() if line.strip()])
             return (f"Error: Worktree '{name}' has {changed} uncommitted "
                     "change(s); preserve or discard them manually")
@@ -697,7 +697,7 @@ def remove_worktree(name: str, discard_changes: bool = False) -> str:
                     f"branch '{_worktree_branch(name)}' retained, but task "
                     f"unbinding failed: {exc}. Manual recovery is required.")
 
-    print(f"  \033[33m[worktree] removed: {name}; branch retained\033[0m")
+    print(f"  \033[33m[工作树] 已移除：{name}，分支保留\033[0m")
     return f"Worktree '{name}' removed; branch '{_worktree_branch(name)}' retained"
 
 
@@ -780,7 +780,7 @@ def load_skill(name: str) -> str:
 # -- Prompt Assembly --
 
 PROMPT_SECTIONS = {
-    "identity": "You are a coding agent. Act, don't explain.",
+    "identity": "You are a coding agent. Act, don't explain. Always answer in Chinese.",
     "tools": "Available tools: bash, read_file, write_file, edit_file, glob, "
              "todo_write, task, load_skill, compact, "
              "create_task, update_task, list_tasks, get_task, claim_task, "
@@ -854,7 +854,7 @@ def safe_path(path: str, cwd: Path | None = None) -> Path:
     base = (cwd or WORKDIR).resolve()
     resolved = (base / path).resolve()
     if not resolved.is_relative_to(base):
-        raise ValueError(f"Path escapes workspace: {path}")
+        raise ValueError(f"路径超出工作区：{path}")
     return resolved
 
 
@@ -902,9 +902,9 @@ def _run_bash_process(command: str, cwd: Path | None = None) -> tuple[str, int |
             _shell_processes.add(process)
         stdout, stderr = process.communicate(timeout=120)
         out = (stdout + stderr).strip()
-        return (out[:50000] if out else "(no output)"), process.returncode
+        return (out[:50000] if out else "(没有输出)"), process.returncode
     except subprocess.TimeoutExpired:
-        return "Error: Timeout (120s)", None
+        return "错误：超时（120 秒）", None
     except OSError as exc:
         return f"Error: {type(exc).__name__}: {exc}", None
     finally:
@@ -952,7 +952,7 @@ def run_write(path: str, content: str, cwd: Path | None = None) -> str:
         fp = safe_path(path, cwd)
         fp.parent.mkdir(parents=True, exist_ok=True)
         fp.write_text(content)
-        return f"Wrote {len(content)} bytes to {path}"
+        return f"已写入（{len(content)} 字节）：{path}"
     except Exception as e:
         return f"Error: {e}"
 
@@ -963,9 +963,9 @@ def run_edit(path: str, old_text: str, new_text: str,
         fp = safe_path(path, cwd)
         text = fp.read_text()
         if old_text not in text:
-            return f"Error: text not found in {path}"
+            return f"错误：在 {path} 里找不到要替换的文字"
         fp.write_text(text.replace(old_text, new_text, 1))
-        return f"Edited {path}"
+        return f"已修改 {path}"
     except Exception as e:
         return f"Error: {e}"
 
@@ -978,7 +978,7 @@ def run_glob(pattern: str, cwd: Path | None = None) -> str:
         for match in base.glob(pattern):
             if match.resolve().is_relative_to(base):
                 results.append(str(match.relative_to(base)))
-        return "\n".join(results) if results else "(no matches)"
+        return "\n".join(results) if results else "(没有匹配的文件)"
     except Exception as e:
         return f"Error: {e}"
 
@@ -1051,7 +1051,7 @@ def run_todo_write(todos: list) -> str:
     if error:
         return error
     CURRENT_TODOS = todos
-    print(f"  \033[33m[todo] updated {len(CURRENT_TODOS)} item(s)\033[0m")
+    print(f"  \033[33m[待办] 已更新 {len(CURRENT_TODOS)} 项\033[0m")
     return f"Updated {len(CURRENT_TODOS)} todos"
 
 
@@ -1099,7 +1099,7 @@ class MessageBus:
             with self._path(to_agent).open("a", encoding="utf-8") as handle:
                 handle.write(json.dumps(msg, ensure_ascii=True) + "\n")
             self._changed.notify_all()
-        print(f"  \033[33m[bus] {from_agent} -> {to_agent}: "
+        print(f"  \033[33m[消息] {from_agent} -> {to_agent}："
               f"({msg_type}) {content[:50]}\033[0m")
 
     def read_inbox(self, agent: str) -> list[dict]:
@@ -1160,25 +1160,25 @@ def match_response(response_type: str, request_id: str, approve: bool,
     with team_lock:
         state = pending_requests.get(request_id)
         if not state:
-            print(f"  \033[31m[protocol] unknown request_id: {request_id}\033[0m")
+            print(f"  \033[31m[协议] 未知的请求编号：{request_id}\033[0m")
             return False
         expected = {
             "shutdown": "shutdown_response",
             "plan_approval": "plan_approval_response",
         }[state.type]
         if response_type != expected:
-            print(f"  \033[31m[protocol] expected {expected}, "
-                  f"got {response_type}\033[0m")
+            print(f"  \033[31m[协议] 期望 {expected}，"
+                  f"收到 {response_type}\033[0m")
             return False
         if from_agent != state.target or to_agent != state.sender:
-            print(f"  \033[31m[protocol] {request_id} responder mismatch\033[0m")
+            print(f"  \033[31m[协议] {request_id} 回应者不匹配\033[0m")
             return False
         if state.status != "pending":
             return False
         state.status = "approved" if approve else "rejected"
-    icon = "approved" if approve else "rejected"
+    icon = "已批准" if approve else "已拒绝"
     color = "32" if approve else "31"
-    print(f"  \033[{color}m[protocol] {state.type} {icon} "
+    print(f"  \033[{color}m[协议] {state.type} {icon} "
           f"({request_id}: {state.status})\033[0m")
     return True
 
@@ -1383,7 +1383,7 @@ def spawn_teammate_thread(name: str, role: str, prompt: str,
             BUS.send(name, "lead", "Shutting down gracefully.",
                      "shutdown_response",
                      {"request_id": req_id, "approve": True})
-            print(f"  \033[35m[protocol] {name} approved shutdown "
+            print(f"  \033[35m[协议] {name} 同意关闭 "
                   f"({req_id})\033[0m")
             return True
 
@@ -1605,7 +1605,7 @@ def spawn_teammate_thread(name: str, role: str, prompt: str,
                         f"Work directory: {workdir}"
                     ),
                 })
-                print(f"  \033[32m[idle] {name} claimed "
+                print(f"  \033[32m[空闲] {name} 认领了 "
                       f"{task.id}: {task.subject}\033[0m")
                 break
 
@@ -1633,10 +1633,10 @@ def spawn_teammate_thread(name: str, role: str, prompt: str,
                 active_teammates.pop(name, None)
                 plan_gates.pop(name, None)
                 plan_request_ids.pop(name, None)
-            print(f"  \033[32m[teammate] {name} finished\033[0m")
+            print(f"  \033[32m[队友] {name} 已结束\033[0m")
 
     threading.Thread(target=run, daemon=True).start()
-    print(f"  \033[36m[teammate] {name} spawned as {role}\033[0m")
+    print(f"  \033[36m[队友] {name} 已启动，角色：{role}\033[0m")
     assigned = f" for {task_id}" if task_id else " without an initial Task"
     return (
         f"Teammate '{name}' spawned as {role}{assigned}. "
@@ -1681,7 +1681,7 @@ def run_request_shutdown(teammate: str) -> str:
     BUS.send("lead", teammate, "Finish the current step and shut down.",
              "shutdown_request",
              {"request_id": req_id})
-    print(f"  \033[35m[protocol] shutdown_request -> {teammate} "
+    print(f"  \033[35m[协议] 关闭请求 -> {teammate} "
           f"({req_id})\033[0m")
     return f"Shutdown requested from {teammate} ({req_id})"
 
@@ -1719,8 +1719,8 @@ def run_review_plan(request_id: str, approve: bool,
     BUS.send("lead", state.sender, content,
              "plan_approval_response",
              {"request_id": request_id, "approve": approve})
-    icon = "approved" if approve else "rejected"
-    print(f"  \033[32m[protocol] plan {icon} ({request_id})\033[0m")
+    icon = "已批准" if approve else "已拒绝"
+    print(f"  \033[32m[协议] 计划{icon}（{request_id}）\033[0m")
     return f"Plan {state.status} ({request_id})"
 
 
@@ -1754,50 +1754,50 @@ def permission_hook(block):
     if block.name == "bash":
         command = block.input.get("command", "")
         if not isinstance(command, str):
-            return "Permission denied: shell command must be a string"
+            return "权限被拒绝：命令必须是字符串"
         for pattern in DENY_LIST:
             if pattern in command:
-                return f"Permission denied: '{pattern}' is on the deny list"
+                return f"权限被拒绝：'{pattern}' 在黑名单里"
         if threading.current_thread() is not threading.main_thread():
             return ("Permission denied: interactive shell approval is unavailable "
                     "during an asynchronous turn")
-        terminal_print("\n\033[33m[permission] shell command\033[0m")
+        terminal_print("\n\033[33m[权限] 要执行命令\033[0m")
         terminal_print(f"  {command}")
-        choice = CONSOLE.ask("  Allow? [y/N] ").strip().lower()
+        choice = CONSOLE.ask("  允许执行吗？[y/N] ").strip().lower()
         if choice not in ("y", "yes"):
-            return "Permission denied by user"
+            return "权限被拒绝：用户不允许"
     if block.name in ("read_file", "write_file", "edit_file"):
         path = block.input.get("path", "")
         if not isinstance(path, str):
-            return "Permission denied: path must be a string"
+            return "权限被拒绝：路径必须是字符串"
         if not (WORKDIR / path).resolve().is_relative_to(WORKDIR):
-            return "Permission denied: path is outside the workspace"
+            return "权限被拒绝：路径在工作区以外"
     if (block.name.startswith("mcp__")
             and mcp_tool_policies.get(block.name, "confirm") != "allow"):
         if threading.current_thread() is not threading.main_thread():
             return ("Permission denied: interactive MCP approval is unavailable "
                     "during an asynchronous turn")
-        terminal_print(f"\n\033[33m[permission] MCP tool: {block.name}\033[0m")
-        choice = CONSOLE.ask("  Allow? [y/N] ").strip().lower()
+        terminal_print(f"\n\033[33m[权限] MCP 工具：{block.name}\033[0m")
+        choice = CONSOLE.ask("  允许执行吗？[y/N] ").strip().lower()
         if choice not in ("y", "yes"):
-            return "Permission denied by user"
+            return "权限被拒绝：用户不允许"
     return None
 
 
 def log_hook(block):
-    print(f"\033[90m[HOOK] {block.name}\033[0m")
+    print(f"\033[90m[钩子] {block.name}\033[0m")
     return None
 
 
 def large_output_hook(block, output):
     if len(str(output)) > 100000:
-        print(f"\033[33m[HOOK] large output from {block.name}: "
-              f"{len(str(output))} chars\033[0m")
+        print(f"\033[33m[钩子] 输出很长，来自 {block.name}: "
+              f"{len(str(output))} 个字符\033[0m")
     return None
 
 
 def user_prompt_hook(query: str):
-    print(f"\033[90m[HOOK] UserPromptSubmit: {WORKDIR}\033[0m")
+    print(f"\033[90m[钩子] UserPromptSubmit：{WORKDIR}\033[0m")
     return None
 
 
@@ -1809,7 +1809,7 @@ def stop_hook(messages: list):
             tool_count += sum(1 for item in content
                               if isinstance(item, dict)
                               and item.get("type") == "tool_result")
-    print(f"\033[90m[HOOK] Stop: {tool_count} tool result(s)\033[0m")
+    print(f"\033[90m[钩子] Stop：{tool_count} 条工具结果\033[0m")
     return None
 
 
@@ -1826,6 +1826,7 @@ SUB_SYSTEM = (
     f"You are a coding subagent at {WORKDIR}. "
     "Complete the task, then return a concise final summary. "
     "Do not spawn more agents."
+    " Always answer in Chinese."
 )
 
 
@@ -2065,7 +2066,7 @@ def summarize_history(messages: list) -> str:
 
 def compact_history(messages: list, active_request: str) -> list:
     transcript = write_transcript(messages)
-    print(f"  \033[36m[compact] transcript saved: {transcript}\033[0m")
+    print(f"  \033[36m[压缩] 对话记录已存到 {transcript}\033[0m")
     summary = summarize_history(messages)
     request = str(active_request)
     reference = json.dumps(summary, ensure_ascii=False)
@@ -2077,7 +2078,7 @@ def compact_history(messages: list, active_request: str) -> list:
 
 def reactive_compact(messages: list, active_request: str) -> list:
     transcript = write_transcript(messages)
-    print(f"  \033[31m[reactive compact] transcript saved: {transcript}\033[0m")
+    print(f"  \033[31m[补救压缩] 对话记录已存到 {transcript}\033[0m")
     tail_start = max(0, len(messages) - 5)
     if (tail_start > 0 and tail_start < len(messages)
             and is_tool_result_message(messages[tail_start])
@@ -2123,8 +2124,8 @@ def with_retry(fn, state: RecoveryState):
             msg = str(e).lower()
             if "ratelimit" in name or "429" in msg:
                 delay = retry_delay(attempt)
-                print(f"  \033[33m[429] retry {attempt + 1}/{MAX_RETRIES} "
-                      f"after {delay:.1f}s\033[0m")
+                print(f"  \033[33m[429] 第 {attempt + 1}/{MAX_RETRIES} 次重试，"
+                      f"等 {delay:.1f} 秒\033[0m")
                 time.sleep(delay)
                 continue
             if "overloaded" in name or "529" in msg or "overloaded" in msg:
@@ -2132,10 +2133,10 @@ def with_retry(fn, state: RecoveryState):
                 if state.consecutive_529 >= MAX_CONSECUTIVE_529 and FALLBACK_MODEL:
                     state.current_model = FALLBACK_MODEL
                     state.consecutive_529 = 0
-                    print(f"  \033[31m[529] switching to {FALLBACK_MODEL}\033[0m")
+                    print(f"  \033[31m[529] 切换到备用模型 {FALLBACK_MODEL}\033[0m")
                 delay = retry_delay(attempt)
-                print(f"  \033[33m[529] retry {attempt + 1}/{MAX_RETRIES} "
-                      f"after {delay:.1f}s\033[0m")
+                print(f"  \033[33m[529] 第 {attempt + 1}/{MAX_RETRIES} 次重试，"
+                      f"等 {delay:.1f} 秒\033[0m")
                 time.sleep(delay)
                 continue
             raise
@@ -2214,7 +2215,7 @@ def start_background_task(block, handlers: dict) -> str:
             background_tasks.pop(bg_id, None)
             background_results.pop(bg_id, None)
         raise
-    print(f"  \033[33m[background] {bg_id}: {str(command)[:60]}\033[0m")
+    print(f"  \033[33m[后台] {bg_id}：{str(command)[:60]}\033[0m")
     return bg_id
 
 
@@ -2428,7 +2429,7 @@ def cron_scheduler_loop():
                         _enqueue_due_job(job)
                         _last_fired[job.id] = marker
                 except Exception as e:
-                    print(f"  \033[31m[cron error] {job.id}: {e}\033[0m")
+                    print(f"  \033[31m[定时出错] {job.id}：{e}\033[0m")
 
 
 def consume_cron_queue() -> list[CronJob]:
@@ -2617,7 +2618,7 @@ def connect_mcp(name: str) -> str:
     mcp_client = factory()
     mcp_clients[name] = mcp_client
     tool_names = [tool["name"] for tool in mcp_client.tools]
-    print(f"  \033[31m[mcp] connected: {name} -> {tool_names}\033[0m")
+    print(f"  \033[31m[MCP] 已连接 {name} -> {tool_names}\033[0m")
     return (f"Connected to MCP server '{name}'. "
             f"Discovered {len(mcp_client.tools)} tools: {', '.join(tool_names)}")
 
@@ -2675,7 +2676,7 @@ def run_create_worktree(name: str, task_id: str) -> str:
 
 def run_create_task(subject: str, description: str = "") -> str:
     task = create_task(subject, description)
-    print(f"  \033[34m[create] {task.subject}\033[0m")
+    print(f"  \033[34m[新建任务] {task.subject}\033[0m")
     return f"Created {task.id}: {task.subject}"
 
 
@@ -2687,7 +2688,7 @@ def run_update_task(task_id: str, addBlockedBy: list[str]) -> str:
     except FileNotFoundError:
         return f"Error: Task {task_id} not found"
     dependencies = ", ".join(task.blockedBy) or "(none)"
-    print(f"  \033[34m[update] {task.subject} blockedBy: {dependencies}\033[0m")
+    print(f"  \033[34m[更新任务] {task.subject} 依赖：{dependencies}\033[0m")
     return f"Updated {task.id} blockedBy: {dependencies}"
 
 
@@ -3018,7 +3019,7 @@ def agent_loop(messages: list, context: dict, active_request: str):
         for job in fired:
             messages.append({"role": "user",
                              "content": f"[Scheduled] {job.prompt}"})
-            print(f"  \033[35m[cron inject] {job.prompt[:60]}\033[0m")
+            print(f"  \033[35m[定时注入] {job.prompt[:60]}\033[0m")
         if fired:
             scheduled_requests = "\n".join(
                 f"Run scheduled task: {job.prompt}" for job in fired)
@@ -3055,7 +3056,7 @@ def agent_loop(messages: list, context: dict, active_request: str):
             if not state.has_escalated:
                 max_tokens = ESCALATED_MAX_TOKENS
                 state.has_escalated = True
-                print(f"  \033[33m[max_tokens] retry with {max_tokens}\033[0m")
+                print(f"  \033[33m[max_tokens] 放大到 {max_tokens} 重试\033[0m")
                 continue
             messages.append({"role": "assistant", "content": response.content})
             if state.recovery_count < MAX_RECOVERY_RETRIES:
@@ -3151,12 +3152,12 @@ def async_event_loop(history: list, context: dict, session_state: dict):
             for job in fired:
                 scheduled_requests.append(f"Run scheduled task: {job.prompt}")
                 terminal_print(
-                    f"  \033[35m[cron auto] {job.prompt[:60]}\033[0m")
+                    f"  \033[35m[定时触发] {job.prompt[:60]}\033[0m")
             if inbox:
                 history.append({"role": "user",
                                 "content": format_team_events(inbox)})
                 terminal_print(
-                    f"  \033[33m[team auto] {len(inbox)} events\033[0m")
+                    f"  \033[33m[团队事件] {len(inbox)} 条\033[0m")
             active_request = (
                 "\n".join(scheduled_requests)
                 if scheduled_requests
@@ -3170,8 +3171,8 @@ def async_event_loop(history: list, context: dict, session_state: dict):
 if __name__ == "__main__":
     CLI_ACTIVE = True
     start_runtime_services()
-    print("s15: integrated harness")
-    print("Enter a question, press Enter to send. Type q to quit.\n")
+    print("s15：Harness 集成")
+    print("输入任务后按回车发送，输入 q 退出。\n")
     history = []
     context = update_context({}, [])
     session_state = {"active_user_request": "(no active user request)"}

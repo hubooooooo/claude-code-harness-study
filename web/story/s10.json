@@ -1,0 +1,183 @@
+{
+  "title": "任务系统：任务是磁盘上的文件，有依赖、有状态，开不开工由程序说了算",
+  "file": "s10_task_system/code.py",
+  "task": "把「上线会员积分」拆成三个任务：设计表结构、写接口、写测试。接口依赖表结构，测试依赖接口。然后认领第一个能开工的任务并完成它",
+  "steps": [
+    {
+      "title": "这一章改了什么：待办从内存搬到磁盘，而且带依赖",
+      "desc": "s05 的待办清单只在内存里，程序一关就没了，条目之间也没有先后关系。s10 把每个任务写成 .tasks/ 目录下的一个 JSON 文件，里面有状态（待办、进行中、已完成）、负责人、还有 blockedBy：这个任务要等哪些任务先完成。",
+      "code": {
+        "fn": "Task 和 TaskStore",
+        "lines": [
+          "TASKS_DIR = WORKDIR / \".tasks\"",
+          "class Task:",
+          "status: str",
+          "owner: str | None",
+          "blockedBy: list[str]"
+        ],
+        "hi": [0, 4],
+        "note": "换个进程、换个 Agent 也能接着干，这是 s13 多 Agent 团队的基础。"
+      }
+    },
+    {
+      "title": "系统提示教模型用法：先建任务，再用程序给的 ID 加依赖",
+      "desc": "工具清单多了六个任务工具。系统提示里规定了顺序：先把所有任务建出来，拿到程序生成的 ID，再用这些 ID 加依赖。ID 由程序随机生成，模型不能自己编。",
+      "code": {
+        "fn": "SYSTEM",
+        "lines": [
+          "\"Use task tools to track dependencies and progress. Create all task nodes \"",
+          "\"first. After create_task returns runtime-generated IDs, use update_task \"",
+          "\"with those exact IDs to add dependencies.\""
+        ],
+        "hi": [1]
+      }
+    },
+    {
+      "title": "你输入任务",
+      "desc": "这个任务的重点不是写代码，而是把三件事和它们的先后关系登记下来。",
+      "code": {
+        "fn": "程序入口",
+        "lines": [
+          "history.append({\"role\": \"user\", \"content\": query})",
+          "agent_loop(history)"
+        ]
+      },
+      "add": [
+        ["user", "把「上线会员积分」拆成三个任务：设计表结构、写接口、写测试。接口依赖表结构，测试依赖接口"]
+      ]
+    },
+    {
+      "title": "第 1 圈：模型建三个任务，程序给每个分配 ID 并写文件",
+      "round": 1,
+      "desc": "模型一次调用三个 create_task。程序这边每建一个任务，就生成一个随机 ID，状态设为 pending，写成一个 JSON 文件。终端打印三行「[创建]」。ID 作为工具结果回到记录本，模型下一步要靠它们。",
+      "code": {
+        "fn": "TaskStore.create()",
+        "lines": [
+          "id=f\"task_{secrets.token_hex(4)}\",",
+          "status=\"pending\",",
+          "owner=None,",
+          "blockedBy=[],",
+          "json.dump(asdict(task), handle, indent=2)"
+        ],
+        "hi": [0, 1, 4]
+      },
+      "add": [
+        ["assistant", "请执行 create_task：设计表结构 ／ 写接口 ／ 写测试"],
+        ["tool", "Created task_a1b2c3d4: 设计表结构　Created task_e5f6a7b8: 写接口　Created task_11223344: 写测试"]
+      ]
+    },
+    {
+      "title": "第 2 圈：模型用 ID 加依赖，程序检查依赖合不合理",
+      "round": 2,
+      "desc": "模型调用 update_task：写接口依赖 task_a1b2c3d4，写测试依赖 task_e5f6a7b8。程序不是照单全收，而是逐条检查：不能依赖自己、被依赖的任务必须存在、不能绕成一个圈（A 等 B，B 又等 A）。检查通过才写进文件。",
+      "code": {
+        "fn": "TaskStore.update_dependencies()",
+        "lines": [
+          "if dependency == task_id:",
+          "raise ValueError(\"Task cannot depend on itself\")",
+          "if not self.exists(dependency):",
+          "f\"Dependency cycle detected: {task_id} -> {dependency}\"",
+          "self.save(task)"
+        ],
+        "hi": [0, 2, 3],
+        "note": "依赖关系错了，整条流水线都会卡住。所以这三条检查由程序硬性把关，不信任模型。"
+      },
+      "add": [
+        ["assistant", "请执行 update_task：task_e5f6a7b8 依赖 task_a1b2c3d4 ／ task_11223344 依赖 task_e5f6a7b8"],
+        ["tool", "Updated task_e5f6a7b8 blockedBy: task_a1b2c3d4　Updated task_11223344 blockedBy: task_e5f6a7b8"]
+      ]
+    },
+    {
+      "title": "第 3 圈：模型要认领任务，程序先看依赖完成了没有",
+      "round": 3,
+      "desc": "模型调用 claim_task 认领。程序检查两件事：任务必须还是 pending；它依赖的任务必须都已完成。「写接口」依赖的表结构还没做，认领会被拒绝并返回「Blocked by」。只有「设计表结构」没有依赖，能认领。认领成功后状态变成 in_progress，负责人记为 agent。",
+      "code": {
+        "fn": "claim_task()",
+        "lines": [
+          "if task.status != \"pending\":",
+          "dependencies = incomplete_dependencies(task)",
+          "if dependencies:",
+          "return f\"Blocked by: {dependencies}\"",
+          "task.owner = owner",
+          "task.status = \"in_progress\""
+        ],
+        "hi": [1, 3, 5],
+        "note": "「能不能开工」不是模型判断的，是程序查文件算出来的。"
+      },
+      "add": [
+        ["assistant", "请执行 claim_task：task_a1b2c3d4"],
+        ["tool", "Claimed task_a1b2c3d4 (设计表结构)"]
+      ]
+    },
+    {
+      "title": "第 4 圈：模型干活",
+      "round": 4,
+      "desc": "认领之后，模型用普通工具做事：写一份表结构文件。这一步和前几章没有区别。",
+      "code": {
+        "fn": "agent_loop() 和 execute_tool()",
+        "lines": [
+          "output = execute_tool(block)",
+          "handler = TOOL_HANDLERS.get(block.name)"
+        ]
+      },
+      "add": [
+        ["assistant", "请执行 write_file：schema.sql"],
+        ["tool", "已写入（240 字节）：schema.sql"]
+      ]
+    },
+    {
+      "title": "第 5 圈：模型标记完成，程序顺手算出哪些任务被解锁了",
+      "round": 5,
+      "desc": "模型调用 complete_task。程序检查：状态必须是 in_progress，而且负责人必须是自己，别人认领的不能替他完成。然后把状态改成 completed，再扫一遍所有任务，看看哪些原来被挡着、现在可以开工了。「写接口」解锁了。终端打印「[完成]」和「[解除阻塞] 写接口」。",
+      "code": {
+        "fn": "complete_task()",
+        "lines": [
+          "if task.status != \"in_progress\":",
+          "if task.owner != owner:",
+          "task.status = \"completed\"",
+          "unblocked = [candidate.subject for candidate in list_tasks()",
+          "message += f\"\\nUnblocked: {', '.join(unblocked)}\""
+        ],
+        "hi": [1, 2, 3]
+      },
+      "add": [
+        ["assistant", "请执行 complete_task：task_a1b2c3d4"],
+        ["tool", "Completed task_a1b2c3d4 (设计表结构)　Unblocked: 写接口"]
+      ]
+    },
+    {
+      "title": "第 6 圈：模型列一遍任务，看现在的全貌",
+      "round": 6,
+      "desc": "模型调用 list_tasks。程序读出 .tasks/ 下所有文件，每个任务一行：状态标记、ID、名字、负责人、依赖。一眼能看到：表结构完成了，接口可以开工，测试还在等接口。",
+      "code": {
+        "fn": "run_list_tasks()",
+        "lines": [
+          "\"pending\": \"[ ]\",",
+          "\"in_progress\": \"[>]\",",
+          "\"completed\": \"[x]\",",
+          "f\" (blockedBy: {', '.join(task.blockedBy)})\""
+        ]
+      },
+      "add": [
+        ["assistant", "请执行 list_tasks"],
+        ["tool", "[x] task_a1b2c3d4: 设计表结构 [completed] [agent]　[ ] task_e5f6a7b8: 写接口 [pending] (blockedBy: task_a1b2c3d4)　[ ] task_11223344: 写测试 [pending] (blockedBy: task_e5f6a7b8)"]
+      ]
+    },
+    {
+      "title": "第 7 圈：模型回答，循环结束",
+      "round": 7,
+      "desc": "模型汇报结果，不再要工具，循环结束。回头看这一章：任务的状态只能沿着 pending、in_progress、completed 单向走，每一步切换都由程序检查依赖和负责人。任务文件留在磁盘上，下次打开程序、甚至换一个 Agent 来，都能接着做。和 s05 的区别就在这两点：有依赖、能持久。",
+      "code": {
+        "fn": "文件开头的说明",
+        "lines": [
+          "pending --claim_task--> in_progress --complete_task--> completed",
+          "can_start(API) is true because schema is completed."
+        ],
+        "note": "产品经理要拍板的：任务拆到多细、谁有权认领、完成的标准是什么。"
+      },
+      "add": [
+        ["assistant", "三个任务已建好并登记了依赖。「设计表结构」已完成，「写接口」现在可以开工，「写测试」还在等接口。"]
+      ]
+    }
+  ]
+}

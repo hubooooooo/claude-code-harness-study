@@ -1,0 +1,172 @@
+{
+  "title": "Agent 循环：模型说要用工具，程序就去执行，直到模型说做完了",
+  "file": "s01_agent_loop/code.py",
+  "task": "看看这个文件夹里有什么，里面的 Python 文件是干什么的？",
+  "steps": [
+    {
+      "title": "你输入一句话",
+      "desc": "你在终端里输入问题。程序先把这句话记进一个叫 messages 的列表，这个列表就是模型的「记录本」，然后启动 agent_loop，也就是那个循环。",
+      "code": {
+        "fn": "程序入口",
+        "lines": [
+          "history.append({\"role\": \"user\", \"content\": query})",
+          "agent_loop(history)"
+        ],
+        "note": "把你的话放进记录本，然后进入循环。"
+      },
+      "add": [
+        [
+          "user",
+          "看看这个文件夹里有什么……"
+        ]
+      ]
+    },
+    {
+      "title": "第 1 圈：调用模型",
+      "round": 1,
+      "desc": "程序把整本记录本，连同一份「工具清单」（这一章只有 bash 一个工具：执行命令）一起发给模型。模型读完后，在同一次调用里自己判断：要回答这个问题，得先知道有哪些文件，而手里的 bash 可以执行 ls 命令。于是它不直接回答，而是回复「请帮我执行 ls」。注意：没有单独的「意图识别」程序，理解意思和选工具都是模型在这一次调用里完成的。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "while True:",
+          "response = client.messages.create(",
+          "model=MODEL, system=SYSTEM, messages=messages,",
+          "tools=TOOLS, max_tokens=8000,",
+          ")",
+          "messages.append({\"role\": \"assistant\", \"content\": response.content})"
+        ],
+        "hi": [
+          1,
+          2,
+          3
+        ],
+        "note": "调用一次模型：把记录本 messages 和工具清单 TOOLS 一起发过去。模型的回复也记进记录本。"
+      },
+      "add": [
+        [
+          "assistant",
+          "请执行 bash：ls"
+        ]
+      ]
+    },
+    {
+      "title": "程序检查：回复里有工具调用吗？",
+      "desc": "程序检查模型的回复。里面有工具调用，说明活还没干完，循环继续往下走。如果没有，程序就会退出循环。整个 Agent 什么时候停，就看这一个判断。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "tool_calls = [",
+          "block for block in response.content if block.type == \"tool_use\"",
+          "]",
+          "if not tool_calls:",
+          "return"
+        ],
+        "hi": [
+          0,
+          1,
+          2
+        ],
+        "note": "从回复里挑出工具调用。一个都没有，就 return 结束循环。"
+      }
+    },
+    {
+      "title": "程序执行命令，拿到结果",
+      "desc": "真正动手的是程序，不是模型。程序在你的电脑上运行 ls，拿到输出，把它包装成一条「工具结果」，准备交回给模型。",
+      "code": {
+        "fn": "agent_loop() 和 run_bash()",
+        "lines": [
+          "output = run_bash(block.input[\"command\"])",
+          "r = subprocess.run(command, shell=True, cwd=os.getcwd(),",
+          "results.append({",
+          "\"type\": \"tool_result\",",
+          "\"tool_use_id\": block.id,",
+          "\"content\": output,"
+        ],
+        "hi": [
+          0,
+          1
+        ],
+        "note": "run_bash 用 subprocess 在电脑上执行命令；输出包装成 tool_result。"
+      }
+    },
+    {
+      "title": "第 2 圈：带着结果再问模型",
+      "round": 2,
+      "desc": "这就是「循环」：程序把执行结果追加进记录本，再调用一次模型。模型看到文件夹里有个 hello.py，决定再读一下它的内容。下一步做什么取决于上一步看到了什么，这正是需要 Agent 的原因。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "messages.append({\"role\": \"user\", \"content\": results})",
+          "while True:",
+          "response = client.messages.create("
+        ],
+        "hi": [
+          0
+        ],
+        "note": "结果写回记录本，回到 while True 的开头，再调用一次模型。"
+      },
+      "add": [
+        [
+          "tool",
+          "hello.py　notes.txt　data/"
+        ],
+        [
+          "assistant",
+          "请执行 bash：cat hello.py"
+        ]
+      ]
+    },
+    {
+      "title": "再执行一次命令",
+      "desc": "和上一圈一样：程序检查到有工具调用，就去电脑上执行 cat hello.py，拿到文件内容。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "output = run_bash(block.input[\"command\"])"
+        ],
+        "note": "同一段代码，这次执行的是另一条命令。"
+      }
+    },
+    {
+      "title": "第 3 圈：模型直接回答",
+      "round": 3,
+      "desc": "程序第三次调用模型。这次模型手里的信息已经够了，它直接写出回答，不再要求用工具。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "response = client.messages.create("
+        ],
+        "note": "还是同一次调用，只是这次模型选择直接回答。"
+      },
+      "add": [
+        [
+          "tool",
+          "print(\"Hello, World!\")"
+        ],
+        [
+          "assistant",
+          "文件夹里有 3 样东西，hello.py 会打印……"
+        ]
+      ]
+    },
+    {
+      "title": "没有工具调用，循环结束",
+      "desc": "程序检查回复：没有工具调用了，于是退出循环，把模型的回答显示给你。整个 Agent 就是这样一圈一圈转出来的：调用模型 → 有工具调用就执行 → 结果交回去 → 再调用模型，直到模型不再要工具。",
+      "code": {
+        "fn": "agent_loop() 和程序入口",
+        "lines": [
+          "if not tool_calls:",
+          "return",
+          "for block in response_content:",
+          "if getattr(block, \"type\", None) == \"text\":",
+          "print(block.text)"
+        ],
+        "hi": [
+          0,
+          1
+        ],
+        "note": "没有工具调用就 return；入口处把模型的文字回答打印出来。"
+      }
+    }
+  ]
+}

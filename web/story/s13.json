@@ -1,0 +1,190 @@
+{
+  "title": "Agent 团队：一个主控分任务，几个队友各跑各的循环，靠任务板和信箱协作",
+  "file": "s13_agent_teams/code.py",
+  "task": "做一个统计文章字数的小工具：配置、核心实现、测试三个文件，能并行就并行",
+  "steps": [
+    {
+      "title": "这一章改了什么：从一个 Agent 变成一支队伍",
+      "desc": "s06 的子 Agent 是「叫来干一件事，干完就散」。这一章的队友是常驻的：每个队友有自己的记录本、自己的循环、自己的线程，干完一件事就等下一件。大家靠两样东西协作：一块共享的任务板（.tasks/ 目录，每个任务一个文件）和各自的信箱（.mailboxes/ 目录）。主控 Agent 叫 Lead，它多了一组工具：建任务、定依赖、招队友、发消息、请队友下班。",
+      "code": {
+        "fn": "PROMPT_SECTIONS 和 TOOLS",
+        "lines": [
+          "\"spawn_teammate, list_teammates, send_message, request_shutdown, \"",
+          "TOOLS = [*BASE_TOOLS, *TASK_TOOLS, *TEAM_TOOLS]",
+          "TASKS_DIR = WORKDIR / \".tasks\"",
+          "MAILBOX_DIR = WORKDIR / \".mailboxes\""
+        ],
+        "hi": [1, 2, 3],
+        "note": "任务板和信箱都是磁盘上的文件，不是内存变量：线程之间、甚至程序重启后都能看到同一份。"
+      }
+    },
+    {
+      "title": "你输入一句话，Lead 先提方案，不急着招人",
+      "desc": "系统提示要求 Lead：觉得能并行时，先提一个小团队方案，等你确认，确认之前不许招队友。所以第一圈模型只是回答：拆成三个任务，招两个队友，问你行不行。",
+      "code": {
+        "fn": "PROMPT_SECTIONS[\"teams\"]",
+        "lines": [
+          "\"When parallel work would help, first propose a small team with clear \"",
+          "\"responsibilities and wait for the user's confirmation. Do not call \"",
+          "\"spawn_teammate before the user confirms. After confirmation, delegate \""
+        ],
+        "hi": [1, 2],
+        "note": "产品经理要拍板的：招人要不要人工确认？每招一个队友都是一份新的模型开销。"
+      },
+      "add": [
+        ["user", "做一个统计文章字数的小工具：配置、核心实现、测试三个文件，能并行就并行"],
+        ["assistant", "建议拆成三个任务：config.py、wordcount.py 可以并行，test_wordcount.py 要等前两个做完。招两个队友 alice 和 bob。可以开始吗？"]
+      ]
+    },
+    {
+      "title": "你说「开始」：Lead 在任务板上建三张任务卡，标好依赖",
+      "desc": "Lead 调用 create_task 三次，程序给每张卡分配一个 ID，写成 .tasks/task_xxx.json 文件。然后用 update_task 给测试任务加上依赖：要等前两张卡完成才能开始。谁能改依赖？只有 Lead。",
+      "code": {
+        "fn": "create_task() 和 run_update_task()",
+        "lines": [
+          "id=f\"task_{secrets.token_hex(4)}\",",
+          "status=\"pending\",",
+          "blockedBy=[],",
+          "task = update_task(task_id, addBlockedBy)"
+        ],
+        "hi": [0, 3]
+      },
+      "add": [
+        ["user", "开始吧"],
+        ["assistant", "请执行 create_task ×3，再执行 update_task：task_c0ffee11 blockedBy [task_a1b2c3d4, task_e5f6a7b8]"],
+        ["tool", "Created task_a1b2c3d4: 写 config.py　Created task_e5f6a7b8: 写 wordcount.py　Created task_c0ffee11: 写测试　Updated task_c0ffee11 blockedBy: task_a1b2c3d4, task_e5f6a7b8"]
+      ]
+    },
+    {
+      "title": "Lead 招两个队友：各领一张卡，各开一条线程",
+      "desc": "Lead 调用 spawn_teammate，带上队友名字、角色、提示词和要领的任务 ID。程序先替队友在任务板上「认领」那张卡（状态改成进行中，写上 owner），再为队友开一条线程跑它自己的循环。工具返回一句关键的话：「结束这一轮，运行时会把队友的事件送回来」。Lead 招完人就该闭嘴等，不许反复查进度。",
+      "code": {
+        "fn": "spawn_teammate_thread()",
+        "lines": [
+          "claimed = claim_task(task_id, owner=name)",
+          "runtime = TeammateRuntime(name, role, prompt, task_id, require_plan)",
+          "thread = threading.Thread(target=runtime.run, daemon=True)",
+          "thread.start()",
+          "\"End this turn; the runtime will deliver its events.\""
+        ],
+        "hi": [0, 2, 4]
+      },
+      "add": [
+        ["assistant", "请执行 spawn_teammate：alice 领 task_a1b2c3d4；spawn_teammate：bob 领 task_e5f6a7b8"],
+        ["tool", "Teammate 'alice' spawned as 配置工程师 for task_a1b2c3d4. End this turn; the runtime will deliver its events.　Teammate 'bob' spawned as 核心开发 for task_e5f6a7b8. End this turn; …"],
+        ["assistant", "两位队友已经开工，我等他们的结果。"]
+      ]
+    },
+    {
+      "title": "队友的循环：自己的系统提示、自己的记录本、自己的工具",
+      "desc": "每个队友是一个 TeammateRuntime。它的系统提示写明「你是 alice，一个配置工程师，做完调用 complete_task 并汇报」；它的记录本第一条就是任务描述和工作目录；它的工具比 Lead 少，没有招人、改依赖的权力。然后它跑的循环和 s01 一模一样：调模型、执行工具、把结果追加进自己的记录本，直到模型不再要工具。注意这里的记录本是队友的，不是右边这本。",
+      "code": {
+        "fn": "TeammateRuntime.__init__() 和 work()",
+        "lines": [
+          "f\"You are '{name}', a {role}. Use tools to complete the assigned \"",
+          "self.messages = [{\"role\": \"user\", \"content\": prompt}]",
+          "response = client.messages.create(",
+          "tools=TEAMMATE_TOOLS,",
+          "return \"continue\""
+        ],
+        "hi": [1, 3],
+        "note": "两个队友在两条线程里同时调模型，真正并行。代价是两倍的模型开销和可能互相改坏文件，所以才有 worktree：给一个任务单独一份工作目录。"
+      }
+    },
+    {
+      "title": "队友干完：在任务板上销卡，把结果投进 Lead 的信箱",
+      "desc": "alice 写完 config.py，调用 complete_task，程序检查「这张卡确实是你的」才允许完成，顺便看有没有别的卡因此解除了阻塞。然后队友的模型不再要工具，循环结束，程序把它最后一段话以 result 类型投进 lead 的信箱，再投一条「我闲了」，队友进入 idle 状态等活。",
+      "code": {
+        "fn": "complete_task() 和 TeammateRuntime.work()",
+        "lines": [
+          "if task.owner != owner:",
+          "task.status = \"completed\"",
+          "BUS.send(self.name, \"lead\", summary, \"result\")",
+          "BUS.send(self.name, \"lead\", \"Waiting for more work.\",",
+          "\"idle_notification\")",
+          "return \"idle\""
+        ],
+        "hi": [2, 3, 5]
+      }
+    },
+    {
+      "title": "信箱有信：主循环被唤醒，队友事件变成一条消息进 Lead 的记录本",
+      "desc": "这是和前几章最大的区别。以前程序只有一个唤醒源：你敲回车。现在终端等你输入的同时，每 0.25 秒看一眼 lead 的信箱。信箱里有信，就不等你了，把信整理成「[Team events]」文本，当成一条用户消息追加进 Lead 的记录本，再跑一圈。你会在终端看到「[唤醒：2 条团队事件 -> 新一轮]」。",
+      "code": {
+        "fn": "wait_for_cli_event() 和程序入口",
+        "lines": [
+          "if BUS.peek(\"lead\"):",
+          "return \"wake\", None",
+          "readable, _, _ = select.select([sys.stdin], [], [], 0.25)",
+          "inbox = consume_lead_inbox()",
+          "\"content\": format_team_events(inbox),",
+          "return \"[Team events]\\n\" + \"\\n\".join(lines)"
+        ],
+        "hi": [0, 1, 4],
+        "note": "队友不会直接改 Lead 的记录本，只能投信。什么时候读信、读了以后怎么办，由 Lead 的循环决定。"
+      },
+      "add": [
+        ["prog", "[Team events]　[result] alice: config.py 已完成，提供默认参数 min_length=1。　[idle_notification] alice: Waiting for more work."],
+        ["assistant", "alice 完成了配置，等 bob 的实现。"]
+      ]
+    },
+    {
+      "title": "闲着的队友自己去任务板找活：测试任务解除阻塞后被 alice 认领",
+      "desc": "bob 也完成了 wordcount.py。此时测试任务的两个依赖都完成了，它从「被阻塞」变成「可以开始」。空闲的 alice 每 2 秒扫一次任务板，发现这张卡没人领、依赖都齐了，就原子地认领下来，把任务描述追加进自己的记录本，重新开工。Lead 没有下任何指令，这是队友自己领的。",
+      "code": {
+        "fn": "TeammateRuntime.wait_for_work() 和 claim_next_task()",
+        "lines": [
+          "inbox = BUS.wait_for_messages(self.name, IDLE_SCAN_INTERVAL)",
+          "task = claim_next_task(self.name)",
+          "if not task:",
+          "continue",
+          "f\"[Auto-claimed task {task.id}] {task.subject}\\n\""
+        ],
+        "hi": [1, 4],
+        "note": "任务板上「依赖」这个字段决定了并行的边界：没依赖的随便领，有依赖的要等。拆任务时把依赖写对，是 Lead 最重要的活。"
+      },
+      "add": [
+        ["prog", "[Team events]　[result] bob: wordcount.py 已完成。　[idle_notification] bob: Waiting for more work."],
+        ["assistant", "两个基础文件都好了，测试任务会被空闲的队友自动领走，我继续等。"]
+      ]
+    },
+    {
+      "title": "测试做完，Lead 请队友下班：发请求，等回执",
+      "desc": "alice 把测试也写完并跑通，结果再次投进 Lead 信箱，主循环再次被唤醒。Lead 判断活都干完了，对每个队友调用 request_shutdown。程序生成一个请求 ID，往队友信箱投一封「做完手头的事就关机」。队友读到后回一封带同一个 ID 的回执，线程退出。程序核对 ID、发件人、收件人都对上，才算这次关机生效。",
+      "code": {
+        "fn": "run_request_shutdown() 和 TeammateRuntime.handle_inbox()",
+        "lines": [
+          "BUS.send(\"lead\", teammate, \"Finish the current step and shut down.\",",
+          "\"shutdown_request\", {\"request_id\": request_id})",
+          "if msg_type == \"shutdown_request\":",
+          "BUS.send(self.name, \"lead\", \"Shutdown acknowledged.\",",
+          "return True"
+        ],
+        "hi": [0, 3, 4]
+      },
+      "add": [
+        ["prog", "[Team events]　[result] alice: test_wordcount.py 已完成，3 个测试全部通过。"],
+        ["assistant", "请执行 request_shutdown：alice；request_shutdown：bob"],
+        ["tool", "Shutdown requested from alice (req_004213)　Shutdown requested from bob (req_004214)"]
+      ]
+    },
+    {
+      "title": "所有队友关闭，Lead 汇报",
+      "desc": "两封回执到达，主循环最后一次被唤醒，Lead 看到两条 shutdown_response，向你汇报。终端打印「[所有队友已关闭]」。回头看这一章的机制：Lead 只做拆任务、定依赖、招人、读信、收工五件事；队友各跑各的循环；任务板管「谁做什么、先后顺序」，信箱管「谁跟谁说了什么」。这就是多 Agent 协作的最小骨架。",
+      "code": {
+        "fn": "程序入口",
+        "lines": [
+          "if active_teammates:",
+          "had_teammates = True",
+          "elif had_teammates and not BUS.peek(\"lead\"):",
+          "print(\"[所有队友已关闭]\")"
+        ],
+        "hi": [2, 3]
+      },
+      "add": [
+        ["prog", "[Team events]　[shutdown_response request_id=req_004213] alice: Shutdown acknowledged.　[shutdown_response request_id=req_004214] bob: Shutdown acknowledged."],
+        ["assistant", "字数统计工具已完成：config.py、wordcount.py、test_wordcount.py 三个文件，测试全部通过，队友已全部关闭。"]
+      ]
+    }
+  ]
+}

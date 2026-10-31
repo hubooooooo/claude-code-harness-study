@@ -171,7 +171,7 @@ def test_scheduled_turn_never_reads_interactive_permission_input():
             thread.join(timeout=1)
 
         assert results == [
-            "Permission denied: scheduled turns cannot request interactive approval"
+            "权限被拒绝：定时任务不能请求人工确认"
         ]
 
 
@@ -182,9 +182,9 @@ def test_corrupt_durable_store_reports_an_error(capsys: pytest.CaptureFixture[st
 
         lesson.load_durable_jobs()
 
-        assert "could not load .scheduled_tasks.json" in capsys.readouterr().out
+        assert "无法读取 .scheduled_tasks.json" in capsys.readouterr().out
         assert lesson.scheduled_jobs == {}
 
 
-def test_s12_code_is_ascii():
-    LESSON.read_text(encoding="ascii")
+def test_s12_code_is_utf8():
+    LESSON.read_text(encoding="utf-8")

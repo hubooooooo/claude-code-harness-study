@@ -1,0 +1,173 @@
+{
+  "title": "后台任务：慢命令丢给另一条线程，结果在下次调用模型之前送回记录本",
+  "file": "s11_background_tasks/code.py",
+  "task": "把完整测试跑一遍（要好几分钟），同时帮我数一下 docs/ 里有多少篇文档",
+  "steps": [
+    {
+      "title": "这一章改了什么：bash 多一个开关，循环开头多一行「收结果」",
+      "desc": "前几章执行工具时，程序会一直等到命令跑完才继续。一条命令跑五分钟，模型和你就干等五分钟。s11 给 bash 工具加了一个开关 run_in_background；循环每次调用模型之前，先把后台跑完的结果收回来塞进记录本。系统提示里限定：只有彼此独立的命令才放后台。",
+      "code": {
+        "fn": "TOOLS、SYSTEM 和 agent_loop()",
+        "lines": [
+          "\"run_in_background\": {\"type\": \"boolean\"}},",
+          "\"Set run_in_background to true only for independent Bash commands.\"",
+          "inject_background_results(messages)",
+          "response = client.messages.create("
+        ],
+        "hi": [0, 2],
+        "note": "哪些命令允许放后台，是产品经理要拍板的边界：后台任务看不见、拦不住，放错了会出事。"
+      }
+    },
+    {
+      "title": "你输入一个「一慢一快」的任务",
+      "desc": "跑测试很慢，数文件很快。两件事互不相关，正好看后台机制怎么工作。",
+      "code": {
+        "fn": "程序入口",
+        "lines": [
+          "history.append({\"role\": \"user\", \"content\": query})",
+          "agent_loop(history)"
+        ]
+      },
+      "add": [
+        ["user", "把完整测试跑一遍（要好几分钟），同时帮我数一下 docs/ 里有多少篇文档"]
+      ]
+    },
+    {
+      "title": "第 1 圈：模型一次要两个工具，其中一个标了「放后台」",
+      "round": 1,
+      "desc": "模型在同一次回复里要了两个 bash：跑测试的那条设了 run_in_background 为 true，数文件的那条正常执行。是模型决定哪条放后台，但它只能在程序允许的范围内选。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "tool_calls = [",
+          "block for block in response.content if block.type == \"tool_use\"",
+          "]"
+        ]
+      },
+      "add": [
+        ["assistant", "请执行 bash：pytest tests/（放后台）／ 请执行 bash：ls docs | wc -l"]
+      ]
+    },
+    {
+      "title": "程序判断：这条要放后台，立刻返回一句占位，不等它跑完",
+      "desc": "执行工具时多了一个分支：如果是 bash 而且开关打开，就交给后台管理器启动，然后马上返回一句话「后台任务 bg_0001 已启动，结果以后送回」。模型拿到的不是命令输出，是一张取货凭条。",
+      "code": {
+        "fn": "execute_tool()",
+        "lines": [
+          "if should_run_background(block.name, block.input):",
+          "task_id = start_background_task(block)",
+          "f\"[Background task {task_id} started] \"",
+          "\"The result will be collected on a later turn.\"",
+          "output = call_tool(block)"
+        ],
+        "hi": [0, 1, 2, 3],
+        "note": "凭条里的 ID 很重要：以后结果回来时，模型靠它对上号。"
+      }
+    },
+    {
+      "title": "后台管理器：开一条新线程去跑命令，主线程不停",
+      "desc": "后台管理器给任务编号 bg_0001，记下命令和状态「running」，然后开一条线程去执行。线程设成 daemon，程序退出时不会被它拖住。终端打印「[后台] 已启动 bg_0001」。与此同时，主线程继续往下走，把数文件那条命令当场执行完。",
+      "code": {
+        "fn": "BackgroundManager.start()",
+        "lines": [
+          "task_id = f\"bg_{self._counter:04d}\"",
+          "\"status\": \"running\",",
+          "thread = threading.Thread(",
+          "target=self._run,",
+          "daemon=True,",
+          "thread.start()"
+        ],
+        "hi": [2, 5],
+        "note": "线程就是「另一个干活的人」。主线程负责和你、和模型打交道，后台线程只管跑命令。"
+      },
+      "add": [
+        ["tool", "[Background task bg_0001 started] The result will be collected on a later turn."],
+        ["tool", "12"]
+      ]
+    },
+    {
+      "title": "第 2 圈：模型先回答能回答的，这一轮结束",
+      "round": 2,
+      "desc": "两个工具结果都回到记录本：一个是凭条，一个是数字 12。模型回答：docs 有 12 篇文档，测试还在后台跑。它不再要工具，循环结束。注意：主线程没有等测试，你现在就可以继续问别的。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "if not tool_calls:",
+          "force = trigger_hooks(\"Stop\", messages)",
+          "return"
+        ],
+        "hi": [2]
+      },
+      "add": [
+        ["assistant", "docs/ 里有 12 篇文档。测试已在后台运行（bg_0001），跑完我再告诉你结果。"]
+      ]
+    },
+    {
+      "title": "几分钟后，后台线程跑完了：把结果放进「待收」清单",
+      "desc": "这一切发生在另一条线程上，主线程此时正在等你输入。线程拿到命令输出和退出码，判定成功还是失败，把结果存进 results，再把任务 ID 放进 _ready 清单。整个过程加了锁，防止两条线程同时改同一份数据。结果不会主动打断模型，只是安静地放在那里等人来收。",
+      "code": {
+        "fn": "BackgroundManager._run()",
+        "lines": [
+          "output, exit_code = _run_bash_process(command)",
+          "status = \"completed\" if exit_code == 0 else \"failed\"",
+          "with self._lock:",
+          "task[\"status\"] = status",
+          "self.results[task_id] = result",
+          "self._ready.append(task_id)"
+        ],
+        "hi": [1, 2, 5]
+      }
+    },
+    {
+      "title": "你再问一句",
+      "desc": "你问测试跑完了没有。这句话照常进记录本，启动新一轮循环。",
+      "code": {
+        "fn": "程序入口",
+        "lines": [
+          "history.append({\"role\": \"user\", \"content\": query})",
+          "agent_loop(history)"
+        ]
+      },
+      "add": [
+        ["user", "测试跑完了吗？结果怎么样？"]
+      ]
+    },
+    {
+      "title": "循环开头：先收后台结果，以「任务通知」的形式塞进记录本",
+      "desc": "调用模型之前，程序先去「待收」清单里取结果，包装成一段 task_notification：任务 ID、状态、命令、输出摘要。然后追加到记录本最后一条用户消息的后面。这段话不是你说的，是程序替你放进去的，所以右边记录本里标成「程序」。终端打印「[后台] 已收回 bg_0001：completed」。",
+      "code": {
+        "fn": "inject_background_results() 和 collect()",
+        "lines": [
+          "notifications = collect_background_results()",
+          "f\"<task_notification>\\n\"",
+          "f\"  <status>{task['status']}</status>\\n\"",
+          "blocks = [{\"type\": \"text\", \"text\": item} for item in notifications]",
+          "if messages and messages[-1].get(\"role\") == \"user\":",
+          "content.extend(blocks)"
+        ],
+        "hi": [0, 3, 5],
+        "note": "结果一定在「调用模型之前」回来，模型不可能看到一半。"
+      },
+      "add": [
+        ["prog", "<task_notification> bg_0001 ／ completed ／ pytest tests/ ／ 48 passed in 213.4s </task_notification>"]
+      ]
+    },
+    {
+      "title": "第 1 圈：模型读到通知，回答你",
+      "round": 1,
+      "desc": "模型看到记录本里多了一条任务通知，对上 bg_0001 这个编号，回答测试全部通过。回头看这一章的三个要点：放后台时立刻给一张凭条；另一条线程去干活；结果在下次调用模型之前回到记录本。模型从头到尾没有「等」过，搬运结果的是程序。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "inject_background_results(messages)",
+          "response = client.messages.create(",
+          "messages.append({\"role\": \"assistant\", \"content\": response.content})"
+        ],
+        "hi": [0, 1]
+      },
+      "add": [
+        ["assistant", "跑完了：48 个测试全部通过，用时约 3.5 分钟。"]
+      ]
+    }
+  ]
+}

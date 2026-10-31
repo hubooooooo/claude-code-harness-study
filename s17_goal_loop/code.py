@@ -306,7 +306,7 @@ class GoalController:
 
     def clear(self, reason: str = "cleared") -> str:
         if self.active is None:
-            return "No goal set"
+            return "当前没有设定目标"
         condition = self.active.condition
         self._record(
             active=False,
@@ -316,31 +316,31 @@ class GoalController:
         )
         self.active = None
         self.consecutive_blocks = 0
-        return f"Goal cleared: {condition}"
+        return f"目标已清除：{condition}"
 
     def status(self, current_tokens: int = 0) -> str:
         if self.active is None:
             if self.last_status and self.last_status.get("met"):
                 return (
-                    f"Goal achieved: {self.last_status['condition']}\n"
-                    f"Reason: {self.last_status.get('reason', '')}"
+                    f"目标已达成：{self.last_status['condition']}\n"
+                    f"理由：{self.last_status.get('reason', '')}"
                 )
             if self.last_status and self.last_status.get("failed"):
                 return (
-                    f"Goal failed: {self.last_status['condition']}\n"
-                    f"Reason: {self.last_status.get('reason', '')}"
+                    f"目标无法达成：{self.last_status['condition']}\n"
+                    f"理由：{self.last_status.get('reason', '')}"
                 )
-            return "No goal set"
+            return "当前没有设定目标"
         elapsed = max(0, int(time.time() - self.active.set_at))
         spent = max(0, current_tokens - self.active.tokens_at_start)
         lines = [
-            f"Goal active: {self.active.condition}",
-            f"Elapsed: {elapsed}s",
-            f"Evaluations: {self.active.iterations}",
-            f"Tokens: {spent}",
+            f"目标进行中：{self.active.condition}",
+            f"已用时：{elapsed} 秒",
+            f"已判断次数：{self.active.iterations}",
+            f"已用 tokens：{spent}",
         ]
         if self.active.last_reason:
-            lines.append(f"Last reason: {self.active.last_reason}")
+            lines.append(f"上次判断理由：{self.active.last_reason}")
         return "\n".join(lines)
 
     async def evaluate_after_turn(
@@ -594,22 +594,22 @@ class AgentSession:
         if name == "bash":
             command = arguments.get("command", "")
             if not isinstance(command, str):
-                return "Permission denied: shell command must be a string"
+                return "权限被拒绝：命令必须是字符串"
             for pattern in DENY_LIST:
                 if pattern in command:
-                    return f"Permission denied by deny list: {pattern}"
+                    return f"权限被拒绝：'{pattern}' 在黑名单里"
             if any(keyword in command for keyword in DESTRUCTIVE):
-                print(f"\n[permission] {name}({arguments})")
-                if input("Allow? [y/N] ").strip().lower() not in {"y", "yes"}:
-                    return "Permission denied by user"
+                print(f"\n[权限] {name}({arguments})")
+                if input("允许执行吗？[y/N] ").strip().lower() not in {"y", "yes"}:
+                    return "权限被拒绝：用户不允许"
         if name in {"read_file", "write_file", "edit_file"}:
             path = arguments.get("path", "")
             if not isinstance(path, str):
-                return "Permission denied: path must be a string"
+                return "权限被拒绝：路径必须是字符串"
             try:
                 self._safe_path(path)
             except GoalError:
-                return "Permission denied: path is outside the repository"
+                return "权限被拒绝：路径在仓库以外"
         return None
 
     @staticmethod
@@ -617,18 +617,18 @@ class AgentSession:
         name = str(_block_value(block, "name", ""))
         arguments = _block_value(block, "input", {}) or {}
         preview = str(list(arguments.values())[:2])[:60]
-        print(f"[hook] {name}({preview})")
+        print(f"[钩子] {name}({preview})")
         return None
 
     @staticmethod
     def _large_output_hook(block: Any, output: str) -> None:
         if len(output) > 100000:
             name = str(_block_value(block, "name", ""))
-            print(f"[hook] Large output from {name}: {len(output)} chars")
+            print(f"[钩子] 输出很长，来自 {name}: {len(output)} 个字符")
         return None
 
     def _context_hook(self, _query: str) -> None:
-        print(f"[hook] UserPromptSubmit: working in {self.workdir}")
+        print(f"[钩子] UserPromptSubmit：工作目录 {self.workdir}")
         return None
 
     @staticmethod
@@ -643,7 +643,7 @@ class AgentSession:
             )
             if isinstance(block, dict) and block.get("type") == "tool_result"
         )
-        print(f"[hook] Stop: session used {tool_count} tool calls")
+        print(f"[钩子] Stop：这次会话共调用了 {tool_count} 次工具")
         return None
 
     async def submit_background_result(self, text: str) -> SessionResult:
@@ -679,7 +679,7 @@ class AgentSession:
                 system=(
                     "You are a coding agent. Use tools to inspect and modify the "
                     "current repository. Report concrete command results so an "
-                    "independent evaluator can judge completion."
+                    "independent evaluator can judge completion. Always answer in Chinese."
                 ),
                 messages=self.messages,
                 tools=TOOLS,
@@ -783,7 +783,7 @@ class AgentSession:
             content = str(arguments["content"])
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(content, encoding="utf-8")
-            return f"Wrote {len(content)} bytes to {path.relative_to(self.workdir)}"
+            return f"已写入（{len(content)} 字节）：{path.relative_to(self.workdir)}"
 
         if name == "edit_file":
             path = self._safe_path(str(arguments["path"]))
@@ -794,7 +794,7 @@ class AgentSession:
             if count != 1:
                 return f"Error: Expected 1 occurrence, found {count}"
             path.write_text(content.replace(old_text, new_text), encoding="utf-8")
-            return f"Edited {path.relative_to(self.workdir)}"
+            return f"已修改 {path.relative_to(self.workdir)}"
 
         if name == "glob":
             base = self.workdir.resolve()
@@ -803,7 +803,7 @@ class AgentSession:
                 for match in base.glob(str(arguments["pattern"]))
                 if match.resolve().is_relative_to(base)
             ]
-            return "\n".join(matches[:200]) if matches else "(no matches)"
+            return "\n".join(matches[:200]) if matches else "(没有匹配的文件)"
 
         raise GoalError(f"unknown tool '{name}'")
 
@@ -852,11 +852,11 @@ async def main(argv: list[str]) -> None:
         if result.text:
             print(result.text)
         if result.reason:
-            print(f"\n[goal] {result.status}: {result.reason}")
+            print(f"\n[目标] {result.status}：{result.reason}")
         return
 
-    print("s17: goal loop")
-    print("Set a condition with /goal <condition>. Type q to quit.\n")
+    print("s17：目标循环")
+    print("用 /goal <完成条件> 设定目标，输入 q 退出。\n")
     while True:
         try:
             query = input("s17 >> ")
@@ -870,7 +870,7 @@ async def main(argv: list[str]) -> None:
         if result.text:
             print(result.text)
         if result.reason:
-            print(f"[goal] {result.status}: {result.reason}")
+            print(f"[目标] {result.status}：{result.reason}")
         print()
 
 

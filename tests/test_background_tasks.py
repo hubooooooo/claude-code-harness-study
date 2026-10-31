@@ -116,7 +116,7 @@ def test_background_bash_passes_permission_before_dispatch():
         assert not lesson.background_tasks
         result = history[2]["content"][0]
         assert result["type"] == "tool_result"
-        assert "Permission denied" in result["content"]
+        assert "权限被拒绝" in result["content"]
 
 
 def test_completed_result_is_collected_once_before_a_later_llm_call():
@@ -153,5 +153,5 @@ def test_completed_result_is_collected_once_before_a_later_llm_call():
         assert lesson.collect_background_results() == []
 
 
-def test_s11_code_is_ascii():
-    LESSON.read_text(encoding="ascii")
+def test_s11_code_is_utf8():
+    LESSON.read_text(encoding="utf-8")

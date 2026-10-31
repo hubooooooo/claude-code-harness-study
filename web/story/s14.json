@@ -1,0 +1,166 @@
+{
+  "title": "MCP 插件：外部服务的工具先「发现」再「并入」工具清单，每一圈重新组装",
+  "file": "s14_mcp_plugin/code.py",
+  "task": "连上文档服务，搜一下 agent hooks 的资料，再看看 web 服务现在的部署状态",
+  "steps": [
+    {
+      "title": "这一章改了什么：工具清单不再写死，每一圈重新组装",
+      "desc": "前面十几章，工具清单 TOOLS 是程序启动时写死的几个。这一章改成：每一圈调用模型之前，先把「自带工具」和「已连接的外部服务的工具」合成一份清单再发出去。外部服务叫 MCP server，程序通过它的 tools/list 发现工具，通过 tools/call 调用工具。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "tools, handlers = assemble_tool_pool()",
+          "response = client.messages.create(",
+          "system=assemble_system_prompt(),",
+          "tools=tools,"
+        ],
+        "hi": [0, 3],
+        "note": "MCP 就是「工具的插座标准」：服务商照标准做插头，Agent 照标准读清单，不用为每家服务单独写代码。"
+      }
+    },
+    {
+      "title": "你输入一句话",
+      "desc": "系统提示里加了一句：「用服务之前先调用 connect_mcp」。此时还没连任何服务，模型手里只有自带的五个工具加一个 connect_mcp。",
+      "code": {
+        "fn": "BASE_SYSTEM 和 BUILTIN_TOOLS",
+        "lines": [
+          "\"tools to solve tasks. Call connect_mcp before using a server.\"",
+          "BUILTIN_TOOLS = [*BASE_TOOLS, CONNECT_TOOL]"
+        ]
+      },
+      "add": [
+        ["user", "连上文档服务，搜一下 agent hooks 的资料，再看看 web 服务现在的部署状态"]
+      ]
+    },
+    {
+      "title": "第 1 圈：模型先要求连接 docs 服务",
+      "round": 1,
+      "desc": "模型知道自己还没有「搜文档」的工具，于是先调用 connect_mcp，连 docs 这个服务。",
+      "code": {
+        "fn": "CONNECT_TOOL",
+        "lines": [
+          "\"name\": \"connect_mcp\",",
+          "\"description\": \"Connect to an MCP server and discover its tools.\","
+        ]
+      },
+      "add": [
+        ["assistant", "请执行 connect_mcp：name=\"docs\""]
+      ]
+    },
+    {
+      "title": "程序连上服务，拿到它的工具清单（tools/list）",
+      "desc": "程序找到 docs 服务，建立连接，服务端告诉程序：我有 search 和 get_version 两个工具，各自要什么参数。程序把这份清单存在 mcp_clients 里。这一章里的服务是写在本地的替身，真实场景里是通过网络或子进程连到别人的服务。",
+      "code": {
+        "fn": "connect_mcp() 和 MCPClient",
+        "lines": [
+          "server = factory()",
+          "mcp_clients[name] = server",
+          "names = \", \".join(tool[\"name\"] for tool in server.tools)",
+          "\"name\": \"search\",",
+          "\"description\": \"Search the documentation.\","
+        ],
+        "hi": [1, 2]
+      },
+      "add": [
+        ["tool", "Connected to MCP server 'docs'. Discovered 2 tools: search, get_version"]
+      ]
+    },
+    {
+      "title": "第 2 圈之前：重新组装工具清单，外部工具改名并入",
+      "round": 2,
+      "desc": "下一圈调用模型之前，assemble_tool_pool 把 docs 的两个工具并进清单，名字改成 mcp__docs__search 这种带前缀的形式，一眼能看出来自哪个服务，也不会和自带工具重名。同时给每个外部工具查一条「主机策略」：search 和 get_version 是只读，策略为直接放行；没写在策略表里的外部工具一律要人确认。",
+      "code": {
+        "fn": "assemble_tool_pool()",
+        "lines": [
+          "for server_name, server in mcp_clients.items():",
+          "prefixed = f\"mcp__{safe_server}__{safe_tool}\"",
+          "tools.append({",
+          "\"name\": prefixed,",
+          "policies[prefixed] = MCP_HOST_POLICY.get(",
+          "(server_name, raw_name), \"confirm\""
+        ],
+        "hi": [1, 4, 5],
+        "note": "放不放行由程序这边的策略表决定，不看服务商自己写的「我是只读的」。产品经理要拍板的就是这张策略表。"
+      }
+    },
+    {
+      "title": "第 2 圈：模型看到新工具，直接用",
+      "desc": "这一圈模型收到的清单里多了两个 docs 工具，它调用 mcp__docs__search 搜 agent hooks。对模型来说，外部工具和自带工具长得一模一样，用法没有任何区别。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "tools, handlers = assemble_tool_pool()",
+          "response = client.messages.create("
+        ]
+      },
+      "add": [
+        ["assistant", "请执行 mcp__docs__search：query=\"agent hooks\""]
+      ]
+    },
+    {
+      "title": "执行之前：权限钩子按策略表放行",
+      "desc": "s04 的权限钩子多了一段：名字以 mcp__ 开头的工具，查策略表。search 是 allow，直接放行。然后程序把调用转交给 docs 服务（tools/call），服务返回结果。",
+      "code": {
+        "fn": "permission_hook() 和 MCPClient.call_tool()",
+        "lines": [
+          "if block.name.startswith(\"mcp__\"):",
+          "policy = mcp_tool_policies.get(block.name, \"confirm\")",
+          "if policy != \"allow\":",
+          "return str(handler(**args))"
+        ],
+        "hi": [0, 1, 2]
+      },
+      "add": [
+        ["tool", "[docs] Found 3 results for 'agent hooks'"]
+      ]
+    },
+    {
+      "title": "第 3 圈：模型连接 deploy 服务，查状态",
+      "round": 3,
+      "desc": "文档查完，轮到部署状态。模型再次 connect_mcp 连 deploy 服务，程序发现它有 trigger（触发部署）和 status（查状态）两个工具。下一圈清单里又多了两个 mcp__deploy__ 工具，模型调用 status。status 在策略表里是 allow，放行。",
+      "code": {
+        "fn": "MCP_HOST_POLICY",
+        "lines": [
+          "(\"deploy\", \"status\"): \"allow\",",
+          "(\"deploy\", \"trigger\"): \"confirm\","
+        ],
+        "hi": [0]
+      },
+      "add": [
+        ["assistant", "请执行 connect_mcp：name=\"deploy\""],
+        ["tool", "Connected to MCP server 'deploy'. Discovered 2 tools: trigger, status"],
+        ["assistant", "请执行 mcp__deploy__status：service=\"web\""],
+        ["tool", "[deploy] web: running (v1.4.2)"]
+      ]
+    },
+    {
+      "title": "假如模型想触发部署：策略是 confirm，程序会停下来问你",
+      "desc": "deploy 服务自己声明 trigger 是「有破坏性的」，但程序不信服务商的自我描述，只信自己的策略表。表里 trigger 是 confirm，所以模型一旦要调用它，权限钩子会在终端问你允不允许，你不说 y 就不执行。这次任务模型没有去碰 trigger。",
+      "code": {
+        "fn": "permission_hook()",
+        "lines": [
+          "print(f\"\\n[权限] 外部工具 {block.name}({block.input})\")",
+          "if input(\"允许执行吗？[y/N] \").strip().lower() not in {\"y\", \"yes\"}:",
+          "return \"权限被拒绝：用户不允许\""
+        ],
+        "hi": [1]
+      }
+    },
+    {
+      "title": "第 4 圈：模型汇报，循环结束",
+      "round": 4,
+      "desc": "模型把两件事的结果汇总回答。回头看这一章的机制：连接服务拿清单（发现）、改名并入工具清单（组装）、按策略表决定放不放行（授权）、转交服务执行（调用）。接入一个新服务，只需要它遵守 MCP 标准，再在策略表里加几行，循环本身不用改。",
+      "code": {
+        "fn": "agent_loop() 和 assemble_system_prompt()",
+        "lines": [
+          "if not tool_calls:",
+          "trigger_hooks(\"Stop\", messages)",
+          "return BASE_SYSTEM + \"\\n\\nConnected MCP servers: \" + \", \".join(mcp_clients)"
+        ]
+      },
+      "add": [
+        ["assistant", "文档里找到 3 条 agent hooks 相关资料；web 服务当前正在运行，版本 v1.4.2。"]
+      ]
+    }
+  ]
+}

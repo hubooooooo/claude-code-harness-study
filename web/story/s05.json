@@ -1,0 +1,170 @@
+{
+  "title": "任务规划：给模型一张待办清单，让它边做边勾",
+  "file": "s05_todo_write/code.py",
+  "task": "给项目加一个 CHANGELOG.md，把最近三次提交写进去",
+  "steps": [
+    {
+      "title": "这一章改了什么：多一个工具，系统提示多一句话",
+      "desc": "工具清单里新增 todo_write，模型可以用它写一张待办清单。系统提示也多了一句：「开始多步任务之前，先用 todo_write 规划步骤，做的过程中更新状态」。模型会不会规划，靠的是这句话加这个工具。",
+      "code": {
+        "fn": "SYSTEM 和 TOOLS",
+        "lines": [
+          "\"Before starting any multi-step task, use todo_write to plan your steps. \"",
+          "\"Update status as you go.\"",
+          "{\"name\": \"todo_write\", \"description\": \"Create and manage a task list for your current coding session.\","
+        ],
+        "hi": [0, 2]
+      }
+    },
+    {
+      "title": "你输入一个多步任务",
+      "desc": "这个任务至少要三步：看提交记录、整理内容、写文件。正好看模型怎么规划。",
+      "code": {
+        "fn": "程序入口",
+        "lines": [
+          "history.append({\"role\": \"user\", \"content\": query})",
+          "agent_loop(history)"
+        ]
+      },
+      "add": [
+        ["user", "给项目加一个 CHANGELOG.md，把最近三次提交写进去"]
+      ]
+    },
+    {
+      "title": "第 1 圈：模型先写清单，而不是直接动手",
+      "round": 1,
+      "desc": "因为系统提示要求先规划，模型第一次回复不是去查提交记录，而是调用 todo_write，列出三件事，并把第一件标成「进行中」。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "response = client.messages.create(",
+          "model=MODEL, system=SYSTEM, messages=messages,"
+        ]
+      },
+      "add": [
+        ["assistant", "请执行 todo_write：[>] 查看最近三次提交 ／ [ ] 整理成变更说明 ／ [ ] 写入 CHANGELOG.md"]
+      ]
+    },
+    {
+      "title": "程序这边：TodoManager 检查并保存清单",
+      "desc": "todo_write 是程序自己实现的工具，不执行任何命令，只是把清单存起来。存之前先检查：最多 20 条，每条必须有内容，状态只能是待办、进行中、已完成三种，而且同一时刻只能有一条「进行中」。检查通过后，在终端打印一张清单给你看。",
+      "code": {
+        "fn": "TodoManager.update() 和 run_todo_write()",
+        "lines": [
+          "if len(todos) > 20:",
+          "raise ValueError(\"Max 20 todos allowed\")",
+          "if status not in (\"pending\", \"in_progress\", \"completed\"):",
+          "if in_progress_count > 1:",
+          "raise ValueError(\"Only one todo can be in_progress at a time\")",
+          "self.items = validated",
+          "return self.render()"
+        ],
+        "hi": [3, 4, 5],
+        "note": "规则是程序定的，不是模型定的。模型写的清单不合规，就会收到一条错误，得重写。"
+      },
+      "add": [
+        ["tool", "[>] 查看最近三次提交　[ ] 整理成变更说明　[ ] 写入 CHANGELOG.md　(0/3 completed)"]
+      ]
+    },
+    {
+      "title": "第 2 圈：按清单做第一件事",
+      "round": 2,
+      "desc": "清单回到记录本里，模型照着第一条行动：用 bash 执行 git log 看最近三次提交。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "messages.append({\"role\": \"user\", \"content\": results})",
+          "response = client.messages.create("
+        ]
+      },
+      "add": [
+        ["assistant", "请执行 bash：git log -3 --oneline"],
+        ["tool", "c52ac55 新增产品经理决策篇　5055954 回放改为逐章机制动画　300ef88 修复测试模块加载"]
+      ]
+    },
+    {
+      "title": "程序在数圈：这一圈没更新清单，计数加一",
+      "desc": "这是 s05 在循环里加的第二样东西：一个计数器 rounds_since_todo。每跑一圈，如果模型没用 todo_write，就加一；用了就清零。刚才这一圈只用了 bash，计数变成 1。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "if block.name == \"todo_write\":",
+          "used_todo = True",
+          "rounds_since_todo = 0 if used_todo else rounds_since_todo + 1"
+        ],
+        "hi": [2]
+      }
+    },
+    {
+      "title": "第 3 圈：模型写文件，清单仍然没动",
+      "round": 3,
+      "desc": "模型拿到提交记录，直接写 CHANGELOG.md。活干得很顺，但它忘了更新清单。计数变成 2。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "response = client.messages.create(",
+          "rounds_since_todo = 0 if used_todo else rounds_since_todo + 1"
+        ],
+        "hi": [1]
+      },
+      "add": [
+        ["assistant", "请执行 write_file：CHANGELOG.md"],
+        ["tool", "已写入（186 字节）：CHANGELOG.md"]
+      ]
+    },
+    {
+      "title": "第 4 圈：模型检查文件，计数到 3，程序塞进一条提醒",
+      "round": 4,
+      "desc": "模型又用 read_file 检查了一遍写好的文件，还是没碰清单。计数到 3，程序在这圈的工具结果后面多塞一条文字：「<reminder>Update your todos.</reminder>」。模型下次读记录本时，会看到这条提醒。这不是模型自觉的，是程序逼的。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "if rounds_since_todo >= 3:",
+          "results.append({\"type\": \"text\",",
+          "\"text\": \"<reminder>Update your todos.</reminder>\"})",
+          "rounds_since_todo = 0"
+        ],
+        "hi": [0, 2],
+        "note": "产品经理要定的数字就是这个 3：提醒太勤会打扰模型干活，太松清单就形同虚设。"
+      },
+      "add": [
+        ["assistant", "请执行 read_file：CHANGELOG.md"],
+        ["tool", "# 变更记录　　- c52ac55 新增产品经理决策篇……"],
+        ["prog", "<reminder>Update your todos.</reminder>"]
+      ]
+    },
+    {
+      "title": "第 5 圈：模型看到提醒，把清单全部勾完",
+      "round": 5,
+      "desc": "模型读到提醒，调用 todo_write 把三条都标成已完成。终端上你看到一张全部打勾的清单。计数清零。",
+      "code": {
+        "fn": "TodoManager.render()",
+        "lines": [
+          "\"pending\": \"[ ]\",",
+          "\"in_progress\": \"[>]\",",
+          "\"completed\": \"[x]\",",
+          "lines.append(f\"\\n({done}/{len(self.items)} completed)\")"
+        ]
+      },
+      "add": [
+        ["assistant", "请执行 todo_write：[x] 查看最近三次提交 ／ [x] 整理成变更说明 ／ [x] 写入 CHANGELOG.md"],
+        ["tool", "[x] 查看最近三次提交　[x] 整理成变更说明　[x] 写入 CHANGELOG.md　(3/3 completed)"]
+      ]
+    },
+    {
+      "title": "第 6 圈：模型回答，循环结束",
+      "round": 6,
+      "desc": "模型确认完成，不再要工具，循环结束。回头看：清单让你随时知道模型做到哪一步了；提醒计数让模型不会把清单扔在一边。这两样加起来，就是「让长任务可控」的最小做法。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "if not tool_calls:",
+          "return"
+        ]
+      },
+      "add": [
+        ["assistant", "已创建 CHANGELOG.md，写入了最近三次提交的说明。"]
+      ]
+    }
+  ]
+}

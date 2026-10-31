@@ -1,0 +1,154 @@
+{
+  "title": "工具调用：模型从 5 个工具里挑一个，程序查表找到对应的函数",
+  "file": "s02_tool_use/code.py",
+  "task": "把 hello.py 里的 World 改成 Agent",
+  "steps": [
+    {
+      "title": "你输入一句话",
+      "desc": "和 s01 一样，你的话先记进记录本 messages，然后进入循环。",
+      "code": {
+        "fn": "程序入口",
+        "lines": [
+          "history.append({\"role\": \"user\", \"content\": query})",
+          "agent_loop(history)"
+        ]
+      },
+      "add": [
+        [
+          "user",
+          "把 hello.py 里的 World 改成 Agent"
+        ]
+      ]
+    },
+    {
+      "title": "第 1 圈：模型从 5 个工具里挑一个",
+      "round": 1,
+      "desc": "这一章工具从 1 个变成了 5 个。每个工具都有一个名字和一句说明，程序把这份清单和记录本一起发给模型。模型就是靠这些说明来挑工具的：要改文件，得先看看现在写了什么，read_file 最合适。",
+      "code": {
+        "fn": "工具清单 TOOLS",
+        "lines": [
+          "{\"name\": \"bash\", \"description\": \"Run a shell command.\",",
+          "{\"name\": \"read_file\", \"description\": \"Read file contents.\",",
+          "{\"name\": \"write_file\", \"description\": \"Write content to a file.\",",
+          "{\"name\": \"edit_file\", \"description\": \"Replace exact text in a file once.\",",
+          "{\"name\": \"glob\", \"description\": \"Find files matching a glob pattern.\","
+        ],
+        "hi": [
+          1
+        ],
+        "note": "每个工具一个名字加一句说明。说明写得好不好，直接决定模型会不会选对工具。"
+      },
+      "add": [
+        [
+          "assistant",
+          "请调用 read_file：hello.py"
+        ]
+      ]
+    },
+    {
+      "title": "程序查表：工具名对应哪个函数",
+      "desc": "模型只说了工具的名字。程序拿这个名字去查一张「分发表」，找到真正干活的函数：read_file 对应 run_read。以后再加新工具，只要在表里加一行，循环本身一行都不用改。",
+      "code": {
+        "fn": "分发表 TOOL_HANDLERS",
+        "lines": [
+          "TOOL_HANDLERS = {",
+          "\"bash\": run_bash, \"read_file\": run_read, \"write_file\": run_write,",
+          "\"edit_file\": run_edit, \"glob\": run_glob,",
+          "handler = TOOL_HANDLERS.get(block.name)",
+          "output = handler(**block.input) if handler else f\"未知工具：{block.name}\""
+        ],
+        "hi": [
+          3,
+          4
+        ],
+        "note": "s01 里写死的是 run_bash(...)，这一章换成了按名字查表。"
+      }
+    },
+    {
+      "title": "执行 run_read，读出文件内容",
+      "desc": "run_read 读出 hello.py 的内容。读之前还会用 safe_path 检查路径：只能读工作目录里面的文件，想读外面的会直接报错。",
+      "code": {
+        "fn": "run_read()",
+        "lines": [
+          "def run_read(path: str, limit: int | None = None) -> str:",
+          "lines = safe_path(path).read_text().splitlines()"
+        ],
+        "hi": [
+          1
+        ],
+        "note": "safe_path 保证不会读到工作目录以外的文件。"
+      }
+    },
+    {
+      "title": "第 2 圈：这次挑 edit_file",
+      "round": 2,
+      "desc": "读到的内容追加进记录本，程序再调用一次模型。模型看到 World 在哪里了，这次挑 edit_file：只替换这一处文字，比整个文件重写更稳。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "messages.append({\"role\": \"user\", \"content\": results})",
+          "response = client.messages.create("
+        ]
+      },
+      "add": [
+        [
+          "tool",
+          "print(\"Hello, World!\")"
+        ],
+        [
+          "assistant",
+          "请调用 edit_file：World → Agent"
+        ]
+      ]
+    },
+    {
+      "title": "查表，执行 run_edit",
+      "desc": "还是同一张分发表：edit_file 对应 run_edit。run_edit 先确认要换的文字确实在文件里，再只替换一处，写回文件。",
+      "code": {
+        "fn": "run_edit()",
+        "lines": [
+          "if old_text not in text:",
+          "return f\"错误：在 {path} 里找不到要替换的文字\"",
+          "file_path.write_text(text.replace(old_text, new_text, 1))"
+        ],
+        "hi": [
+          2
+        ],
+        "note": "找不到要换的文字就报错，交给模型重新想办法；找到了只换一处。"
+      }
+    },
+    {
+      "title": "第 3 圈：模型确认完成",
+      "round": 3,
+      "desc": "程序把「改好了」的结果交回去，第三次调用模型。模型确认任务完成，直接写出回答，不再要求用工具。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "response = client.messages.create("
+        ]
+      },
+      "add": [
+        [
+          "tool",
+          "已修改 hello.py"
+        ],
+        [
+          "assistant",
+          "已把 World 改成 Agent"
+        ]
+      ]
+    },
+    {
+      "title": "循环结束，回答你",
+      "desc": "没有工具调用，循环结束。和 s01 比，循环的样子一点没变，变的只有两处：工具清单从 1 个变成 5 个；执行工具时从写死的 run_bash 变成了按名字查表。",
+      "code": {
+        "fn": "agent_loop() 和程序入口",
+        "lines": [
+          "if not tool_calls:",
+          "return",
+          "print(block.text)"
+        ]
+      }
+    }
+  ]
+}

@@ -636,7 +636,7 @@ class AgentTeamsRuntimeTests(unittest.TestCase):
                     with patch("builtins.input", return_value="no"):
                         self.assertEqual(
                             lesson.permission_hook(trigger),
-                            "Permission denied by user",
+                            "权限被拒绝：用户不允许",
                         )
 
                     spoofed = types.SimpleNamespace(
@@ -646,7 +646,7 @@ class AgentTeamsRuntimeTests(unittest.TestCase):
                     with patch("builtins.input", return_value="no"):
                         self.assertEqual(
                             lesson.permission_hook(spoofed),
-                            "Permission denied by user",
+                            "权限被拒绝：用户不允许",
                         )
 
     def test_integrated_permission_requires_approval_for_every_shell_command(self):
@@ -664,7 +664,7 @@ class AgentTeamsRuntimeTests(unittest.TestCase):
                 with patch("builtins.input", return_value="no"):
                     self.assertEqual(
                         lesson.permission_hook(block),
-                        "Permission denied by user",
+                        "权限被拒绝：用户不允许",
                     )
                 self.assertFalse(outside.exists())
             finally:
@@ -1551,7 +1551,7 @@ class AgentTeamsRuntimeTests(unittest.TestCase):
                         "Completed", lesson.complete_task(first.id, owner="agent")
                     )
                     self.assertIn(
-                        "Wrote",
+                        "已写入",
                         lesson.run_agent_write("after-complete.txt", "done"),
                     )
                     self.assertTrue(
@@ -1606,7 +1606,7 @@ class AgentTeamsRuntimeTests(unittest.TestCase):
                         "Completed", lesson.complete_task(task.id, owner="agent")
                     )
                     self.assertIn(
-                        "Wrote", lesson.run_agent_write("after.txt", "done")
+                        "已写入", lesson.run_agent_write("after.txt", "done")
                     )
                     self.assertTrue(
                         (lesson.WORKTREES_DIR / "auth" / "after.txt").exists()
@@ -1635,7 +1635,7 @@ class AgentTeamsRuntimeTests(unittest.TestCase):
                         first.complete_task(new_task.id, owner="agent"),
                     )
                     self.assertIn(
-                        "Wrote", first.run_agent_write("after.txt", "done")
+                        "已写入", first.run_agent_write("after.txt", "done")
                     )
                     self.assertTrue(
                         (first.WORKTREES_DIR / "new" / "after.txt").exists()
@@ -1819,7 +1819,7 @@ class AgentTeamsRuntimeTests(unittest.TestCase):
             self.assertEqual(assignment["task_id"], task.id)
             self.assertEqual(assignment["cwd"], worktree)
             self.assertIn(
-                "Wrote", lesson.run_write(
+                "已写入", lesson.run_write(
                     "nested/result.txt", "done", cwd=lesson.assignment_cwd("alice")
                 )
             )
@@ -1828,7 +1828,7 @@ class AgentTeamsRuntimeTests(unittest.TestCase):
             escaped = lesson.run_write(
                 "../outside.txt", "bad", cwd=lesson.assignment_cwd("alice")
             )
-            self.assertIn("escapes workspace", escaped)
+            self.assertIn("超出工作区", escaped)
             self.assertFalse((lesson.WORKTREES_DIR / "outside.txt").exists())
             missing_cwd = lesson.run_bash("pwd", cwd=worktree / "missing")
             self.assertIn("FileNotFoundError", missing_cwd)

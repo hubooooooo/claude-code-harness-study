@@ -1,0 +1,144 @@
+{
+  "title": "子 Agent：把一件要翻很多资料的活派出去，主对话只收结论",
+  "file": "s06_subagent/code.py",
+  "task": "看看 tests 目录里的测试都在测什么，给我一句话总结",
+  "steps": [
+    {
+      "title": "这一章改了什么：多一个 task 工具，它会启动第二个循环",
+      "desc": "工具清单里新增 task。模型调用它时，程序不是去执行命令，而是启动另一个 agent_loop，也就是「子 Agent」。子 Agent 用自己的系统提示 SUB_SYSTEM，工具只有基础的五个，没有 task，所以它不能再往下派人。",
+      "code": {
+        "fn": "TASK_TOOL、TOOLS 和 SUB_TOOLS",
+        "lines": [
+          "SUB_TOOLS = list(BASE_TOOLS)",
+          "\"name\": \"task\",",
+          "\"description\": \"Run a subagent with fresh conversation context and return its final text.\",",
+          "TOOLS = [*BASE_TOOLS, TASK_TOOL]",
+          "TOOL_HANDLERS = {**BASE_HANDLERS, \"task\": run_subagent}"
+        ],
+        "hi": [0, 3, 4],
+        "note": "父 Agent 的工具是「基础五个 + task」，子 Agent 的工具只有「基础五个」。差一个 task，就差了「能不能再派人」。"
+      }
+    },
+    {
+      "title": "你输入一个要翻很多文件的任务",
+      "desc": "tests 目录里有几十个测试文件。如果主 Agent 自己一个个读，几十份文件内容会全部堆进它的记录本，后面每次调用模型都要带着这堆东西。这正是子 Agent 要解决的问题。",
+      "code": {
+        "fn": "程序入口",
+        "lines": [
+          "history.append({\"role\": \"user\", \"content\": query})",
+          "agent_loop(history)"
+        ]
+      },
+      "add": [
+        ["user", "看看 tests 目录里的测试都在测什么，给我一句话总结"]
+      ]
+    },
+    {
+      "title": "第 1 圈：主模型决定派人，而不是自己翻",
+      "round": 1,
+      "desc": "系统提示告诉模型：「需要专注调研或者独立的子任务时，用 task」。模型判断这个任务要读很多文件，于是调用 task，把要做的事写成一段话交出去。",
+      "code": {
+        "fn": "SYSTEM 和 agent_loop()",
+        "lines": [
+          "\"Use task for focused exploration or a self-contained subtask.\"",
+          "response = client.messages.create(",
+          "tools=TOOLS,"
+        ],
+        "hi": [0]
+      },
+      "add": [
+        ["assistant", "请执行 task：读一遍 tests 目录下所有测试文件，归纳它们各自在测什么，最后用一句话总结"]
+      ]
+    },
+    {
+      "title": "子 Agent 启动：一本全新的记录本",
+      "desc": "程序执行 task 工具，也就是调用 run_subagent。注意第一行：messages 是一个新列表，里面只有主模型交代的那段话。主对话里之前说过什么，子 Agent 一概不知道。终端打印「[子 Agent 开始]」。",
+      "code": {
+        "fn": "run_subagent()",
+        "lines": [
+          "def run_subagent(prompt: str) -> str:",
+          "print(\"\\n\\033[35m[子 Agent 开始]\\033[0m\")",
+          "messages = [{\"role\": \"user\", \"content\": prompt}]",
+          "for _ in range(30):"
+        ],
+        "hi": [2, 3],
+        "note": "两本记录本互不相通。右侧看到的是主 Agent 的记录本，子 Agent 的那一本在这几步里只在后台，不会显示在这里。"
+      }
+    },
+    {
+      "title": "子 Agent 第 1 圈：用自己的循环、自己的系统提示调模型",
+      "desc": "子 Agent 的循环和 s01 的一模一样，只是三样东西换了：系统提示换成 SUB_SYSTEM（「完成任务后给一个简短的最终答案」）、记录本是自己那本、工具清单是 SUB_TOOLS。子模型先要求列出 tests 目录。",
+      "code": {
+        "fn": "run_subagent()",
+        "lines": [
+          "response = client.messages.create(",
+          "system=SUB_SYSTEM,",
+          "messages=messages,",
+          "tools=SUB_TOOLS,"
+        ],
+        "hi": [1, 3]
+      }
+    },
+    {
+      "title": "子 Agent 执行工具：同一套钩子，终端上多了个「[子]」标记",
+      "desc": "子 Agent 执行工具走的是同一个 execute_tool，权限检查、日志钩子一个不少。区别只在终端上每一行前面加了「[子]」，让你分得清是谁在干活。子 Agent 接着一个一个读测试文件，这几圈读到的几十份内容，全都记在它自己的记录本里。",
+      "code": {
+        "fn": "run_subagent() 和 execute_tool()",
+        "lines": [
+          "output = execute_tool(block, SUB_HANDLERS)",
+          "print(f\"  \\033[90m[子] {block.name}: {output[:100]}\\033[0m\")",
+          "blocked = trigger_hooks(\"PreToolUse\", block)"
+        ],
+        "hi": [0, 1],
+        "note": "权限的边界对子 Agent 同样有效：它想删文件，一样会停下来问你。"
+      }
+    },
+    {
+      "title": "子 Agent 最后一圈：给出结论，只把文字带回去",
+      "desc": "子模型读完所有文件，不再要工具，写出一段总结。程序用 extract_text 把回复里的文字抽出来，作为 run_subagent 的返回值。子 Agent 记录本里那几十份文件内容，到这里就留在后台了，一个字都不会带回主对话。终端打印「[子 Agent 结束]」。",
+      "code": {
+        "fn": "run_subagent() 和 extract_text()",
+        "lines": [
+          "if not tool_calls:",
+          "print(\"\\033[35m[子 Agent 结束]\\033[0m\")",
+          "return extract_text(response.content) or \"(no summary)\"",
+          "if getattr(block, \"type\", None) == \"text\""
+        ],
+        "hi": [2],
+        "note": "子 Agent 最多跑 30 圈。30 圈还没结论，程序强行停掉，把「没有最终答案」告诉主模型，不会无限跑下去。"
+      }
+    },
+    {
+      "title": "回到主循环：子 Agent 的结论变成一条工具结果",
+      "desc": "对主循环来说，task 和 bash 没有区别：调用了一个工具，拿到一段文字，追加进记录本。主 Agent 的记录本只多了这一条结论，而不是几十份文件。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "output = execute_tool(block, TOOL_HANDLERS)",
+          "\"type\": \"tool_result\",",
+          "messages.append({\"role\": \"user\", \"content\": results})"
+        ],
+        "hi": [2]
+      },
+      "add": [
+        ["tool", "tests 目录共 31 个测试文件：s01–s05 测循环、工具、权限、钩子、待办清单；s06–s14 测各部件的运行时行为；另有网页和 README 的一致性检查。"]
+      ]
+    },
+    {
+      "title": "第 2 圈：主模型回答，循环结束",
+      "round": 2,
+      "desc": "主模型看到结论，直接回答你。回头看本章的机制：主 Agent 派活、子 Agent 用一本独立的记录本干活、只把最终文字交回来。好处是主对话保持干净；代价是子 Agent 不知道主对话的来龙去脉，交代任务的那段话必须写清楚。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "if not tool_calls:",
+          "return"
+        ],
+        "note": "产品经理要判断的：哪些活「过程很长、结论很短」，值得派出去；交代任务时要带上哪些背景。"
+      },
+      "add": [
+        ["assistant", "一句话：这些测试覆盖了 17 章每个部件的核心行为，外加网页与文档的一致性。"]
+      ]
+    }
+  ]
+}

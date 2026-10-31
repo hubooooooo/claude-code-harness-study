@@ -46,6 +46,7 @@ MODEL = os.getenv("MODEL_ID", "deepseek-chat")
 SYSTEM = (
     f"You are a coding agent at {WORKDIR}. Use tools to solve tasks. "
     "Set run_in_background to true only for independent Bash commands."
+    " Always answer in Chinese."
 )
 
 
@@ -97,9 +98,9 @@ def _run_bash_process(command: str) -> tuple[str, int | None]:
             _shell_processes.add(process)
         stdout, stderr = process.communicate(timeout=120)
         output = (stdout + stderr).strip()
-        return (output[:50000] if output else "(no output)"), process.returncode
+        return (output[:50000] if output else "(没有输出)"), process.returncode
     except subprocess.TimeoutExpired:
-        return "Error: Timeout (120s)", None
+        return "错误：超时（120 秒）", None
     except OSError as error:
         return f"Error: {type(error).__name__}: {error}", None
     finally:
@@ -139,7 +140,7 @@ def run_write(path: str, content: str) -> str:
         file_path = (WORKDIR / path).resolve()
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content)
-        return f"Wrote {len(content)} bytes to {path}"
+        return f"已写入（{len(content)} 字节）：{path}"
     except Exception as error:
         return f"Error: {error}"
 
@@ -149,9 +150,9 @@ def run_edit(path: str, old_text: str, new_text: str) -> str:
         file_path = (WORKDIR / path).resolve()
         text = file_path.read_text()
         if old_text not in text:
-            return f"Error: text not found in {path}"
+            return f"错误：在 {path} 里找不到要替换的文字"
         file_path.write_text(text.replace(old_text, new_text, 1))
-        return f"Edited {path}"
+        return f"已修改 {path}"
     except Exception as error:
         return f"Error: {error}"
 
@@ -164,7 +165,7 @@ def run_glob(pattern: str) -> str:
             for match in base.glob(pattern)
             if match.resolve().is_relative_to(base)
         ]
-        return "\n".join(matches) if matches else "(no matches)"
+        return "\n".join(matches) if matches else "(没有匹配的文件)"
     except Exception as error:
         return f"Error: {error}"
 
@@ -233,43 +234,43 @@ def permission_hook(block):
         command = block.input.get("command", "")
         for pattern in DENY_LIST:
             if pattern in command:
-                print(f"\n\033[31m[blocked] '{pattern}'\033[0m")
-                return "Permission denied by deny list"
+                print(f"\n\033[31m[已拦截] '{pattern}'\033[0m")
+                return "权限被拒绝：命中黑名单"
         if any(keyword in command for keyword in DESTRUCTIVE):
-            print("\n\033[33m[permission] Potentially destructive command\033[0m")
-            print(f"   Tool: {block.name}({block.input})")
-            choice = input("   Allow? [y/N] ").strip().lower()
+            print("\n\033[33m[权限] 可能有破坏性的命令\033[0m")
+            print(f"   工具：{block.name}({block.input})")
+            choice = input("   允许执行吗？[y/N] ").strip().lower()
             if choice not in ("y", "yes"):
-                return "Permission denied by user"
+                return "权限被拒绝：用户不允许"
 
     if block.name in ("read_file", "write_file", "edit_file"):
         path = block.input.get("path", "")
         if not (WORKDIR / path).resolve().is_relative_to(WORKDIR):
-            print("\n\033[33m[permission] Access outside workspace\033[0m")
-            print(f"   Tool: {block.name}({block.input})")
-            choice = input("   Allow? [y/N] ").strip().lower()
+            print("\n\033[33m[权限] 要访问工作区以外的路径\033[0m")
+            print(f"   工具：{block.name}({block.input})")
+            choice = input("   允许执行吗？[y/N] ").strip().lower()
             if choice not in ("y", "yes"):
-                return "Permission denied by user"
+                return "权限被拒绝：用户不允许"
     return None
 
 
 def log_hook(block):
     preview = str(list(block.input.values())[:2])[:60]
-    print(f"\033[90m[HOOK] {block.name}({preview})\033[0m")
+    print(f"\033[90m[钩子] {block.name}({preview})\033[0m")
     return None
 
 
 def large_output_hook(block, output):
     if len(str(output)) > 100000:
         print(
-            f"\033[33m[HOOK] Large output from {block.name}: "
-            f"{len(str(output))} chars\033[0m"
+            f"\033[33m[钩子] 输出很长，来自 {block.name}: "
+            f"{len(str(output))} 个字符\033[0m"
         )
     return None
 
 
 def context_inject_hook(query: str):
-    print(f"\033[90m[HOOK] UserPromptSubmit: working in {WORKDIR}\033[0m")
+    print(f"\033[90m[钩子] UserPromptSubmit：工作目录 {WORKDIR}\033[0m")
     return None
 
 
@@ -284,7 +285,7 @@ def summary_hook(messages: list):
         )
         if isinstance(block, dict) and block.get("type") == "tool_result"
     )
-    print(f"\033[90m[HOOK] Stop: session used {tool_count} tool calls\033[0m")
+    print(f"\033[90m[钩子] Stop：这次会话共调用了 {tool_count} 次工具\033[0m")
     return None
 
 
@@ -298,7 +299,7 @@ register_hook("Stop", summary_hook)
 def call_tool(block) -> str:
     handler = TOOL_HANDLERS.get(block.name)
     try:
-        output = handler(**block.input) if handler else f"Unknown: {block.name}"
+        output = handler(**block.input) if handler else f"未知工具：{block.name}"
     except Exception as error:
         output = f"Error: {error}"
     return str(output)
@@ -341,7 +342,7 @@ class BackgroundManager:
             with self._lock:
                 self.tasks.pop(task_id, None)
             raise
-        print(f"  [background] started {task_id}: {command[:60]}")
+        print(f"  [后台] 已启动 {task_id}：{command[:60]}")
         return task_id
 
     def _run(self, task_id: str, command: str):
@@ -381,7 +382,7 @@ class BackgroundManager:
                 f"  <summary>{result[:500]}</summary>\n"
                 f"</task_notification>"
             )
-            print(f"  [background] collected {task_id}: {task['status']}")
+            print(f"  [后台] 已收回 {task_id}：{task['status']}")
         return notifications
 
 
@@ -482,8 +483,8 @@ def agent_loop(messages: list):
 
 
 if __name__ == "__main__":
-    print("s11: Background Tasks - explicit background Bash execution")
-    print("Enter a question, press Enter to send. Type q to quit.\n")
+    print("s11：后台任务")
+    print("输入任务后按回车发送，输入 q 退出。\n")
 
     history = []
     while True:

@@ -47,7 +47,7 @@ WORKDIR = Path.cwd()
 client = Anthropic(base_url=os.getenv("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic"))
 MODEL = os.getenv("MODEL_ID", "deepseek-chat")
 
-SYSTEM = f"You are a coding agent at {WORKDIR}. Use tools to solve tasks. Act, don't explain."
+SYSTEM = f"You are a coding agent at {WORKDIR}. Use tools to solve tasks. Act, don't explain. Always answer in Chinese."
 
 
 # -- From s01 (unchanged) --
@@ -55,15 +55,15 @@ SYSTEM = f"You are a coding agent at {WORKDIR}. Use tools to solve tasks. Act, d
 def run_bash(command: str) -> str:
     dangerous = ["rm -rf /", "sudo", "shutdown", "reboot", "> /dev/"]
     if any(d in command for d in dangerous):
-        return "Error: Dangerous command blocked"
+        return "错误：危险命令已拦截"
     try:
         r = subprocess.run(command, shell=True, cwd=WORKDIR,
                            capture_output=True, text=True,
                            encoding="utf-8", errors="replace", timeout=120)
         out = (r.stdout + r.stderr).strip()
-        return out[:50000] if out else "(no output)"
+        return out[:50000] if out else "(没有输出)"
     except subprocess.TimeoutExpired:
-        return "Error: Timeout (120s)"
+        return "错误：超时（120 秒）"
     except (FileNotFoundError, OSError) as e:
         return f"Error: {e}"
 
@@ -73,7 +73,7 @@ def run_bash(command: str) -> str:
 def safe_path(p: str) -> Path:
     path = (WORKDIR / p).resolve()
     if not path.is_relative_to(WORKDIR):
-        raise ValueError(f"Path escapes workspace: {p}")
+        raise ValueError(f"路径超出工作区：{p}")
     return path
 
 
@@ -92,7 +92,7 @@ def run_write(path: str, content: str) -> str:
         file_path = safe_path(path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content)
-        return f"Wrote {len(content)} bytes to {path}"
+        return f"已写入（{len(content)} 字节）：{path}"
     except Exception as e:
         return f"Error: {e}"
 
@@ -102,9 +102,9 @@ def run_edit(path: str, old_text: str, new_text: str) -> str:
         file_path = safe_path(path)
         text = file_path.read_text()
         if old_text not in text:
-            return f"Error: text not found in {path}"
+            return f"错误：在 {path} 里找不到要替换的文字"
         file_path.write_text(text.replace(old_text, new_text, 1))
-        return f"Edited {path}"
+        return f"已修改 {path}"
     except Exception as e:
         return f"Error: {e}"
 
@@ -117,7 +117,7 @@ def run_glob(pattern: str) -> str:
         for match in base.glob(pattern):
             if match.resolve().is_relative_to(base):
                 results.append(str(match.relative_to(base)))
-        return "\n".join(results) if results else "(no matches)"
+        return "\n".join(results) if results else "(没有匹配的文件)"
     except Exception as e:
         return f"Error: {e}"
 
@@ -167,7 +167,7 @@ def agent_loop(messages: list):
         for block in tool_calls:
             print(f"\033[33m> {block.name}\033[0m")
             handler = TOOL_HANDLERS.get(block.name)
-            output = handler(**block.input) if handler else f"Unknown: {block.name}"
+            output = handler(**block.input) if handler else f"未知工具：{block.name}"
             print(str(output)[:200])
             results.append({"type": "tool_result", "tool_use_id": block.id, "content": output})
 
@@ -175,8 +175,8 @@ def agent_loop(messages: list):
 
 
 if __name__ == "__main__":
-    print("s02: Tool Use - four tools added to s01")
-    print("Enter a question, press Enter to send. Type q to quit.\n")
+    print("s02：工具调用")
+    print("输入任务后按回车发送，输入 q 退出。\n")
 
     history = []
     while True:

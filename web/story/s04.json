@@ -1,0 +1,166 @@
+{
+  "title": "钩子：把「检查」从循环里拆出来，挂在固定的位置上",
+  "file": "s04_hooks/code.py",
+  "task": "把 README 里的项目名改成「晨报助手」",
+  "steps": [
+    {
+      "title": "先看这一章改了什么：循环里不再写死检查",
+      "desc": "s03 的循环里直接写着「if not check_permission(block)」。s04 把它换成「trigger_hooks(\"PreToolUse\", block)」：循环只负责在固定位置「喊一声」，具体做什么检查，由挂在那个位置上的钩子决定。四个位置：用户输入之后、执行工具之前、执行工具之后、循环要结束时。",
+      "code": {
+        "fn": "钩子表 HOOKS 和 trigger_hooks()",
+        "lines": [
+          "HOOKS = {\"UserPromptSubmit\": [], \"PreToolUse\": [], \"PostToolUse\": [], \"Stop\": []}",
+          "def trigger_hooks(event: str, *args):",
+          "for callback in HOOKS[event]:",
+          "result = callback(*args)",
+          "if result is not None:  # A hook result blocks this tool call.",
+          "return result"
+        ],
+        "hi": [0, 4, 5],
+        "note": "一个位置可以挂多个钩子，按顺序跑。哪个钩子返回了内容，就表示「拦下来」，后面的不再跑。"
+      }
+    },
+    {
+      "title": "程序启动时，把钩子挂上去",
+      "desc": "权限检查、日志、输出过长提醒、会话总结，各写成一个小函数，用 register_hook 挂到对应位置。以后要加新检查，只需再挂一个，循环一行都不用动。",
+      "code": {
+        "fn": "程序顶部",
+        "lines": [
+          "register_hook(\"UserPromptSubmit\", context_inject_hook)",
+          "register_hook(\"PreToolUse\", permission_hook)",
+          "register_hook(\"PreToolUse\", log_hook)",
+          "register_hook(\"PostToolUse\", large_output_hook)",
+          "register_hook(\"Stop\", summary_hook)"
+        ],
+        "note": "PreToolUse 挂了两个：先查权限，再记日志。顺序就是挂的顺序。"
+      }
+    },
+    {
+      "title": "你输入一句话：第一个钩子响了",
+      "desc": "你的话还没进记录本，程序先喊一声 UserPromptSubmit。这里挂的钩子只在终端打印一行「工作目录是哪里」。真正的产品里，这个位置常用来给模型补上下文，比如当前时间、用户身份。",
+      "code": {
+        "fn": "程序入口 和 context_inject_hook()",
+        "lines": [
+          "trigger_hooks(\"UserPromptSubmit\", query)",
+          "history.append({\"role\": \"user\", \"content\": query})",
+          "print(f\"\\033[90m[钩子] UserPromptSubmit：工作目录 {WORKDIR}\\033[0m\")"
+        ],
+        "hi": [0]
+      },
+      "add": [
+        ["user", "把 README 里的项目名改成「晨报助手」"]
+      ]
+    },
+    {
+      "title": "第 1 圈：模型要先读文件",
+      "round": 1,
+      "desc": "调用模型和前几章完全一样。模型判断：要改名，得先知道 README 现在写的是什么，于是要求读 README.md。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "response = client.messages.create(",
+          "messages.append({\"role\": \"assistant\", \"content\": response.content})"
+        ]
+      },
+      "add": [
+        ["assistant", "请执行 read_file：README.md"]
+      ]
+    },
+    {
+      "title": "执行之前：PreToolUse 位置上的两个钩子依次跑",
+      "desc": "循环喊一声 PreToolUse。第一个钩子 permission_hook 检查：read_file 的路径在工作区里，放行（返回 None）。第二个钩子 log_hook 打印一行「[钩子] read_file(['README.md'])」，也返回 None。两个都没拦，工具可以执行。",
+      "code": {
+        "fn": "agent_loop() 和 log_hook()",
+        "lines": [
+          "blocked = trigger_hooks(\"PreToolUse\", block)",
+          "if blocked:",
+          "print(f\"\\033[90m[钩子] {block.name}({args_preview})\\033[0m\")",
+          "return None"
+        ],
+        "hi": [0, 1],
+        "note": "返回 None 表示「我没意见」。只要所有钩子都没意见，blocked 就是空的，往下执行。"
+      }
+    },
+    {
+      "title": "执行读文件，然后 PostToolUse 钩子再响一次",
+      "desc": "程序读出 README 内容。执行完立刻喊一声 PostToolUse，挂在这里的钩子检查输出长不长（超过 10 万字符才提醒）。这次很短，什么也不做。",
+      "code": {
+        "fn": "agent_loop() 和 large_output_hook()",
+        "lines": [
+          "output = handler(**block.input) if handler else f\"未知工具：{block.name}\"",
+          "trigger_hooks(\"PostToolUse\", block, output)  # s04: post hook",
+          "if len(str(output)) > 100000:"
+        ],
+        "hi": [1]
+      },
+      "add": [
+        ["tool", "# 每日简报工具　　一个自动汇总……"]
+      ]
+    },
+    {
+      "title": "第 2 圈：模型要改文件",
+      "round": 2,
+      "desc": "模型看到了原文，要求用 edit_file 把「每日简报工具」替换成「晨报助手」。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "messages.append({\"role\": \"user\", \"content\": results})",
+          "response = client.messages.create("
+        ]
+      },
+      "add": [
+        ["assistant", "请执行 edit_file：README.md，把「每日简报工具」改成「晨报助手」"]
+      ]
+    },
+    {
+      "title": "权限钩子：改文件要看路径在不在工作区里",
+      "desc": "PreToolUse 再次响起。permission_hook 对读、写、改三种文件工具都检查一件事：路径有没有跑到工作区外面。README.md 在工作区里，放行。如果模型想改 /etc/hosts 这种外面的文件，这里会停下来问你。",
+      "code": {
+        "fn": "permission_hook()",
+        "lines": [
+          "if block.name in (\"read_file\", \"write_file\", \"edit_file\"):",
+          "path = block.input.get(\"path\", \"\")",
+          "if not (WORKDIR / path).resolve().is_relative_to(WORKDIR):",
+          "choice = input(\"   允许执行吗？[y/N] \").strip().lower()"
+        ],
+        "hi": [2],
+        "note": "s03 的 check_permission() 整段搬到了这里，逻辑没变，只是换了个挂法。"
+      }
+    },
+    {
+      "title": "执行修改",
+      "desc": "放行后执行 edit_file，文件改好了。PostToolUse 钩子照例看一眼输出长度。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "output = handler(**block.input) if handler else f\"未知工具：{block.name}\"",
+          "results.append({\"type\": \"tool_result\", \"tool_use_id\": block.id, \"content\": output})"
+        ]
+      },
+      "add": [
+        ["tool", "已修改 README.md"]
+      ]
+    },
+    {
+      "title": "第 3 圈：模型说做完了，Stop 钩子最后响一次",
+      "round": 3,
+      "desc": "模型不再要工具，循环准备退出。退出前喊一声 Stop，挂在这里的钩子数一数记录本里有几条工具结果，打印「这次会话共调用了 2 次工具」。注意：Stop 钩子如果返回内容，循环不会结束，而是把这段内容当成新的用户消息继续跑。s17 的「目标循环」就是靠这个位置实现的。",
+      "code": {
+        "fn": "agent_loop() 和 summary_hook()",
+        "lines": [
+          "if not tool_calls:",
+          "force = trigger_hooks(\"Stop\", messages)",
+          "if force:",
+          "messages.append({\"role\": \"user\", \"content\": force})",
+          "continue",
+          "return"
+        ],
+        "hi": [1, 2, 3, 4],
+        "note": "四个位置里，Stop 最有意思：它能「不让模型停」。"
+      },
+      "add": [
+        ["assistant", "已把 README 里的项目名改成「晨报助手」。"]
+      ]
+    }
+  ]
+}

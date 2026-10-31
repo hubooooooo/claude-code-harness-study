@@ -295,7 +295,7 @@ class AnthropicAgentRunner:
             system=(
                 "You are a focused workflow agent. Complete only the supplied "
                 "step. Do not claim access to files or results not included in "
-                "the prompt."
+                "the prompt. Always answer in Chinese."
             ),
             messages=[{"role": "user", "content": request}],
             max_tokens=2000,
@@ -821,11 +821,11 @@ async def run_demo(argv):
     if argv and argv[0] == "resume":
         resume_id = _read_last_run()
         if not resume_id:
-            print("nothing to resume; run `python code.py demo` first.")
+            print("没有可续跑的记录，请先运行 `python code.py demo`。")
             return
-        print(f"resuming {resume_id}; unchanged agent() calls use the journal cache\n")
+        print(f"续跑 {resume_id}：没变化的 agent() 调用直接用日志缓存，不再花钱\n")
     else:
-        print("launching workflow `review-changes`\n")
+        print("启动工作流 `review-changes`\n")
 
     out = await WORKFLOW_HANDLERS["Workflow"](
         name="review-changes",
@@ -833,7 +833,7 @@ async def run_demo(argv):
         resume_from_run_id=resume_id,
     )
 
-    print("\nresult:")
+    print("\n确认为真的问题：")
     for f in out["result"].get("confirmed", []):
         print(f"  [{f['severity']:<6}] {f['dimension']}: {f['title']}")
     task = out["task"]
@@ -848,8 +848,8 @@ def run_cli():
     install_workflow_tool(host)
     host.CLI_ACTIVE = True
     host.start_runtime_services()
-    print("s16: workflow runtime")
-    print("Enter a question, press Enter to send. Type q to quit.\n")
+    print("s16：工作流运行时")
+    print("输入任务后按回车发送，输入 q 退出。\n")
     history = []
     context = host.update_context({}, history)
     session_state = {"active_user_request": "(no active user request)"}

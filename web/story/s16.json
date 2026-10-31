@@ -1,0 +1,199 @@
+{
+  "title": "工作流运行时：把多步编排写成代码，模型一次调用就跑完一整套",
+  "file": "s16_workflow_runtime/code.py",
+  "task": "用 review-changes 工作流帮我审一下 load_user 这段改动",
+  "steps": [
+    {
+      "title": "这一章改了什么：s15 的工具池里多了一个 Workflow 工具",
+      "desc": "s16 不改 s15 的循环，只给它多装一个工具。程序启动时把 s15 加载进来，把它的「拼装工具池」函数包一层：原来有什么照旧，再追加一个叫 Workflow 的工具。模型看到的只是工具清单里多了一项。",
+      "code": {
+        "fn": "install_workflow_tool()",
+        "lines": [
+          "base_assemble = host.assemble_tool_pool",
+          "tools, handlers = base_assemble()",
+          "tools.append(WORKFLOW_TOOL)",
+          "handlers[\"Workflow\"] = run_workflow_sync",
+          "host.assemble_tool_pool = assemble_with_workflow"
+        ],
+        "hi": [2, 3],
+        "note": "一行没动 s15 的循环，这是总装之后加部件的正确姿势。"
+      }
+    },
+    {
+      "title": "你输入一句话",
+      "desc": "这个任务要从四个角度审代码，每条发现还要复核。如果让模型自己一圈一圈地做，要跑很多圈，而且每次做法都不一样。s16 的思路是：把这套流程固定下来写成代码。",
+      "code": {
+        "fn": "run_cli()",
+        "lines": [
+          "host.trigger_hooks(\"UserPromptSubmit\", query)",
+          "history.append({\"role\": \"user\", \"content\": query})",
+          "host.agent_loop(history, context, query)"
+        ]
+      },
+      "add": [
+        ["user", "用 review-changes 工作流帮我审一下 load_user 这段改动"]
+      ]
+    },
+    {
+      "title": "第 1 圈：模型调用 Workflow 工具，只报名字和输入",
+      "round": 1,
+      "desc": "模型在工具清单里看到 Workflow，描述是「按名字运行一个保存好的工作流」。它不需要知道工作流里面怎么跑，只要给出名字 review-changes 和要审的代码。",
+      "code": {
+        "fn": "WORKFLOW_TOOL",
+        "lines": [
+          "\"name\": \"Workflow\",",
+          "\"description\": \"Run a saved workflow by name. Pass input in args.\",",
+          "\"resume_from_run_id\": {\"type\": \"string\"},"
+        ],
+        "hi": [1]
+      },
+      "add": [
+        ["assistant", "请执行 Workflow：name=review-changes，args={changes: \"def load_user(user_id): query = f'SELECT * FROM users WHERE id = {user_id}' ...\"}"]
+      ]
+    },
+    {
+      "title": "程序查注册表、过权限、分配一个运行编号",
+      "desc": "程序按名字到注册表 WORKFLOWS 里找：这个工作流是谁写的代码。找到后先校验元信息，再过一遍 s03 式的允许／拒绝检查，然后分配一个唯一的 run_id，在 .runtime 目录里给这次运行建档。",
+      "code": {
+        "fn": "run_workflow() 和 WorkflowTool.call()",
+        "lines": [
+          "if name not in WORKFLOWS:",
+          "meta, script_fn = WORKFLOWS[name]",
+          "validate_meta(meta)",
+          "check_permission(meta)",
+          "run_id = reserve_run_id(meta)"
+        ],
+        "hi": [1, 4],
+        "note": "工作流是人写好、放进注册表的代码，模型只能点名运行，不能自己现编一个。"
+      }
+    },
+    {
+      "title": "工作流脚本开始跑：Review 阶段，四个维度各派一个小 Agent",
+      "desc": "脚本第一步宣布进入 Review 阶段，然后对四个维度（正确性、安全、性能、风格）各发起一次 agent() 调用：把代码和「只从这个角度找问题」的要求交给一个独立的小模型调用。四路同时跑，互不等待。",
+      "code": {
+        "fn": "sample_workflow() 和 audit()",
+        "lines": [
+          "ctx.phase(\"Review\")",
+          "DIMENSIONS = [\"correctness\", \"security\", \"performance\", \"style\"]",
+          "out = await ctx.agent(",
+          "schema=FINDINGS_SCHEMA, label=f\"audit:{dimension}\", phase=\"Review\")",
+          "results = await ctx.pipeline(DIMENSIONS, audit, verify)"
+        ],
+        "hi": [2, 4],
+        "note": "pipeline 的意思是：每个维度各走自己的「先审后核」两步，A 维度在核的时候 B 维度可能还在审。"
+      }
+    },
+    {
+      "title": "agent() 里面：一次独立的模型调用，结果必须符合规定的格式",
+      "desc": "每次 agent() 都是一次全新的模型调用，没有记录本，只有这一步的提示。调用时附上一个格式要求（schema），返回后程序用它校验：必须是一个 findings 数组，每条有标题和严重程度。不合格就带着「请返回合法 JSON」再试一次，还不行就报错。",
+      "code": {
+        "fn": "ExecutionState.agent()",
+        "lines": [
+          "run = await asyncio.to_thread(",
+          "self.runner.run, prompt, schema, label",
+          "ok, err = SimpleJsonSchema(schema).validate(result)",
+          "prompt + \"\\n\\nReturn valid JSON.\",",
+          "raise WorkflowInputError(f\"agent({{schema}}) invalid output: {err}\")"
+        ],
+        "hi": [2, 3],
+        "note": "格式由程序强制，后面的代码才能放心地直接用结果，不用再让模型「理解」一遍。"
+      },
+      "add": [
+        ["tool", "audit:security → findings: [{title: SQL 拼接字符串，存在注入风险, severity: high}]　audit:correctness → findings: [{title: 查不到用户时返回 None 未处理, severity: medium}]"]
+      ]
+    },
+    {
+      "title": "每个结果写进日志，并记一笔花费",
+      "desc": "agent() 成功返回后做三件事：把花掉的 tokens 记进预算；把结果按一个「语义键」写进 .runtime 下的日志文件；在终端打印一行 progress。语义键由标签、提示和格式算出来，和执行顺序无关。",
+      "code": {
+        "fn": "ExecutionState.agent() 和 WorkflowJournal",
+        "lines": [
+          "key = self.journal.key(\"agent\", label, prompt, schema)",
+          "self.budget.add(tokens)",
+          "self.journal.record(key, result)",
+          "self.task.progress_event(\"workflow_agent\", label=label,"
+        ],
+        "hi": [0, 2],
+        "note": "预算超了，agent() 直接报错而不是悄悄多花。这个上限是产品经理定的。"
+      }
+    },
+    {
+      "title": "Verify 阶段：每条发现派一个「对手」去复核，并行跑",
+      "desc": "某个维度审完，脚本立刻进入 Verify：对这个维度的每一条发现，再发起一次 agent()，要求它「站在反方，核实这条发现是不是真的」。多条发现用 parallel 同时跑，全部回来后只保留核实为真的。",
+      "code": {
+        "fn": "verify()",
+        "lines": [
+          "ctx.phase(\"Verify\")",
+          "verdicts = await ctx.parallel([",
+          "schema=VERDICT_SCHEMA, label=f\"verify:{dimension}:{f['title']}\", phase=\"Verify\"))",
+          "confirmed = [f for f, v in zip(audited[\"findings\"], verdicts)",
+          "if v and v.get(\"isReal\")]"
+        ],
+        "hi": [1, 3, 4],
+        "note": "审的人和核的人分开，和 s17 的思路一样：一个模型说的不算，要另一个模型核过。"
+      },
+      "add": [
+        ["tool", "verify:security:SQL 拼接 → {isReal: true, reason: 能复现}　verify:correctness:返回 None → {isReal: false, reason: 调用方已判空}"]
+      ]
+    },
+    {
+      "title": "工作流结束：整套结果变成一条工具结果，回到主循环",
+      "desc": "四个维度都走完，脚本把确认为真的发现按严重程度排序，返回一个字典。程序把它写进 .runtime 的输出文件，连同运行状态（完成、用了几个 agent、花了多少 tokens）一起打包，作为 Workflow 工具的返回值放进主循环的记录本。",
+      "code": {
+        "fn": "sample_workflow() 和 WorkflowTool._call_locked()",
+        "lines": [
+          "ctx.log(f\"confirmed {len(confirmed)} real finding(s)\")",
+          "return {\"confirmed\": confirmed}",
+          "_write_json(STORE / f\"{run_id}.output.json\", result)",
+          "return {\"launched\": launched, \"result\": result, \"task\": task}"
+        ]
+      },
+      "add": [
+        ["tool", "result: {confirmed: [{dimension: security, title: SQL 拼接字符串，存在注入风险, severity: high}]}　task: status=completed agents=7 tokens=5120"]
+      ]
+    },
+    {
+      "title": "第 2 圈：模型把结果讲给你听",
+      "round": 2,
+      "desc": "主循环的模型看到工具结果，用一句话总结，不再要工具，这一轮结束。它自始至终只调用了一次工具，里面跑了 7 次小模型调用，它一概不用操心。",
+      "code": {
+        "fn": "run_cli()",
+        "lines": [
+          "context = host.update_context(context, history)",
+          "host.print_turn_assistants(history, turn_start)"
+        ]
+      },
+      "add": [
+        ["assistant", "审查完成，确认 1 个真实问题（高）：load_user 用字符串拼接 SQL，存在注入风险，建议改成参数化查询。另一条「返回 None 未处理」复核后认为调用方已判空，不算问题。"]
+      ]
+    },
+    {
+      "title": "如果中途断了：resume 直接读日志，不再花钱",
+      "desc": "假设跑到第 5 个 agent() 时网络断了。你带着上次的 run_id 重新运行，程序先把日志里已有的结果读进缓存。每次 agent() 先算语义键，缓存里有就直接返回，progress 打 cached，不调用模型，不花 tokens；只有没跑过的那几步才真正执行。",
+      "code": {
+        "fn": "ExecutionState.agent()",
+        "lines": [
+          "cached = self.journal.cached(key)",
+          "if cached is not MISS:",
+          "phase=phase or self._phase, status=\"cached\")",
+          "return cached"
+        ],
+        "hi": [1, 3],
+        "note": "语义键和执行顺序无关，所以并行跑过的步骤，重跑时照样能命中缓存。"
+      }
+    },
+    {
+      "title": "回头看：工作流是「把计划写成代码」",
+      "desc": "s05 的待办清单是模型自己写、自己执行的计划，每次都可能不一样。s16 把固定的流程交给代码来编排：步骤顺序、并行与否、每步的格式、预算上限、断点续跑，全部由人定。模型只负责两头：决定调用它，和解释它的结果。中间那一大段，越稳定的事越该写成代码。",
+      "code": {
+        "fn": "运行时的硬性上限",
+        "lines": [
+          "AGENT_CAP = 1000                       # hard cap on agent() calls per run",
+          "CONCURRENCY = 8                        # parallelism cap (semaphore)",
+          "STORE = Path(__file__).parent / \".runtime\"   # snapshots + journals live here"
+        ],
+        "note": "三个数字都是产品经理要拍板的：一次最多派多少个 agent、同时跑几个、记录存在哪。"
+      }
+    }
+  ]
+}

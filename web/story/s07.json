@@ -1,0 +1,132 @@
+{
+  "title": "技能加载：系统提示里只放目录，用到哪个技能再把全文拿进来",
+  "file": "s07_skill_loading/code.py",
+  "task": "帮我审一下 s01 的 code.py，看看 agent_loop 有没有问题",
+  "steps": [
+    {
+      "title": "这一章改了什么：程序启动时先扫一遍 skills 文件夹",
+      "desc": "skills 目录下每个子文件夹放一份 SKILL.md，开头几行写着技能的名字和一句话描述。程序一启动，SkillLoader 把这些文件全部读一遍，记下每个技能的名字、描述和全文。这时候模型还没看到任何东西。",
+      "code": {
+        "fn": "SkillLoader.scan()",
+        "lines": [
+          "for manifest in sorted(self.skills_dir.glob(\"*/SKILL.md\")):",
+          "metadata, body = self.parse_frontmatter(content)",
+          "self.skills[name] = {",
+          "\"name\": name,",
+          "\"description\": description,",
+          "\"content\": content,"
+        ],
+        "hi": [0, 2],
+        "note": "技能就是一份写给模型看的说明书。谁来写、写什么，是产品经理的活。"
+      }
+    },
+    {
+      "title": "系统提示里只放「目录」：名字加一句话",
+      "desc": "程序把技能目录拼进系统提示：每个技能一行，只有名字和描述，再加一句「适用时用 load_skill 读完整说明」。四份说明书加起来可能有几千字，但此刻进入系统提示的只有四行。模型每次调用都要读系统提示，目录短，每次调用就省。",
+      "code": {
+        "fn": "SkillLoader.catalog() 和 build_system_prompt()",
+        "lines": [
+          "f\"- {skill['name']}: {skill['description']}\"",
+          "f\"Skills available:\\n{SKILL_LOADER.catalog()}\\n\\n\"",
+          "\"Use load_skill to read the full instructions when a skill applies.\""
+        ],
+        "hi": [1, 2],
+        "note": "这就是「按需加载」：目录常驻，全文按需。和 s06 的思路一样，都是在省记录本的空间。"
+      }
+    },
+    {
+      "title": "工具清单里多了 load_skill",
+      "desc": "load_skill 是程序自己实现的工具，不跑命令。模型传一个技能名，程序从刚才扫好的表里把全文拿出来返回。名字不对，就返回一句「没有这个技能，可用的有……」。",
+      "code": {
+        "fn": "TOOLS 和 SkillLoader.load()",
+        "lines": [
+          "{\"name\": \"load_skill\", \"description\": \"Load the full SKILL.md content by skill name.\",",
+          "skill = self.skills.get(name)",
+          "if skill:",
+          "return skill[\"content\"]",
+          "\"load_skill\": SKILL_LOADER.load,"
+        ],
+        "hi": [0, 3]
+      }
+    },
+    {
+      "title": "你输入一个审代码的任务",
+      "desc": "审代码正好对应 code-review 这个技能。看看模型会不会自己想到去加载它。",
+      "code": {
+        "fn": "程序入口",
+        "lines": [
+          "history.append({\"role\": \"user\", \"content\": query})",
+          "agent_loop(history)"
+        ]
+      },
+      "add": [
+        ["user", "帮我审一下 s01 的 code.py，看看 agent_loop 有没有问题"]
+      ]
+    },
+    {
+      "title": "第 1 圈：模型在目录里认出了 code-review",
+      "round": 1,
+      "desc": "模型读系统提示时看到目录里有一行「code-review：做全面的代码审查，用户要求审代码、找 bug 时使用」。它判断这个技能对得上，于是先调用 load_skill，而不是直接开始读代码。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "response = client.messages.create(",
+          "system=SYSTEM,",
+          "tools=TOOLS,"
+        ],
+        "hi": [1]
+      },
+      "add": [
+        ["assistant", "请执行 load_skill：code-review"]
+      ]
+    },
+    {
+      "title": "程序把整份说明书作为工具结果交回去",
+      "desc": "load_skill 返回 SKILL.md 全文，程序把它当成普通的工具结果追加进记录本。从这一步起，这份说明书才真正进入模型的视野。注意它进的是记录本，不是系统提示：以后 s08 压缩历史时，它也可能被压掉，到时模型得再加载一次。",
+      "code": {
+        "fn": "execute_tool() 和 agent_loop()",
+        "lines": [
+          "handler = TOOL_HANDLERS.get(block.name)",
+          "output = handler(**block.input) if handler else f\"未知工具：{block.name}\"",
+          "messages.append({\"role\": \"user\", \"content\": results})"
+        ],
+        "hi": [1, 2]
+      },
+      "add": [
+        ["tool", "# Code Review Skill　You now have expertise in conducting comprehensive code reviews. Follow this structured approach: 1. 先读目标文件　2. 按安全、性能、可维护性三类检查　3. 每条发现给出位置和改法……"]
+      ]
+    },
+    {
+      "title": "第 2 圈：按说明书的步骤做，先读文件",
+      "round": 2,
+      "desc": "说明书说先读目标文件。模型照做，调用 read_file 读 s01 的代码。接下来模型的每一步，都是在按刚加载进来的说明书走，而不是凭自己的习惯。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "response = client.messages.create(",
+          "output = execute_tool(block)"
+        ]
+      },
+      "add": [
+        ["assistant", "请执行 read_file：s01_agent_loop/code.py"],
+        ["tool", "#!/usr/bin/env python3　\"\"\"s01_agent_loop.py - Agent Loop……"]
+      ]
+    },
+    {
+      "title": "第 3 圈：按说明书的格式给出审查结论，循环结束",
+      "round": 3,
+      "desc": "模型按说明书要求的分类和格式写出结论，不再要工具，循环结束。回头看本章机制：技能说明书放在文件里，目录常驻系统提示，全文在模型自己判断「用得上」时才加载。换一个技能，改的是文件，不是代码。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "if not tool_calls:",
+          "return"
+        ],
+        "note": "产品经理要拍板的：哪些业务流程值得写成技能；描述那一句话怎么写，决定模型能不能在对的时候想起它。"
+      },
+      "add": [
+        ["assistant", "审查结论（按 code-review 技能）：1. 安全：bash 工具没有任何权限检查，任何命令都会直接执行。2. 可维护性：循环没有圈数上限。3. 性能：无明显问题。"]
+      ]
+    }
+  ]
+}

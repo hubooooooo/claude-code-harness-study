@@ -1,0 +1,212 @@
+{
+  "title": "总装：一个循环，十四个部件各在各的位置上",
+  "file": "s15_integrated_harness/code.py",
+  "task": "检查 docs 目录里有没有失效的链接，有就修掉",
+  "steps": [
+    {
+      "title": "这一章没有新部件：看一圈循环里，前十四章的东西各装在哪",
+      "desc": "s15 的 agent_loop 还是 s01 那个循环：调模型、执行工具、回填结果。不同的是每一步前后都多了固定的「插槽」：进圈先收定时任务（s12）和后台结果（s11），调模型前整理记录本（s08）和取记忆（s09），执行工具前后过钩子（s04）。下面用一个任务走一遍，经过哪个部件就点哪个的名。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "fired = consume_cron_queue()",
+          "inject_background_notifications(messages)",
+          "prepare_context(messages, active_request)",
+          "context = update_context(context, messages)",
+          "tools, handlers = assemble_tool_pool()",
+          "response = call_llm(messages, context, tools, state, max_tokens)"
+        ],
+        "note": "这六行就是一圈的开头。每一行背后是一章。"
+      }
+    },
+    {
+      "title": "你输入一句话：先过 UserPromptSubmit 钩子（s04）",
+      "desc": "和 s04 一样，你的话进记录本之前先喊一声钩子。然后进入循环。注意主程序拿了一把锁 agent_lock：后面会看到，还有一个后台线程也可能来跑这个循环，两边不能同时动记录本。",
+      "code": {
+        "fn": "程序入口",
+        "lines": [
+          "with agent_lock:",
+          "trigger_hooks(\"UserPromptSubmit\", query)",
+          "history.append({\"role\": \"user\", \"content\": query})",
+          "agent_loop(history, context, query)"
+        ],
+        "hi": [0, 1]
+      },
+      "add": [
+        ["user", "检查 docs 目录里有没有失效的链接，有就修掉"]
+      ]
+    },
+    {
+      "title": "调模型之前：整理记录本（s08 压缩）、翻出相关记忆（s09）",
+      "desc": "每一圈调模型前，记录本都要过一遍同样的流水线：先把过大的工具结果瘦身，再剪掉太老的消息，实在太长就让模型写一份摘要。接着从 .memory 目录里挑出和当前对话相关的记忆。第一圈记录本很短，这些步骤都是空跑，但位置固定在那里。",
+      "code": {
+        "fn": "prepare_context() 和 update_context()",
+        "lines": [
+          "messages[:] = tool_result_budget(messages)",
+          "messages[:] = micro_compact(messages)",
+          "if estimate_size(messages) > CONTEXT_LIMIT:",
+          "messages[:] = compact_history(messages, active_request)",
+          "\"memories\": MEMORY_RUNTIME.load_memories(messages),"
+        ],
+        "hi": [2, 3, 4],
+        "note": "CONTEXT_LIMIT 这个数字决定多久压缩一次，是产品经理要定的。"
+      }
+    },
+    {
+      "title": "系统提示每圈重新拼：技能目录（s07）、记忆、已连的 MCP（s14）",
+      "desc": "系统提示不是写死的一段话，而是每圈从当前状态拼出来的：身份和规则、工具清单、工作目录、当前时间、技能目录、记忆目录、相关记忆、已连接的 MCP 服务器。技能目录只列名字和一句描述，模型觉得需要再用 load_skill 读全文，这是 s07 的省上下文做法。",
+      "code": {
+        "fn": "assemble_system_prompt()",
+        "lines": [
+          "sections.append(\"Skills catalog:\\n\" + list_skills() +",
+          "\"\\nUse load_skill(name) when a skill is relevant.\")",
+          "sections.append(f\"Memory catalog:\\n{context['memory_catalog']}\")",
+          "sections.append(f\"Connected MCP servers: {', '.join(mcp_names)}\")"
+        ],
+        "hi": [0, 2, 3]
+      }
+    },
+    {
+      "title": "第 1 圈：调用模型，外面套一层重试",
+      "round": 1,
+      "desc": "调模型这一行被 with_retry 包着：遇到限流（429）等一会再试，遇到过载（529）连续两次就切到备用模型。模型回复：这是个多步任务，先用 todo_write 列清单（s05 的系统提示要求）。",
+      "code": {
+        "fn": "call_llm() 和 with_retry()",
+        "lines": [
+          "return with_retry(",
+          "lambda: client.messages.create(",
+          "model=state.current_model,",
+          "if \"ratelimit\" in name or \"429\" in msg:",
+          "state.current_model = FALLBACK_MODEL"
+        ],
+        "hi": [0, 4]
+      },
+      "add": [
+        ["assistant", "请执行 todo_write：[>] 找出 docs 里的所有链接 ／ [ ] 逐个检查是否可访问 ／ [ ] 修掉失效的"]
+      ]
+    },
+    {
+      "title": "执行工具：先过权限钩子（s03/s04），再到工具池里查表（s02），然后数圈（s05）",
+      "desc": "每个工具调用前喊 PreToolUse：权限钩子看命令在不在黑名单、路径有没有出工作区、MCP 工具要不要确认；日志钩子打一行。放行后到工具池里查表执行，执行完喊 PostToolUse。最后数一下：这圈用了 todo_write，计数清零；没用就加一，攒到 3 就塞提醒。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "blocked = trigger_hooks(\"PreToolUse\", block)",
+          "handler = handlers.get(block.name)",
+          "output = call_tool_handler(handler, block.input, block.name)",
+          "trigger_hooks(\"PostToolUse\", block, output)",
+          "if block.name == \"todo_write\":",
+          "rounds_since_todo = 0"
+        ],
+        "hi": [0, 2, 4]
+      },
+      "add": [
+        ["tool", "[>] 找出 docs 里的所有链接　[ ] 逐个检查是否可访问　[ ] 修掉失效的　(0/3 completed)"]
+      ]
+    },
+    {
+      "title": "第 2 圈：慢命令放到后台（s11）",
+      "round": 2,
+      "desc": "模型要跑一个脚本逐个请求链接，可能要几十秒。它在调用时标了 run_in_background=true。程序不等它：开一个线程去跑，立刻把「后台任务 bg_0001 已启动」当作工具结果还给模型，循环继续。",
+      "code": {
+        "fn": "agent_loop() 和 start_background_task()",
+        "lines": [
+          "if should_run_background(block.name, block.input):",
+          "bg_id = start_background_task(block, handlers)",
+          "output = (f\"[Background task {bg_id} started] \"",
+          "thread = threading.Thread(target=worker, daemon=True)"
+        ],
+        "hi": [0, 2]
+      },
+      "add": [
+        ["assistant", "请执行 bash（后台）：grep -o 'http[^)]*' docs/*.md | xargs -n1 curl -sI -o /dev/null -w '%{http_code} %{url}\\n'"],
+        ["tool", "[Background task bg_0001 started] Result will arrive as a task_notification."]
+      ]
+    },
+    {
+      "title": "第 3 圈：模型说「等结果」，这一轮先结束：Stop 钩子、记忆提取（s09）",
+      "round": 3,
+      "desc": "模型没有新工具要调，回复「等后台结果出来再修」。循环要结束了：先喊 Stop 钩子（打印这轮调了几次工具），再让记忆模块看看这段对话有没有值得长期记住的东西，写进 .memory。然后把屏幕交还给你。",
+      "code": {
+        "fn": "agent_loop() 和 remember_after_turn()",
+        "lines": [
+          "if not has_tool_use(response.content):",
+          "trigger_hooks(\"Stop\", messages)",
+          "remember_after_turn(messages)",
+          "if MEMORY_RUNTIME.extract_memories(messages):",
+          "MEMORY_RUNTIME.consolidate_memories()"
+        ],
+        "hi": [1, 2]
+      },
+      "add": [
+        ["assistant", "链接检查已在后台运行，结果回来后我再修。"]
+      ]
+    },
+    {
+      "title": "后台线程醒来：结果以通知的形式塞进记录本，再跑一圈",
+      "desc": "程序里另有一个线程每秒看一眼：有没有到点的定时任务（s12）、有没有队友发来的消息（s13）、有没有做完的后台任务。后台脚本跑完了，它拿到锁，把结果包成一条 task_notification 放进记录本，自己调用 agent_loop 再跑一圈。你没有输入任何东西，这一圈是程序自己发起的。",
+      "code": {
+        "fn": "async_event_loop() 和 collect_background_results()",
+        "lines": [
+          "if not fired and not inbox and not has_pending_background():",
+          "agent_loop(history, context, active_request)",
+          "f\"<task_notification>\\n\"",
+          "for note in collect_background_results():",
+          "content.append({\"type\": \"text\", \"text\": note})"
+        ],
+        "hi": [0, 1, 2],
+        "note": "定时任务、团队消息、后台结果，三种「不是你说的话」都从这一个入口进记录本。"
+      },
+      "add": [
+        ["prog", "<task_notification> bg_0001 completed：404 https://example.com/old-api　200 https://example.com/guide　（共 12 条，1 条失效）"]
+      ]
+    },
+    {
+      "title": "第 4、5 圈：修链接、勾清单、回答",
+      "round": 4,
+      "desc": "模型看到通知，用 edit_file 把失效链接改成新地址（权限钩子确认路径在工作区内），然后把清单三条全勾上，最后回答你。这两圈走的还是同一个循环、同样的插槽。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "messages.append({\"role\": \"user\", \"content\": build_user_content(results)})",
+          "release_completed_assignment(\"agent\")",
+          "return"
+        ]
+      },
+      "add": [
+        ["assistant", "请执行 edit_file：docs/guide.md，把 /old-api 改成 /api"],
+        ["tool", "已修改 docs/guide.md"],
+        ["assistant", "请执行 todo_write：[x] 找出链接 ／ [x] 逐个检查 ／ [x] 修掉失效的"],
+        ["tool", "[x] 找出 docs 里的所有链接　[x] 逐个检查是否可访问　[x] 修掉失效的　(3/3 completed)"],
+        ["assistant", "docs 里共 12 个链接，1 个失效（/old-api），已改为 /api。"]
+      ]
+    },
+    {
+      "title": "这次没用到、但一直在位置上的部件：子 Agent（s06）、任务系统（s10）、定时（s12）、团队（s13）",
+      "desc": "这个任务没派子 Agent，没建任务节点，没设定时，也没组团队，但这些工具都在清单里，模型随时可以用。系统提示里专门写了团队的规矩：先提方案等你确认，再 spawn_teammate；派出去以后就结束本轮，等事件回来。什么时候该用哪个，是这门课前面十四章要教会你判断的事。",
+      "code": {
+        "fn": "PROMPT_SECTIONS",
+        "lines": [
+          "\"todo_write, task, load_skill, compact, \"",
+          "\"create_task, update_task, list_tasks, get_task, claim_task, \"",
+          "\"schedule_cron, list_crons, cancel_cron, \"",
+          "\"spawn_teammate, list_teammates, send_message, \"",
+          "\"When parallel work would help, first propose a small team with clear \"",
+          "\"responsibilities and wait for the user's confirmation. Do not call \""
+        ],
+        "hi": [4, 5]
+      }
+    },
+    {
+      "title": "回头看：总装的意思是「位置固定，部件可换」",
+      "desc": "s15 没有发明新机制，它做的是把每个部件放到循环里一个固定的位置：进圈时收外部事件，调模型前整理和补充上下文，执行工具前后过钩子，出圈时做收尾。以后要加一个新部件，比如 s16 的工作流、s17 的目标判断器，就是往某个插槽里再挂一个东西，循环本身不动。判断一个自研方案靠不靠谱，先看它的循环有没有这些插槽。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "# One cycle: inject scheduled/background work, prepare context, call",
+          "# the model, execute tool_use blocks, append tool_results, repeat."
+        ]
+      }
+    }
+  ]
+}

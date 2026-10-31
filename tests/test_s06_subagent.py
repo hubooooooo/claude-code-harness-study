@@ -128,5 +128,5 @@ def test_subagent_file_tools_keep_the_kernel_permission_boundary():
         with patch.object(builtins, "input", return_value="n"):
             result = lesson.execute_tool(block, lesson.SUB_HANDLERS)
 
-        assert result == "Permission denied by user"
+        assert result == "权限被拒绝：用户不允许"
         assert not outside.exists()

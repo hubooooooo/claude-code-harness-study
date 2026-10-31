@@ -50,6 +50,7 @@ MODEL = os.getenv("MODEL_ID", "deepseek-chat")
 BASE_SYSTEM = (
     f"You are a coding agent at {WORKDIR}. Use built-in and connected MCP "
     "tools to solve tasks. Call connect_mcp before using a server."
+    " Always answer in Chinese."
 )
 
 
@@ -66,12 +67,12 @@ def run_bash(command: str) -> str:
             timeout=120,
         )
         output = (result.stdout + result.stderr).strip()
-        output = output[:50000] if output else "(no output)"
+        output = output[:50000] if output else "(没有输出)"
         if result.returncode:
             return f"Error: command exited with status {result.returncode}\n{output}"
         return output
     except subprocess.TimeoutExpired:
-        return "Error: Timeout (120s)"
+        return "错误：超时（120 秒）"
     except OSError as exc:
         return f"Error: {type(exc).__name__}: {exc}"
 
@@ -91,7 +92,7 @@ def run_write(path: str, content: str) -> str:
         target = (WORKDIR / path).resolve()
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
-        return f"Wrote {len(content)} bytes to {path}"
+        return f"已写入（{len(content)} 字节）：{path}"
     except Exception as exc:
         return f"Error: {exc}"
 
@@ -104,7 +105,7 @@ def run_edit(path: str, old_text: str, new_text: str) -> str:
         if count != 1:
             return f"Error: Expected 1 occurrence, found {count}"
         target.write_text(content.replace(old_text, new_text), encoding="utf-8")
-        return f"Edited {path}"
+        return f"已修改 {path}"
     except Exception as exc:
         return f"Error: {exc}"
 
@@ -117,7 +118,7 @@ def run_glob(pattern: str) -> str:
             for match in base.glob(pattern)
             if match.resolve().is_relative_to(base)
         ]
-        return "\n".join(matches[:200]) if matches else "(no matches)"
+        return "\n".join(matches[:200]) if matches else "(没有匹配的文件)"
     except Exception as exc:
         return f"Error: {exc}"
 
@@ -288,7 +289,7 @@ def connect_mcp(name: str) -> str:
     server = factory()
     mcp_clients[name] = server
     names = ", ".join(tool["name"] for tool in server.tools)
-    print(f"  [mcp] connected: {name} -> {names}")
+    print(f"  [MCP] 已连接 {name}，发现工具：{names}")
     return (
         f"Connected to MCP server '{name}'. "
         f"Discovered {len(server.tools)} tools: {names}"
@@ -389,42 +390,42 @@ def permission_hook(block):
         command = block.input.get("command", "")
         for pattern in DENY_LIST:
             if pattern in command:
-                return f"Permission denied by deny list: {pattern}"
+                return f"权限被拒绝：'{pattern}' 在黑名单里"
         if any(keyword in command for keyword in DESTRUCTIVE):
-            print(f"\n[permission] {block.name}({block.input})")
-            if input("Allow? [y/N] ").strip().lower() not in {"y", "yes"}:
-                return "Permission denied by user"
+            print(f"\n[权限] {block.name}({block.input})")
+            if input("允许执行吗？[y/N] ").strip().lower() not in {"y", "yes"}:
+                return "权限被拒绝：用户不允许"
 
     if block.name in {"read_file", "write_file", "edit_file"}:
         raw_path = block.input.get("path", "")
         if not (WORKDIR / raw_path).resolve().is_relative_to(WORKDIR.resolve()):
-            print(f"\n[permission] {block.name}({block.input})")
-            if input("Allow? [y/N] ").strip().lower() not in {"y", "yes"}:
-                return "Permission denied by user"
+            print(f"\n[权限] {block.name}({block.input})")
+            if input("允许执行吗？[y/N] ").strip().lower() not in {"y", "yes"}:
+                return "权限被拒绝：用户不允许"
 
     if block.name.startswith("mcp__"):
         policy = mcp_tool_policies.get(block.name, "confirm")
         if policy != "allow":
-            print(f"\n[permission] External tool {block.name}({block.input})")
-            if input("Allow? [y/N] ").strip().lower() not in {"y", "yes"}:
-                return "Permission denied by user"
+            print(f"\n[权限] 外部工具 {block.name}({block.input})")
+            if input("允许执行吗？[y/N] ").strip().lower() not in {"y", "yes"}:
+                return "权限被拒绝：用户不允许"
     return None
 
 
 def log_hook(block):
     preview = str(list(block.input.values())[:2])[:60]
-    print(f"[hook] {block.name}({preview})")
+    print(f"[钩子] {block.name}({preview})")
     return None
 
 
 def large_output_hook(block, output):
     if len(str(output)) > 100000:
-        print(f"[hook] Large output from {block.name}: {len(str(output))} chars")
+        print(f"[钩子] 输出很长，来自 {block.name}: {len(str(output))} 个字符")
     return None
 
 
 def context_hook(query: str):
-    print(f"[hook] UserPromptSubmit: working in {WORKDIR}")
+    print(f"[钩子] UserPromptSubmit：工作目录 {WORKDIR}")
     return None
 
 
@@ -439,7 +440,7 @@ def summary_hook(messages: list):
         )
         if isinstance(block, dict) and block.get("type") == "tool_result"
     )
-    print(f"[hook] Stop: session used {tool_count} tool calls")
+    print(f"[钩子] Stop：这次会话共调用了 {tool_count} 次工具")
     return None
 
 
@@ -511,8 +512,8 @@ def agent_loop(messages: list):
 
 
 if __name__ == "__main__":
-    print("s14: MCP tools")
-    print("Enter a question, press Enter to send. Type q to quit.\n")
+    print("s14：MCP 插件")
+    print("输入任务后按回车发送，输入 q 退出。\n")
     history = []
 
     while True:

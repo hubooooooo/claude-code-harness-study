@@ -46,7 +46,7 @@ WORKDIR = Path.cwd()
 client = Anthropic(base_url=os.getenv("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic"))
 MODEL = os.getenv("MODEL_ID", "deepseek-chat")
 
-SYSTEM = f"You are a coding agent at {WORKDIR}. Use tools to solve tasks. Act, don't explain."
+SYSTEM = f"You are a coding agent at {WORKDIR}. Use tools to solve tasks. Act, don't explain. Always answer in Chinese."
 
 
 # -- From s02-s03: tool implementations --
@@ -56,9 +56,9 @@ def run_bash(command: str) -> str:
         r = subprocess.run(command, shell=True, cwd=WORKDIR,
                            capture_output=True, text=True, timeout=120)
         out = (r.stdout + r.stderr).strip()
-        return out[:50000] if out else "(no output)"
+        return out[:50000] if out else "(没有输出)"
     except subprocess.TimeoutExpired:
-        return "Error: Timeout (120s)"
+        return "错误：超时（120 秒）"
 
 def run_read(path: str, limit: int | None = None) -> str:
     try:
@@ -75,7 +75,7 @@ def run_write(path: str, content: str) -> str:
         file_path = (WORKDIR / path).resolve()
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content)
-        return f"Wrote {len(content)} bytes to {path}"
+        return f"已写入（{len(content)} 字节）：{path}"
     except Exception as e:
         return f"Error: {e}"
 
@@ -84,9 +84,9 @@ def run_edit(path: str, old_text: str, new_text: str) -> str:
         file_path = (WORKDIR / path).resolve()
         text = file_path.read_text()
         if old_text not in text:
-            return f"Error: text not found in {path}"
+            return f"错误：在 {path} 里找不到要替换的文字"
         file_path.write_text(text.replace(old_text, new_text, 1))
-        return f"Edited {path}"
+        return f"已修改 {path}"
     except Exception as e:
         return f"Error: {e}"
 
@@ -98,7 +98,7 @@ def run_glob(pattern: str) -> str:
         for match in base.glob(pattern):
             if match.resolve().is_relative_to(base):
                 results.append(str(match.relative_to(base)))
-        return "\n".join(results) if results else "(no matches)"
+        return "\n".join(results) if results else "(没有匹配的文件)"
     except Exception as e:
         return f"Error: {e}"
 
@@ -145,40 +145,40 @@ def permission_hook(block):
     if block.name == "bash":
         for pattern in DENY_LIST:
             if pattern in block.input.get("command", ""):
-                print(f"\n\033[31m[blocked] '{pattern}'\033[0m")
-                return "Permission denied by deny list"
+                print(f"\n\033[31m[已拦截] '{pattern}'\033[0m")
+                return "权限被拒绝：命中黑名单"
         for kw in DESTRUCTIVE:
             if kw in block.input.get("command", ""):
-                print(f"\n\033[33m[permission] Potentially destructive command\033[0m")
-                print(f"   Tool: {block.name}({block.input})")
-                choice = input("   Allow? [y/N] ").strip().lower()
+                print(f"\n\033[33m[权限] 可能有破坏性的命令\033[0m")
+                print(f"   工具：{block.name}({block.input})")
+                choice = input("   允许执行吗？[y/N] ").strip().lower()
                 if choice not in ("y", "yes"):
-                    return "Permission denied by user"
+                    return "权限被拒绝：用户不允许"
     if block.name in ("read_file", "write_file", "edit_file"):
         path = block.input.get("path", "")
         if not (WORKDIR / path).resolve().is_relative_to(WORKDIR):
-            print(f"\n\033[33m[permission] Access outside workspace\033[0m")
-            print(f"   Tool: {block.name}({block.input})")
-            choice = input("   Allow? [y/N] ").strip().lower()
+            print(f"\n\033[33m[权限] 要访问工作区以外的路径\033[0m")
+            print(f"   工具：{block.name}({block.input})")
+            choice = input("   允许执行吗？[y/N] ").strip().lower()
             if choice not in ("y", "yes"):
-                return "Permission denied by user"
+                return "权限被拒绝：用户不允许"
     return None
 
 def log_hook(block):
     """PreToolUse: log every tool call."""
     args_preview = str(list(block.input.values())[:2])[:60]
-    print(f"\033[90m[HOOK] {block.name}({args_preview})\033[0m")
+    print(f"\033[90m[钩子] {block.name}({args_preview})\033[0m")
     return None
 
 def large_output_hook(block, output):
     """PostToolUse: warn on large output."""
     if len(str(output)) > 100000:
-        print(f"\033[33m[HOOK] Large output from {block.name}: {len(str(output))} chars\033[0m")
+        print(f"\033[33m[钩子] 输出很长，来自 {block.name}: {len(str(output))} 个字符\033[0m")
     return None
 
 # UserPromptSubmit hook: log user input before it reaches the LLM
 def context_inject_hook(query: str):
-    print(f"\033[90m[HOOK] UserPromptSubmit: working in {WORKDIR}\033[0m")
+    print(f"\033[90m[钩子] UserPromptSubmit：工作目录 {WORKDIR}\033[0m")
     return None
 
 # Stop hook: print summary when loop is about to exit
@@ -186,7 +186,7 @@ def summary_hook(messages: list):
     tool_count = sum(1 for m in messages
                      for b in (m.get("content") if isinstance(m.get("content"), list) else [])
                      if isinstance(b, dict) and b.get("type") == "tool_result")
-    print(f"\033[90m[HOOK] Stop: session used {tool_count} tool calls\033[0m")
+    print(f"\033[90m[钩子] Stop：这次会话共调用了 {tool_count} 次工具\033[0m")
     return None
 
 register_hook("UserPromptSubmit", context_inject_hook)
@@ -228,7 +228,7 @@ def agent_loop(messages: list):
                 continue
 
             handler = TOOL_HANDLERS.get(block.name)
-            output = handler(**block.input) if handler else f"Unknown: {block.name}"
+            output = handler(**block.input) if handler else f"未知工具：{block.name}"
 
             trigger_hooks("PostToolUse", block, output)  # s04: post hook
 
@@ -238,8 +238,8 @@ def agent_loop(messages: list):
 
 
 if __name__ == "__main__":
-    print("s04: Hooks - extension logic on hooks, loop stays clean")
-    print("Enter a question, press Enter to send. Type q to quit.\n")
+    print("s04：钩子")
+    print("输入任务后按回车发送，输入 q 退出。\n")
 
     history = []
     while True:

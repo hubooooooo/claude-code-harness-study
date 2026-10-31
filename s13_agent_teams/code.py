@@ -306,7 +306,7 @@ def claim_task(task_id: str, owner: str = "agent") -> str:
         save_task(task)
         teammate_assignments[owner] = {"task_id": task.id, "cwd": cwd}
         advance_assignment_version(owner)
-    print(f"  [claim] {task.subject} -> in_progress (owner: {owner})")
+    print(f"  [认领] {task.subject} -> 进行中（负责人：{owner}）")
     return f"Claimed {task.id} ({task.subject})"
 
 
@@ -332,11 +332,11 @@ def complete_task(task_id: str, owner: str = "agent") -> str:
         save_task(task)
         unblocked = [t.subject for t in list_tasks()
                      if t.status == "pending" and t.blockedBy and can_start(t.id)]
-    print(f"  [complete] {task.subject}")
+    print(f"  [完成] {task.subject}")
     msg = f"Completed {task.id} ({task.subject})"
     if unblocked:
         msg += f"\nUnblocked: {', '.join(unblocked)}"
-        print(f"  [unblocked] {', '.join(unblocked)}")
+        print(f"  [解除阻塞] {', '.join(unblocked)}")
     return msg
 
 
@@ -379,7 +379,7 @@ def _run_git(args: list[str], cwd: Path | None = None) -> tuple[bool, str]:
     except (OSError, subprocess.TimeoutExpired) as exc:
         return False, f"{type(exc).__name__}: {exc}"
     output = (result.stdout + result.stderr).strip()
-    return result.returncode == 0, output or "(no output)"
+    return result.returncode == 0, output or "(没有输出)"
 
 
 def run_git(args: list[str], cwd: Path | None = None) -> tuple[bool, str]:
@@ -563,7 +563,7 @@ def create_worktree(name: str, task_id: str) -> str:
                     f"{path} on branch '{branch}', but task binding failed: "
                     f"{exc}. Git data was retained for manual recovery.")
 
-    print(f"  \033[33m[worktree] created: {name} at {path}\033[0m")
+    print(f"  \033[33m[工作树] 已创建 {name}：{path}\033[0m")
     return f"Worktree '{name}' created at {path} for task {task_id}"
 
 
@@ -594,7 +594,7 @@ def remove_worktree(name: str, discard_changes: bool = False) -> str:
         )
         if not ok:
             return f"Error: Cannot verify worktree '{name}' status: {status}"
-        if status != "(no output)" and not discard_changes:
+        if status != "(没有输出)" and not discard_changes:
             changed = len([line for line in status.splitlines() if line.strip()])
             return (f"Error: Worktree '{name}' has {changed} uncommitted "
                     "change(s); preserve or discard them manually")
@@ -616,14 +616,14 @@ def remove_worktree(name: str, discard_changes: bool = False) -> str:
                     f"branch '{_worktree_branch(name)}' retained, but task "
                     f"unbinding failed: {exc}. Manual recovery is required.")
 
-    print(f"  [worktree] removed: {name}; branch retained")
+    print(f"  [工作树] 已移除 {name}，分支保留")
     return f"Worktree '{name}' removed; branch '{_worktree_branch(name)}' retained"
 
 
 # -- System Prompt --
 
 PROMPT_SECTIONS = {
-    "identity": "You are a coding agent. Act, don't explain.",
+    "identity": "You are a coding agent. Act, don't explain. Always answer in Chinese.",
     "tools": "Available tools: bash, read_file, write_file, edit_file, glob, "
              "create_task, update_task, list_tasks, get_task, claim_task, "
              "complete_task, "
@@ -661,7 +661,7 @@ def safe_path(p: str, cwd: Path | None = None) -> Path:
     base = (cwd or WORKDIR).resolve()
     path = (base / p).resolve()
     if not path.is_relative_to(base):
-        raise ValueError(f"Path escapes workspace: {p}")
+        raise ValueError(f"路径超出工作区：{p}")
     return path
 
 
@@ -676,12 +676,12 @@ def run_bash(command: str, cwd: Path | None = None) -> str:
             timeout=120,
         )
         output = (result.stdout + result.stderr).strip()
-        output = output[:50000] if output else "(no output)"
+        output = output[:50000] if output else "(没有输出)"
         if result.returncode:
             return f"Error: command exited with status {result.returncode}\n{output}"
         return output
     except subprocess.TimeoutExpired:
-        return "Error: Timeout (120s)"
+        return "错误：超时（120 秒）"
     except OSError as exc:
         return f"Error: {type(exc).__name__}: {exc}"
 
@@ -702,7 +702,7 @@ def run_write(path: str, content: str, cwd: Path | None = None) -> str:
         fp = safe_path(path, cwd)
         fp.parent.mkdir(parents=True, exist_ok=True)
         fp.write_text(content)
-        return f"Wrote {len(content)} bytes to {path}"
+        return f"已写入（{len(content)} 字节）：{path}"
     except Exception as e:
         return f"Error: {e}"
 
@@ -716,7 +716,7 @@ def run_edit(path: str, old_text: str, new_text: str,
         if count != 1:
             return f"Error: Expected 1 occurrence, found {count}"
         target.write_text(content.replace(old_text, new_text), encoding="utf-8")
-        return f"Edited {path}"
+        return f"已修改 {path}"
     except Exception as exc:
         return f"Error: {exc}"
 
@@ -770,7 +770,7 @@ def run_agent_glob(pattern: str) -> str:
 
 def run_create_task(subject: str, description: str = "") -> str:
     task = create_task(subject, description)
-    print(f"  \033[34m[create] {task.subject}\033[0m")
+    print(f"  \033[34m[建任务] {task.subject}\033[0m")
     return f"Created {task.id}: {task.subject}"
 
 
@@ -782,7 +782,7 @@ def run_update_task(task_id: str, addBlockedBy: list[str]) -> str:
     except FileNotFoundError:
         return f"Error: Task {task_id} not found"
     dependencies = ", ".join(task.blockedBy) or "(none)"
-    print(f"  \033[34m[update] {task.subject} blockedBy: {dependencies}\033[0m")
+    print(f"  \033[34m[改依赖] {task.subject} 依赖：{dependencies}\033[0m")
     return f"Updated {task.id} blockedBy: {dependencies}"
 
 
@@ -876,7 +876,7 @@ class MessageBus:
             with self._path(to_agent).open("a", encoding="utf-8") as handle:
                 handle.write(json.dumps(msg, ensure_ascii=True) + "\n")
             self._changed.notify_all()
-        print(f"  [bus] {from_agent} -> {to_agent}: "
+        print(f"  [信箱] {from_agent} -> {to_agent}："
               f"({msg_type}) {content[:50]}")
 
     def read_inbox(self, agent: str) -> list[dict]:
@@ -940,23 +940,23 @@ def match_response(response_type: str, request_id: str, approve: bool,
     with team_lock:
         state = pending_requests.get(request_id)
         if not state:
-            print(f"  [protocol] unknown request_id: {request_id}")
+            print(f"  [协议] 未知的请求 ID：{request_id}")
             return False
         expected = {
             "shutdown": "shutdown_response",
             "plan_approval": "plan_approval_response",
         }[state.type]
         if response_type != expected:
-            print(f"  [protocol] expected {expected}, got {response_type}")
+            print(f"  [协议] 期望 {expected}，收到 {response_type}")
             return False
         if from_agent != state.target or to_agent != state.sender:
-            print(f"  [protocol] {request_id} responder mismatch")
+            print(f"  [协议] {request_id} 回复方不匹配")
             return False
         if state.status != "pending":
-            print(f"  [protocol] {request_id} already {state.status}")
+            print(f"  [协议] {request_id} 已经是 {state.status}")
             return False
         state.status = "approved" if approve else "rejected"
-    print(f"  [protocol] {request_id} -> {state.status}")
+    print(f"  [协议] {request_id} -> {state.status}")
     return True
 
 
@@ -1335,7 +1335,7 @@ class TeammateRuntime:
                     f"{task.description}\nWork directory: {cwd}"
                 ),
             })
-            print(f"  [idle] {self.name} claimed {task.id}: {task.subject}")
+            print(f"  [空闲] {self.name} 认领了 {task.id}：{task.subject}")
             return True
 
     def run(self):
@@ -1368,7 +1368,7 @@ class TeammateRuntime:
                 plan_gates.pop(self.name, None)
                 plan_request_ids.pop(self.name, None)
                 teammate_threads.pop(self.name, None)
-            print(f"  [teammate] {self.name} finished")
+            print(f"  [队友] {self.name} 已结束")
 
 
 teammate_threads: dict[str, threading.Thread] = {}
@@ -1408,7 +1408,7 @@ def spawn_teammate_thread(name: str, role: str, prompt: str,
     with team_lock:
         teammate_threads[name] = thread
     thread.start()
-    print(f"  [teammate] {name} spawned as {role}")
+    print(f"  [队友] {name} 已启动，角色：{role}")
     assigned = f" for {task_id}" if task_id else " without an initial Task"
     return (
         f"Teammate '{name}' spawned as {role}{assigned}. "
@@ -1684,22 +1684,22 @@ def check_permission(block, prompt_user: bool = True) -> str | None:
         command = block.input.get("command", "")
         for pattern in DENY_LIST:
             if pattern in command:
-                return f"Permission denied by deny list: {pattern}"
+                return f"权限被拒绝：'{pattern}' 在黑名单里"
         if any(keyword in command for keyword in DESTRUCTIVE):
             if not prompt_user:
                 return "Permission required: ask Lead to run this command."
-            print(f"\n[permission] {block.name}({block.input})")
-            if input("Allow? [y/N] ").strip().lower() not in {"y", "yes"}:
-                return "Permission denied by user"
+            print(f"\n[权限] {block.name}({block.input})")
+            if input("允许执行吗？[y/N] ").strip().lower() not in {"y", "yes"}:
+                return "权限被拒绝：用户不允许"
 
     if block.name in {"read_file", "write_file", "edit_file"}:
         raw_path = block.input.get("path", "")
         if not (WORKDIR / raw_path).resolve().is_relative_to(WORKDIR.resolve()):
             if not prompt_user:
                 return "Permission required: path is outside the workspace."
-            print(f"\n[permission] {block.name}({block.input})")
-            if input("Allow? [y/N] ").strip().lower() not in {"y", "yes"}:
-                return "Permission denied by user"
+            print(f"\n[权限] {block.name}({block.input})")
+            if input("允许执行吗？[y/N] ").strip().lower() not in {"y", "yes"}:
+                return "权限被拒绝：用户不允许"
     return None
 
 
@@ -1709,18 +1709,18 @@ def permission_hook(block):
 
 def log_hook(block):
     preview = str(list(block.input.values())[:2])[:60]
-    print(f"[hook] {block.name}({preview})")
+    print(f"[钩子] {block.name}({preview})")
     return None
 
 
 def large_output_hook(block, output):
     if len(str(output)) > 100000:
-        print(f"[hook] Large output from {block.name}: {len(str(output))} chars")
+        print(f"[钩子] 输出很长，来自 {block.name}: {len(str(output))} 个字符")
     return None
 
 
 def context_hook(query: str):
-    print(f"[hook] UserPromptSubmit: working in {WORKDIR}")
+    print(f"[钩子] UserPromptSubmit：工作目录 {WORKDIR}")
     return None
 
 
@@ -1735,7 +1735,7 @@ def summary_hook(messages: list):
         )
         if isinstance(block, dict) and block.get("type") == "tool_result"
     )
-    print(f"[hook] Stop: session used {tool_count} tool calls")
+    print(f"[钩子] Stop：这次会话共调用了 {tool_count} 次工具")
     return None
 
 
@@ -1836,8 +1836,8 @@ def wait_for_cli_event() -> tuple[str, str | None]:
 
 
 if __name__ == "__main__":
-    print("s13: agent teams")
-    print("Enter a question, press Enter to send. Type q to quit.\n")
+    print("s13：Agent 团队")
+    print("输入任务后按回车发送，输入 q 退出。\n")
     history = []
     had_teammates = False
 
@@ -1858,7 +1858,7 @@ if __name__ == "__main__":
                 "role": "user",
                 "content": format_team_events(inbox),
             })
-            print(f"[wake: {len(inbox)} team event(s) -> new turn]")
+            print(f"[唤醒：{len(inbox)} 条团队事件 -> 新一轮]")
 
         agent_loop(history)
         print_last_assistant_message(history)
@@ -1866,6 +1866,6 @@ if __name__ == "__main__":
         if active_teammates:
             had_teammates = True
         elif had_teammates and not BUS.peek("lead"):
-            print("[all teammates shut down]")
+            print("[所有队友已关闭]")
             had_teammates = False
         print()

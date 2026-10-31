@@ -50,6 +50,7 @@ MODEL = os.getenv("MODEL_ID", "deepseek-chat")
 SYSTEM = (
     f"You are a coding agent at {WORKDIR}. Use tools to solve tasks. "
     "Use schedule_cron for work that should start at a future local time."
+    " Always answer in Chinese."
 )
 
 
@@ -68,9 +69,9 @@ def run_bash(command: str) -> str:
         output = (result.stdout + result.stderr).strip()
         if result.returncode != 0:
             return f"Error: command exited with status {result.returncode}\n{output}"
-        return output[:50000] if output else "(no output)"
+        return output[:50000] if output else "(没有输出)"
     except subprocess.TimeoutExpired:
-        return "Error: Timeout (120s)"
+        return "错误：超时（120 秒）"
 
 
 def run_read(path: str, limit: int | None = None) -> str:
@@ -89,7 +90,7 @@ def run_write(path: str, content: str) -> str:
         file_path = (WORKDIR / path).resolve()
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content)
-        return f"Wrote {len(content)} bytes to {path}"
+        return f"已写入（{len(content)} 字节）：{path}"
     except Exception as error:
         return f"Error: {error}"
 
@@ -99,9 +100,9 @@ def run_edit(path: str, old_text: str, new_text: str) -> str:
         file_path = (WORKDIR / path).resolve()
         text = file_path.read_text()
         if old_text not in text:
-            return f"Error: text not found in {path}"
+            return f"错误：在 {path} 里找不到要替换的文字"
         file_path.write_text(text.replace(old_text, new_text, 1))
-        return f"Edited {path}"
+        return f"已修改 {path}"
     except Exception as error:
         return f"Error: {error}"
 
@@ -114,7 +115,7 @@ def run_glob(pattern: str) -> str:
             for match in base.glob(pattern)
             if match.resolve().is_relative_to(base)
         ]
-        return "\n".join(matches) if matches else "(no matches)"
+        return "\n".join(matches) if matches else "(没有匹配的文件)"
     except Exception as error:
         return f"Error: {error}"
 
@@ -178,13 +179,13 @@ DESTRUCTIVE = ["rm ", "> /etc/", "chmod 777"]
 
 def request_permission(block, reason: str) -> str | None:
     if threading.current_thread() is not threading.main_thread():
-        return "Permission denied: scheduled turns cannot request interactive approval"
+        return "权限被拒绝：定时任务不能请求人工确认"
 
-    print(f"\n\033[33m[permission] {reason}\033[0m")
-    print(f"   Tool: {block.name}({block.input})")
-    choice = input("   Allow? [y/N] ").strip().lower()
+    print(f"\n\033[33m[权限] {reason}\033[0m")
+    print(f"   工具：{block.name}({block.input})")
+    choice = input("   允许执行吗？[y/N] ").strip().lower()
     if choice not in ("y", "yes"):
-        return "Permission denied by user"
+        return "权限被拒绝：用户不允许"
     return None
 
 
@@ -193,35 +194,35 @@ def permission_hook(block):
         command = block.input.get("command", "")
         for pattern in DENY_LIST:
             if pattern in command:
-                print(f"\n\033[31m[blocked] '{pattern}'\033[0m")
-                return "Permission denied by deny list"
+                print(f"\n\033[31m[已拦截] '{pattern}'\033[0m")
+                return "权限被拒绝：命中黑名单"
         if any(keyword in command for keyword in DESTRUCTIVE):
-            return request_permission(block, "Potentially destructive command")
+            return request_permission(block, "可能有破坏性的命令")
 
     if block.name in ("read_file", "write_file", "edit_file"):
         path = block.input.get("path", "")
         if not (WORKDIR / path).resolve().is_relative_to(WORKDIR):
-            return request_permission(block, "Access outside workspace")
+            return request_permission(block, "要访问工作区以外的路径")
     return None
 
 
 def log_hook(block):
     preview = str(list(block.input.values())[:2])[:60]
-    print(f"\033[90m[HOOK] {block.name}({preview})\033[0m")
+    print(f"\033[90m[钩子] {block.name}({preview})\033[0m")
     return None
 
 
 def large_output_hook(block, output):
     if len(str(output)) > 100000:
         print(
-            f"\033[33m[HOOK] Large output from {block.name}: "
-            f"{len(str(output))} chars\033[0m"
+            f"\033[33m[钩子] 输出很长，来自 {block.name}: "
+            f"{len(str(output))} 个字符\033[0m"
         )
     return None
 
 
 def context_inject_hook(query: str):
-    print(f"\033[90m[HOOK] UserPromptSubmit: working in {WORKDIR}\033[0m")
+    print(f"\033[90m[钩子] UserPromptSubmit：工作目录 {WORKDIR}\033[0m")
     return None
 
 
@@ -236,7 +237,7 @@ def summary_hook(messages: list):
         )
         if isinstance(block, dict) and block.get("type") == "tool_result"
     )
-    print(f"\033[90m[HOOK] Stop: session used {tool_count} tool calls\033[0m")
+    print(f"\033[90m[钩子] Stop：这次会话共调用了 {tool_count} 次工具\033[0m")
     return None
 
 
@@ -380,7 +381,7 @@ def load_durable_jobs():
         if not isinstance(payload, list):
             raise ValueError("expected a JSON list")
     except (OSError, json.JSONDecodeError, ValueError) as error:
-        print(f"  [cron] could not load {DURABLE_PATH.name}: {error}")
+        print(f"  [定时] 无法读取 {DURABLE_PATH.name}：{error}")
         return
 
     loaded = 0
@@ -396,14 +397,14 @@ def load_durable_jobs():
                 if not job.prompt.strip():
                     raise ValueError("prompt cannot be empty")
             except (TypeError, ValueError) as error:
-                print(f"  [cron] skipped invalid saved job: {error}")
+                print(f"  [定时] 跳过一条无效的已保存任务：{error}")
                 continue
             scheduled_jobs[job.id] = job
             if job.pending_delivery:
                 cron_queue.append(job)
             loaded += 1
     if loaded:
-        print(f"  [cron] loaded {loaded} durable job(s)")
+        print(f"  [定时] 已载入 {loaded} 个持久化任务")
 
 
 def new_cron_id() -> str:
@@ -437,7 +438,7 @@ def schedule_job(cron: str, prompt: str, recurring: bool = True,
         except Exception:
             scheduled_jobs.pop(job.id, None)
             raise
-    print(f"  [cron] scheduled {job.id}: {cron} -> {prompt[:60]}")
+    print(f"  [定时] 已登记 {job.id}：{cron} -> {prompt[:60]}")
     return job
 
 
@@ -457,7 +458,7 @@ def cancel_job(job_id: str) -> str:
             scheduled_jobs[job_id] = job
             cron_queue[:] = previous_queue
             raise
-    print(f"  [cron] cancelled {job_id}")
+    print(f"  [定时] 已取消 {job_id}")
     return f"Cancelled {job_id}"
 
 
@@ -486,9 +487,9 @@ def poll_due_jobs(moment: datetime):
                     continue
                 if cron_matches(job.cron, moment):
                     _enqueue_due_job(job, minute_marker)
-                    print(f"  [cron] due {job.id}: {job.prompt[:60]}")
+                    print(f"  [定时] 到点 {job.id}：{job.prompt[:60]}")
             except Exception as error:
-                print(f"  [cron] could not enqueue {job.id}: {error}")
+                print(f"  [定时] 无法排队 {job.id}：{error}")
 
 
 def consume_cron_queue() -> list[CronJob]:
@@ -607,7 +608,7 @@ def execute_tool(block) -> str:
 
     handler = TOOL_HANDLERS.get(block.name)
     try:
-        output = handler(**block.input) if handler else f"Unknown: {block.name}"
+        output = handler(**block.input) if handler else f"未知工具：{block.name}"
     except Exception as error:
         output = f"Error: {error}"
     trigger_hooks("PostToolUse", block, output)
@@ -634,7 +635,7 @@ def agent_loop(messages: list, context: dict | None = None):
     scheduled_start = len(messages)
     for job in fired:
         messages.append({"role": "user", "content": f"[Scheduled] {job.prompt}"})
-        print(f"  [cron] delivered {job.id}: {job.prompt[:60]}")
+        print(f"  [定时] 已送达 {job.id}：{job.prompt[:60]}")
 
     waiting_for_ack = list(fired)
     while True:
@@ -650,7 +651,7 @@ def agent_loop(messages: list, context: dict | None = None):
             if waiting_for_ack:
                 del messages[scheduled_start:]
                 restore_cron_jobs(waiting_for_ack)
-            print(f"  [error] {type(error).__name__}: {error}")
+            print(f"  [错误] {type(error).__name__}: {error}")
             return context
 
         messages.append({"role": "assistant", "content": response.content})
@@ -658,7 +659,7 @@ def agent_loop(messages: list, context: dict | None = None):
             try:
                 acknowledge_cron_jobs(waiting_for_ack)
             except Exception as error:
-                print(f"  [cron] acknowledgement failed: {error}")
+                print(f"  [定时] 签收失败：{error}")
             waiting_for_ack = []
 
         tool_calls = [
@@ -755,8 +756,8 @@ def stop_runtime_threads():
 
 
 if __name__ == "__main__":
-    print("s12: Cron Scheduler - run prompts on a local schedule")
-    print("Enter a question, press Enter to send. Type q to quit.\n")
+    print("s12：定时调度")
+    print("输入任务后按回车发送，输入 q 退出。\n")
     start_runtime_threads()
     try:
         while True:

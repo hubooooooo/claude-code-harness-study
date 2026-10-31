@@ -1,0 +1,249 @@
+{
+  "title": "定时调度：把「到点要做的事」记在本子上，后台线程到点唤醒主循环",
+  "file": "s12_cron_scheduler/code.py",
+  "task": "每天早上 9 点帮我跑一遍测试，把结果写进 report.txt",
+  "steps": [
+    {
+      "title": "这一章改了什么：多了三个工具，多了两条后台线程",
+      "desc": "前面的章节都是「你说一句，它做一件」，程序空闲时什么都不干。这一章让 Agent 能在未来某个时刻自己动起来。工具清单新增 schedule_cron（登记定时任务）、list_crons、cancel_cron；程序启动时另开两条后台线程：一条每秒看一眼「到点了没」，一条负责在 Agent 空闲时把到点的任务送进主循环。",
+      "code": {
+        "fn": "TOOLS.extend() 和 start_runtime_threads()",
+        "lines": [
+          "{\"name\": \"schedule_cron\",",
+          "\"description\": \"Schedule a prompt with a 5-field cron expression.\",",
+          "target=cron_scheduler_loop,",
+          "target=queue_processor_loop,"
+        ],
+        "hi": [
+          0,
+          2,
+          3
+        ],
+        "note": "定时任务不是模型的能力，是程序给它配的闹钟。闹钟响了以后做什么，还是靠模型。"
+      }
+    },
+    {
+      "title": "你输入一句话",
+      "desc": "系统提示里加了一句：「要在未来某个时间开始的工作，用 schedule_cron」。所以模型看到「每天早上 9 点」，会想到去登记一个定时任务，而不是现在就跑测试。",
+      "code": {
+        "fn": "SYSTEM 和程序入口",
+        "lines": [
+          "\"Use schedule_cron for work that should start at a future local time.\"",
+          "run_agent_turn_locked(query)"
+        ],
+        "hi": [
+          0
+        ]
+      },
+      "add": [
+        [
+          "user",
+          "每天早上 9 点帮我跑一遍测试，把结果写进 report.txt"
+        ]
+      ]
+    },
+    {
+      "title": "第 1 圈：模型把「每天 9 点」翻译成 cron 表达式",
+      "round": 1,
+      "desc": "模型调用 schedule_cron，参数是一个 5 段的 cron 表达式「0 9 * * *」（分 时 日 月 周），加上到点要执行的那句话。注意：到点要做的事，模型是用一句自然语言写下来的，到时候再交给模型自己去理解和执行。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "response = client.messages.create(",
+          "tools=TOOLS,"
+        ]
+      },
+      "add": [
+        [
+          "assistant",
+          "请执行 schedule_cron：cron=\"0 9 * * *\"，prompt=\"运行测试，把结果写进 report.txt\"，recurring=true，durable=true"
+        ]
+      ]
+    },
+    {
+      "title": "程序这边：先检查表达式，再登记，再写到磁盘上",
+      "desc": "程序先验证 cron 表达式每一段的范围（小时只能 0 到 23，写 24 就会被退回）。合格后生成一个任务 ID，记进内存里的 scheduled_jobs 字典。因为 durable 是真，还会把它写进 .scheduled_tasks.json 文件，这样程序重启后闹钟不会丢。",
+      "code": {
+        "fn": "schedule_job() 和 save_durable_jobs()",
+        "lines": [
+          "error = validate_cron(cron)",
+          "if error:",
+          "return error",
+          "scheduled_jobs[job.id] = job",
+          "if durable:",
+          "save_durable_jobs()"
+        ],
+        "hi": [
+          0,
+          3,
+          5
+        ],
+        "note": "产品经理要定的：定时任务要不要跨重启保留？要的话存在哪里？这里选了最简单的本地 JSON 文件。"
+      },
+      "add": [
+        [
+          "tool",
+          "Scheduled cron_3f9a12c0: 0 9 * * * -> 运行测试，把结果写进 report.txt"
+        ]
+      ]
+    },
+    {
+      "title": "第 2 圈：模型回答，这一轮结束，但程序没有闲着",
+      "round": 2,
+      "desc": "模型告诉你已经安排好了，循环结束，终端回到等你输入的状态。和前几章不同的是：后台的调度线程还在每隔 1 秒醒一次，拿当前时间去对每一个定时任务的表达式。",
+      "code": {
+        "fn": "cron_scheduler_loop() 和 cron_matches()",
+        "lines": [
+          "def cron_scheduler_loop(stop_event: threading.Event = RUNTIME_STOP):",
+          "while not stop_event.wait(1.0):",
+          "poll_due_jobs(datetime.now())",
+          "minute, hour, day, month, weekday = fields"
+        ],
+        "hi": [
+          1,
+          2
+        ],
+        "note": "这条线程只负责「看表」，不调用模型，所以一直跑也不花钱。"
+      },
+      "add": [
+        [
+          "assistant",
+          "已安排好：每天 9:00 自动运行测试并把结果写进 report.txt。"
+        ]
+      ]
+    },
+    {
+      "title": "第二天 9:00：调度线程发现到点了，把任务放进队列",
+      "desc": "时间走到 9:00，表达式对上了。调度线程把这个任务标成「待送达」，并追加到 cron_queue 队列里。它只管放进队列，不自己去执行，因为执行要调用模型，而模型同一时刻只能忙一件事。同一分钟内不会重复放：程序记下了 last_fired。",
+      "code": {
+        "fn": "poll_due_jobs() 和 _enqueue_due_job()",
+        "lines": [
+          "if job.pending_delivery or job.last_fired == minute_marker:",
+          "continue",
+          "if cron_matches(job.cron, moment):",
+          "_enqueue_due_job(job, minute_marker)",
+          "cron_queue.append(job)"
+        ],
+        "hi": [
+          2,
+          3,
+          4
+        ]
+      }
+    },
+    {
+      "title": "另一条线程：等 Agent 空闲，再把任务送进主循环",
+      "desc": "第二条后台线程每 0.2 秒看一眼队列。队列里有东西，而且 Agent 此刻没在处理你的输入（agent_lock 能抢到），它就替你启动一轮 Agent。如果你正好在和 Agent 对话，它会等你这轮结束再送，两件事不会撞车。",
+      "code": {
+        "fn": "queue_processor_loop()",
+        "lines": [
+          "while not stop_event.wait(0.2):",
+          "if not has_cron_queue() or not agent_lock.acquire(blocking=False):",
+          "continue",
+          "run_agent_turn_locked()"
+        ],
+        "hi": [
+          1,
+          3
+        ],
+        "note": "一把锁解决了「定时任务和人工输入谁先谁后」的问题：谁先拿到锁谁先跑，另一个等着。"
+      }
+    },
+    {
+      "title": "第 3 圈：到点的任务以「用户消息」的身份进入记录本",
+      "round": 3,
+      "desc": "主循环开始时先把队列清空，把每个到点任务的那句话，加上「[Scheduled]」前缀，当成一条用户消息追加进记录本。对模型来说，这就像你在 9 点整亲自打了一句话。然后照常调用模型，模型照常决定用什么工具。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "fired = consume_cron_queue()",
+          "for job in fired:",
+          "messages.append({\"role\": \"user\", \"content\": f\"[Scheduled] {job.prompt}\"})",
+          "response = client.messages.create("
+        ],
+        "hi": [
+          2
+        ]
+      },
+      "add": [
+        [
+          "prog",
+          "[Scheduled] 运行测试，把结果写进 report.txt"
+        ],
+        [
+          "assistant",
+          "请执行 bash：python -m pytest -q"
+        ]
+      ]
+    },
+    {
+      "title": "模型拿到回复后，程序才把任务「签收」",
+      "desc": "模型成功回复了，程序才把这个任务标为已送达；如果调用模型失败了（比如断网），程序会把刚塞进去的消息撤回，任务放回队列，下次再送。这样一次闹钟不会因为一次网络抖动就丢掉。周期任务签收后继续等下一个 9 点；一次性任务签收后直接删除。",
+      "code": {
+        "fn": "agent_loop() 和 acknowledge_cron_jobs()",
+        "lines": [
+          "if waiting_for_ack:",
+          "del messages[scheduled_start:]",
+          "restore_cron_jobs(waiting_for_ack)",
+          "acknowledge_cron_jobs(waiting_for_ack)",
+          "if current.recurring:",
+          "current.pending_delivery = False"
+        ],
+        "hi": [
+          3,
+          4,
+          5
+        ]
+      }
+    },
+    {
+      "title": "定时任务里没有人：危险操作一律拒绝",
+      "desc": "这轮是在后台线程里跑的，终端前可能根本没有人。所以权限检查多了一条：不是主线程发起的、又需要人工确认的操作，直接拒绝，不会卡在那里等一个永远不会来的「y」。跑测试、写 report.txt 都在工作区内，不需要确认，正常执行。",
+      "code": {
+        "fn": "request_permission()",
+        "lines": [
+          "if threading.current_thread() is not threading.main_thread():",
+          "return \"权限被拒绝：定时任务不能请求人工确认\""
+        ],
+        "hi": [
+          0,
+          1
+        ],
+        "note": "产品经理要拍板的：无人值守时，哪些事可以自动做，哪些事宁可不做。这里的选择是「宁可不做」。"
+      },
+      "add": [
+        [
+          "tool",
+          "229 passed in 4.1s"
+        ],
+        [
+          "assistant",
+          "请执行 write_file：report.txt"
+        ],
+        [
+          "tool",
+          "已写入（38 字节）：report.txt"
+        ]
+      ]
+    },
+    {
+      "title": "第 4 圈：模型汇报，这一轮结束，闹钟继续等明天",
+      "round": 4,
+      "desc": "模型确认写好了，这一轮结束。回头看这一章的机制：模型负责「把时间翻译成表达式」和「到点后做事」，程序负责「记闹钟、看表、排队、签收」。前几章的循环一行都没变，只是多了两条线程在旁边伺候它。",
+      "code": {
+        "fn": "agent_loop() 和 print_latest_assistant_text()",
+        "lines": [
+          "if not tool_calls:",
+          "return context",
+          "print_latest_assistant_text(session_history)"
+        ]
+      },
+      "add": [
+        [
+          "assistant",
+          "测试已运行，229 个全部通过，结果已写进 report.txt。"
+        ]
+      ]
+    }
+  ]
+}

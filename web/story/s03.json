@@ -1,0 +1,157 @@
+{
+  "title": "权限：执行任何工具之前，先过三道闸门",
+  "file": "s03_permission/code.py",
+  "task": "帮我清理掉项目里的临时文件",
+  "steps": [
+    {
+      "title": "你输入一句话",
+      "desc": "这个任务会删文件，正好用来看权限检查怎么工作。",
+      "code": {
+        "fn": "程序入口",
+        "lines": [
+          "history.append({\"role\": \"user\", \"content\": query})",
+          "agent_loop(history)"
+        ]
+      },
+      "add": [
+        [
+          "user",
+          "帮我清理掉项目里的临时文件"
+        ]
+      ]
+    },
+    {
+      "title": "第 1 圈：模型想先看看有什么",
+      "round": 1,
+      "desc": "和前两章一样调用模型。模型判断：要清理，得先知道有哪些文件，于是要求执行 ls。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "response = client.messages.create("
+        ]
+      },
+      "add": [
+        [
+          "assistant",
+          "请执行 bash：ls"
+        ]
+      ]
+    },
+    {
+      "title": "执行之前，先过权限检查",
+      "desc": "这是 s03 新增的一步：程序执行任何工具之前，都要先问一句「这个能做吗」。ls 只是列出文件：闸门 1 的黑名单（sudo、rm -rf / 这类）没命中，闸门 2 的规则（删除、越界写入）也没命中，直接放行，不打扰你。",
+      "code": {
+        "fn": "agent_loop() 和 check_permission()",
+        "lines": [
+          "if not check_permission(block):",
+          "reason = check_deny_list(block.input.get(\"command\", \"\"))",
+          "reason = check_rules(block.name, block.input)",
+          "return True"
+        ],
+        "hi": [
+          0
+        ],
+        "note": "循环里只多了一行 if：先检查，通过了才执行。"
+      }
+    },
+    {
+      "title": "执行 ls",
+      "desc": "放行以后，程序照常查表、执行，拿到文件列表。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "handler = TOOL_HANDLERS.get(block.name)",
+          "output = handler(**block.input) if handler else f\"未知工具：{block.name}\""
+        ]
+      }
+    },
+    {
+      "title": "第 2 圈：模型要删文件",
+      "round": 2,
+      "desc": "模型看到 build/ 和 tmp.log，判断它们是临时文件，要求删除。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "messages.append({\"role\": \"user\", \"content\": results})",
+          "response = client.messages.create("
+        ]
+      },
+      "add": [
+        [
+          "tool",
+          "build/　tmp.log　main.py"
+        ],
+        [
+          "assistant",
+          "请执行 bash：rm -rf build tmp.log"
+        ]
+      ]
+    },
+    {
+      "title": "权限检查：命中规则",
+      "desc": "这次不一样了。闸门 1 黑名单没命中，但闸门 2 有一条规则：bash 命令里出现「rm 」，就算「可能有破坏性」。命中规则不会直接拒绝，而是交给第三道闸门：问你。",
+      "code": {
+        "fn": "权限规则 PERMISSION_RULES",
+        "lines": [
+          "{\"tools\": [\"bash\"],",
+          "\"check\": lambda args: any(kw in args.get(\"command\", \"\") for kw in [\"rm \", \"> /etc/\", \"chmod 777\"]),",
+          "\"message\": \"可能有破坏性的命令\"},"
+        ],
+        "hi": [
+          1
+        ],
+        "note": "规则由人来写：哪些工具、什么情况算危险。产品经理要拍板的，正是这张清单。"
+      }
+    },
+    {
+      "title": "闸门 3：停下来问你",
+      "desc": "程序暂停，在终端里问你允不允许。你输入 y，才会放行。如果你输入 n，命令不会执行，程序会把「权限被拒绝，没有执行。」作为结果交给模型，模型会换个办法，或者告诉你做不了。",
+      "code": {
+        "fn": "ask_user() 和 agent_loop()",
+        "lines": [
+          "choice = input(\"   允许执行吗？[y/N] \").strip().lower()",
+          "return \"allow\" if choice in (\"y\", \"yes\") else \"deny\"",
+          "\"content\": \"权限被拒绝，没有执行。\"})"
+        ],
+        "hi": [
+          0,
+          1
+        ],
+        "note": "默认是不允许（N）：你不明确说 y，就不执行。"
+      }
+    },
+    {
+      "title": "执行删除",
+      "desc": "得到你的同意以后，程序才真正执行删除命令。",
+      "code": {
+        "fn": "agent_loop()",
+        "lines": [
+          "output = handler(**block.input) if handler else f\"未知工具：{block.name}\""
+        ]
+      }
+    },
+    {
+      "title": "第 3 圈：模型回答，循环结束",
+      "round": 3,
+      "desc": "结果交回模型，模型确认完成，不再要工具，循环结束。回头看：安全的 ls 直接放行，你没感觉到权限检查的存在；危险的删除停下来问你。这就是「先划边界，再给自由」。",
+      "code": {
+        "fn": "agent_loop() 和程序入口",
+        "lines": [
+          "if not tool_calls:",
+          "return",
+          "print(block.text)"
+        ]
+      },
+      "add": [
+        [
+          "tool",
+          "(没有输出)"
+        ],
+        [
+          "assistant",
+          "已删除 build/ 和 tmp.log"
+        ]
+      ]
+    }
+  ]
+}

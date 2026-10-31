@@ -55,7 +55,7 @@ if os.getenv("ANTHROPIC_BASE_URL"):
 client = Anthropic(base_url=os.getenv("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic"))
 MODEL = os.getenv("MODEL_ID", "deepseek-chat")
 
-SYSTEM = f"You are a coding agent at {os.getcwd()}. Use bash to solve tasks. Act, don't explain."
+SYSTEM = f"You are a coding agent at {os.getcwd()}. Use bash to solve tasks. Act, don't explain. Always answer in Chinese."
 
 # -- Tool definition: just bash --
 TOOLS = [{
@@ -73,14 +73,14 @@ TOOLS = [{
 def run_bash(command: str) -> str:
     dangerous = ["rm -rf /", "sudo", "shutdown", "reboot", "> /dev/"]
     if any(d in command for d in dangerous):
-        return "Error: Dangerous command blocked"
+        return "错误：危险命令已拦截"
     try:
         r = subprocess.run(command, shell=True, cwd=os.getcwd(),
                            capture_output=True, text=True, timeout=120)
         out = (r.stdout + r.stderr).strip()
-        return out[:50000] if out else "(no output)"
+        return out[:50000] if out else "(没有输出)"
     except subprocess.TimeoutExpired:
-        return "Error: Timeout (120s)"
+        return "错误：超时（120 秒）"
     except (FileNotFoundError, OSError) as e:
         return f"Error: {e}"
 
@@ -121,8 +121,8 @@ def agent_loop(messages: list):
 
 # -- Entry point --
 if __name__ == "__main__":
-    print("s01: Agent Loop")
-    print("Enter a question, press Enter to send. Type q to quit.\n")
+    print("s01：循环")
+    print("输入任务后按回车发送，输入 q 退出。\n")
 
     history = []
     while True:

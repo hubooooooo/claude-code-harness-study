@@ -333,7 +333,7 @@ def build_system(relevant_memories: str = "") -> str:
     sections = [
         (
             f"You are a coding agent at {WORKDIR}. "
-            "Use tools to solve tasks. Act, don't explain."
+            "Use tools to solve tasks. Act, don't explain. Always answer in Chinese."
         ),
         (
             "Memory is selected background knowledge, not a transcript. "
@@ -441,10 +441,10 @@ def extract_memories(messages: list) -> int:
             stored += 1
 
         if stored:
-            print(f"\n\033[33m[Memory: stored {stored} records]\033[0m")
+            print(f"\n\033[33m[记忆] 存入了 {stored} 条\033[0m")
         return stored
     except Exception as error:
-        print(f"\n\033[33m[Memory extraction skipped: {error}]\033[0m")
+        print(f"\n\033[33m[记忆] 跳过提取：{error}\033[0m")
         return 0
 
 def consolidate_memories() -> int:
@@ -523,12 +523,12 @@ def consolidate_memories() -> int:
             raise
 
         print(
-            f"\n\033[33m[Memory: consolidated {len(records)} "
-            f"to {len(consolidated)} records]\033[0m"
+            f"\n\033[33m[记忆] 整理：{len(records)} 条合并为 "
+            f"{len(consolidated)} 条\033[0m"
         )
         return len(consolidated)
     except Exception as error:
-        print(f"\n\033[33m[Memory consolidation skipped: {error}]\033[0m")
+        print(f"\n\033[33m[记忆] 跳过整理：{error}\033[0m")
         return 0
 
 # -- Tools --
@@ -544,9 +544,9 @@ def run_bash(command: str) -> str:
             timeout=120,
         )
         output = (result.stdout + result.stderr).strip()
-        return output[:50000] if output else "(no output)"
+        return output[:50000] if output else "(没有输出)"
     except subprocess.TimeoutExpired:
-        return "Error: Timeout (120s)"
+        return "错误：超时（120 秒）"
 
 def run_read(path: str, limit: int | None = None) -> str:
     try:
@@ -564,7 +564,7 @@ def run_write(path: str, content: str) -> str:
         file_path = (WORKDIR / path).resolve()
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content)
-        return f"Wrote {len(content)} bytes to {path}"
+        return f"已写入（{len(content)} 字节）：{path}"
     except Exception as error:
         return f"Error: {error}"
 
@@ -573,9 +573,9 @@ def run_edit(path: str, old_text: str, new_text: str) -> str:
         file_path = (WORKDIR / path).resolve()
         text = file_path.read_text()
         if old_text not in text:
-            return f"Error: text not found in {path}"
+            return f"错误：在 {path} 里找不到要替换的文字"
         file_path.write_text(text.replace(old_text, new_text, 1))
-        return f"Edited {path}"
+        return f"已修改 {path}"
     except Exception as error:
         return f"Error: {error}"
 
@@ -587,7 +587,7 @@ def run_glob(pattern: str) -> str:
             for match in base.glob(pattern)
             if match.resolve().is_relative_to(base)
         ]
-        return "\n".join(matches) if matches else "(no matches)"
+        return "\n".join(matches) if matches else "(没有匹配的文件)"
     except Exception as error:
         return f"Error: {error}"
 
@@ -634,34 +634,34 @@ def permission_hook(block):
         command = block.input.get("command", "")
         for pattern in DENY_LIST:
             if pattern in command:
-                return f"Permission denied by deny list: {pattern}"
+                return f"权限被拒绝：'{pattern}' 在黑名单里"
         if any(keyword in command for keyword in DESTRUCTIVE):
-            print("\n\033[33m[permission] Potentially destructive command\033[0m")
-            print(f"   Tool: {block.name}({block.input})")
-            if input("   Allow? [y/N] ").strip().lower() not in ("y", "yes"):
-                return "Permission denied by user"
+            print("\n\033[33m[权限] 可能有破坏性的命令\033[0m")
+            print(f"   工具：{block.name}({block.input})")
+            if input("   允许执行吗？[y/N] ").strip().lower() not in ("y", "yes"):
+                return "权限被拒绝：用户不允许"
 
     if block.name in ("read_file", "write_file", "edit_file"):
         path = block.input.get("path", "")
         if not (WORKDIR / path).resolve().is_relative_to(WORKDIR):
-            print("\n\033[33m[permission] Access outside workspace\033[0m")
-            print(f"   Tool: {block.name}({block.input})")
-            if input("   Allow? [y/N] ").strip().lower() not in ("y", "yes"):
-                return "Permission denied by user"
+            print("\n\033[33m[权限] 要访问工作区以外的路径\033[0m")
+            print(f"   工具：{block.name}({block.input})")
+            if input("   允许执行吗？[y/N] ").strip().lower() not in ("y", "yes"):
+                return "权限被拒绝：用户不允许"
     return None
 
 def log_hook(block):
     preview = str(list(block.input.values())[:2])[:60]
-    print(f"\033[90m[HOOK] {block.name}({preview})\033[0m")
+    print(f"\033[90m[钩子] {block.name}({preview})\033[0m")
     return None
 
 def large_output_hook(block, output):
     if len(str(output)) > 100000:
-        print(f"\033[33m[HOOK] Large output from {block.name}: {len(str(output))} chars\033[0m")
+        print(f"\033[33m[钩子] 输出很长，来自 {block.name}: {len(str(output))} 个字符\033[0m")
     return None
 
 def context_inject_hook(query: str):
-    print(f"\033[90m[HOOK] UserPromptSubmit: working in {WORKDIR}\033[0m")
+    print(f"\033[90m[钩子] UserPromptSubmit：工作目录 {WORKDIR}\033[0m")
     return None
 
 def summary_hook(messages: list):
@@ -675,7 +675,7 @@ def summary_hook(messages: list):
         )
         if isinstance(block, dict) and block.get("type") == "tool_result"
     )
-    print(f"\033[90m[HOOK] Stop: session used {tool_count} tool calls\033[0m")
+    print(f"\033[90m[钩子] Stop：这次会话共调用了 {tool_count} 次工具\033[0m")
     return None
 
 register_hook("UserPromptSubmit", context_inject_hook)
@@ -691,7 +691,7 @@ def execute_tool(block) -> str:
 
     handler = TOOL_HANDLERS.get(block.name)
     try:
-        output = handler(**block.input) if handler else f"Unknown: {block.name}"
+        output = handler(**block.input) if handler else f"未知工具：{block.name}"
     except Exception as error:
         output = f"Error: {error}"
 
@@ -740,8 +740,8 @@ def agent_loop(messages: list):
         messages.append({"role": "user", "content": results})
 
 if __name__ == "__main__":
-    print("s09: Memory - selective knowledge across sessions")
-    print("Enter a question, press Enter to send. Type q to quit.\n")
+    print("s09：记忆")
+    print("输入任务后按回车发送，输入 q 退出。\n")
 
     history = []
     while True:

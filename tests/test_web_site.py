@@ -96,3 +96,45 @@ def test_every_chapter_has_live_prompts_and_an_animation():
         assert any(step.get("send") for run in prompts[lesson_id]["runs"] for step in run["steps"])
         assert f"VIZ.{lesson_id} = {{" in viz
 
+
+
+def test_teach_mode_controls_exist():
+    html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+    app = (ROOT / "web" / "app.js").read_text(encoding="utf-8")
+    # 开关在侧栏底部和顶栏各一个
+    assert html.count("data-teach") == 2 and 'id="slidebar"' in html
+    # 讲解页和导读、决策实战页都支持按小节翻页
+    assert app.count("if (teach) startSlides(article,") == 2
+
+
+def test_story_replays_are_well_formed_and_quote_real_code():
+    import json
+
+    stories = sorted((ROOT / "web" / "story").glob("s[0-9][0-9].json"))
+    assert stories, "至少要有一章回放"
+    for path in stories:
+        story = json.loads(path.read_text(encoding="utf-8"))
+        chapter = next(c for c in CHAPTERS if c.startswith(path.stem))
+        assert story["file"] == f"{chapter}/code.py", path.name
+        source = (ROOT / story["file"]).read_text(encoding="utf-8")
+        assert story["task"] and story["steps"], path.name
+        for k, step in enumerate(story["steps"], 1):
+            where = f"{path.name} 第 {k} 步"
+            assert step["title"] and step["desc"], where
+            for role, text in step.get("add", []):
+                assert role in ("user", "assistant", "tool", "prog") and text, where
+            code = step.get("code")
+            if code:
+                # 回放里展示的每一行代码，都必须原样出现在本章 code.py 里
+                for line in code["lines"]:
+                    assert line.strip() in source, f"{where}：code.py 里找不到 {line!r}"
+                for i in code.get("hi", []):
+                    assert 0 <= i < len(code["lines"]), where
+
+
+def test_live_page_renders_runs_as_group_chat():
+    html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+    live = (ROOT / "web" / "live.js").read_text(encoding="utf-8")
+    assert html.index('src="chat.js"') < html.index('src="live.js"')
+    for kind in ("user", "approval", "console", "tool_result", "tool_use"):
+        assert kind in live, kind
