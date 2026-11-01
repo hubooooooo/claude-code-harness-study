@@ -45,7 +45,7 @@ if os.getenv("ANTHROPIC_BASE_URL"):
 
 WORKDIR = Path.cwd()
 client = Anthropic(base_url=os.getenv("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic"))
-MODEL = os.getenv("MODEL_ID", "deepseek-chat")
+MODEL = os.getenv("MODEL_ID", "deepseek-v4-flash")
 
 # s05 change: SYSTEM prompt adds planning guidance
 SYSTEM = (

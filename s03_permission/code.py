@@ -55,7 +55,7 @@ if os.getenv("ANTHROPIC_BASE_URL"):
 
 WORKDIR = Path.cwd()
 client = Anthropic(base_url=os.getenv("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic"))
-MODEL = os.getenv("MODEL_ID", "deepseek-chat")
+MODEL = os.getenv("MODEL_ID", "deepseek-v4-flash")
 
 SYSTEM = f"You are a coding agent at {WORKDIR}. All destructive operations require user approval. Always answer in Chinese."
 

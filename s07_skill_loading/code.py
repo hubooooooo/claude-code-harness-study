@@ -46,7 +46,7 @@ if os.getenv("ANTHROPIC_BASE_URL"):
 WORKDIR = Path.cwd()
 SKILLS_DIR = WORKDIR / "skills"
 client = Anthropic(base_url=os.getenv("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic"))
-MODEL = os.getenv("MODEL_ID", "deepseek-chat")
+MODEL = os.getenv("MODEL_ID", "deepseek-v4-flash")
 
 
 # -- Skill catalog --

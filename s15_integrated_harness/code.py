@@ -55,7 +55,7 @@ if os.getenv("ANTHROPIC_BASE_URL"):
 
 WORKDIR = Path.cwd()
 client = Anthropic(base_url=os.getenv("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic"))
-MODEL = os.getenv("MODEL_ID", "deepseek-chat")
+MODEL = os.getenv("MODEL_ID", "deepseek-v4-flash")
 PRIMARY_MODEL = MODEL
 FALLBACK_MODEL = os.getenv("FALLBACK_MODEL_ID")
 

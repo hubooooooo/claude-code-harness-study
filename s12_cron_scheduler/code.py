@@ -45,7 +45,7 @@ if os.getenv("ANTHROPIC_BASE_URL"):
 WORKDIR = Path.cwd()
 DURABLE_PATH = WORKDIR / ".scheduled_tasks.json"
 client = Anthropic(base_url=os.getenv("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic"))
-MODEL = os.getenv("MODEL_ID", "deepseek-chat")
+MODEL = os.getenv("MODEL_ID", "deepseek-v4-flash")
 
 SYSTEM = (
     f"You are a coding agent at {WORKDIR}. Use tools to solve tasks. "

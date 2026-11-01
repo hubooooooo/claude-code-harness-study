@@ -818,7 +818,7 @@ def make_live_session(workdir: Path) -> AgentSession:
         ) from error
 
     load_dotenv(override=True)
-    model = os.getenv("MODEL_ID", "deepseek-chat")
+    model = os.getenv("MODEL_ID", "deepseek-v4-flash")
     evaluator_model = (
         os.getenv("GOAL_EVALUATOR_MODEL_ID")
         or os.getenv("ANTHROPIC_DEFAULT_HAIKU_MODEL")

@@ -41,6 +41,7 @@ window.GUIDES = [
   { id: "guide-cs", file: "guide/case-customer-service.md", stage: "after", tag: "案例", zh: "案例：跨境电商售后客服", en: "Case · Customer Service", tip: "厂商开发包；Agent 要替公司退款" },
   { id: "guide-code", file: "guide/case-coding-agent.md", stage: "after", tag: "案例", zh: "案例：研发团队引入编程 Agent", en: "Case · Coding Agent", tip: "直接买成品；产品经理定配置" },
   { id: "guide-report", file: "guide/case-daily-report.md", stage: "after", tag: "案例", zh: "案例：竞品和舆情日报", en: "Case · Daily Report", tip: "大部分环节不该用 Agent" },
-  { id: "practice", file: "guide/practice.md", stage: "after", tag: "练习", zh: "练习：拿到需求，做出判断", en: "Practice", tip: "7 道题：要不要 Agent、走哪条路、用哪些组件" },
+  { id: "practice", file: "guide/practice.md", stage: "after", tag: "练习", zh: "练习：拿到需求，做出判断", en: "Practice", tip: "7 道题：要不要 Agent、走哪条路、用哪些组件；第 7 题给自己的产品填结论卡" },
   { id: "answers", file: "guide/practice-answers.md", stage: "after", tag: "答案", zh: "练习参考答案与评分要点", en: "Answer Key", tip: "先做题再看；老师批改也用这份" },
+  { id: "interview", file: "guide/interview.md", stage: "after", tag: "面试", zh: "模拟面试：把结论卡和两个项目讲出来", en: "Mock Interview", tip: "六步讲法，三个一定会被追问的问题" },
 ];
