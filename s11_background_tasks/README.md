@@ -229,7 +229,7 @@ python s11_background_tasks/code.py
 - 做完主动通知；失败要有兜底和说明。
 - 用等待期间的流失率来衡量。
 
-> 16 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
+> 16 个组件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
 
 ---
 

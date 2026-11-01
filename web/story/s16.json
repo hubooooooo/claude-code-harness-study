@@ -16,7 +16,7 @@
           "host.assemble_tool_pool = assemble_with_workflow"
         ],
         "hi": [2, 3],
-        "note": "一行没动 s15 的循环，这是总装之后加部件的正确姿势。"
+        "note": "一行没动 s15 的循环，这是总装之后加组件的正确姿势。"
       }
     },
     {

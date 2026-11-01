@@ -63,4 +63,4 @@ def test_s15_is_counted_as_assembly_not_a_component() -> None:
 
     docs = [ROOT / "README.md", ROOT / "SUMMARY.md", *ROOT.glob("guide/*.md"), *ROOT.glob("s[0-9][0-9]_*/README.md")]
     for doc in docs:
-        assert not re.search(r"17 ?个(部件|零件)", doc.read_text()), doc
+        assert not re.search(r"17 ?个(组件|部件|零件)", doc.read_text()), doc

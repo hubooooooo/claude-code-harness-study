@@ -301,7 +301,7 @@ python s16_workflow_runtime/code.py resume   # 用上次的 runId 续跑，每�
 - 流程还不稳定时，先让 Agent 跑，稳定以后再固定下来。
 - 用成功率和结果一致性来衡量。
 
-> 16 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
+> 16 个组件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
 
 ---
 

@@ -393,7 +393,7 @@ python s08_context_compact/code.py
 - 让用户能看到、能修正摘要。
 - 用长对话的任务完成率来衡量。
 
-> 16 个部件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
+> 16 个组件的判断卡放在一起比较，见 [选型篇](../guide/README.md)。
 
 ---
 

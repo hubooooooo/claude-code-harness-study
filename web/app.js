@@ -195,7 +195,7 @@
       <div class="hero"><div class="hero-watermark">17</div>
         <span class="pill">LEARN CLAUDE CODE</span>
         <h1>亲手造一遍 Agent&nbsp;Harness，学会做产品判断</h1>
-        <p class="lead">写给 AI 零基础的同学和准 AI 产品经理。<strong>用自研的方式学</strong>：照着 Claude Code，从一个循环出发，把 16 个部件亲手造一遍，再在 s15 装成一个整体。<strong>学会的是判断</strong>：拿到一个需求，能说清楚该走哪条路、用哪些部件、规则怎么定。代码可以只看回放，每章末尾的<strong>「产品经理视角」</strong>是重点。第一次来，先读<a href="#/${BEFORE[0] ? BEFORE[0].id : "s01"}">第 0 课 · 导读</a>。</p>
+        <p class="lead">写给 AI 零基础的同学和准 AI 产品经理。<strong>用自研的方式学</strong>：照着 Claude Code，从一个循环出发，把 16 个组件亲手造一遍，再在 s15 装成一个整体。<strong>学会的是判断</strong>：拿到一个需求，能说清楚该走哪条路、用哪些组件、规则怎么定。代码可以只看回放，每章末尾的<strong>「产品经理视角」</strong>是重点。第一次来，先读<a href="#/${BEFORE[0] ? BEFORE[0].id : "s01"}">第 0 课 · 导读</a>。</p>
       </div>
       <div class="panel">${stages}</div></div>`;
   }
@@ -256,7 +256,7 @@
       box.firstChild.addEventListener("scroll", () => tableShadow(box), { passive: true });
       const heads = [...t.rows[0].cells].map((c) => c.textContent.trim());
       t.dataset.cols = heads.length >= 5 ? "many" : String(heads.length);
-      // 第一列都是短标签（部件名、档位、方案名）时不折行；有整句话时照常折行
+      // 第一列都是短标签（组件名、档位、方案名）时不折行；有整句话时照常折行
       if ([...t.rows].every((r) => r.cells[0] && r.cells[0].textContent.trim().length <= 12)) t.classList.add("key-first");
       const key = heads.join("|");
       groups.set(key, [...(groups.get(key) || []), t]);
