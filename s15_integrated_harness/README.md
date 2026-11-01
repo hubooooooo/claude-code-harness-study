@@ -219,7 +219,7 @@ MCP 负责外部能力：
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s15_integrated_harness/code.py
 ```
 
@@ -298,5 +298,3 @@ python s15_integrated_harness/code.py
 ## 接下来
 
 [s16 Workflow Runtime](../s16_workflow_runtime/) 会在这个 host 中加入 `Workflow` 工具。Workflow 把固定的编排路径写在代码中，并记录运行进度，使同一次运行可以继续执行。
-
-<!-- translation-sync: zh@v14, en@v14, ja@v14 -->

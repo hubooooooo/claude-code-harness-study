@@ -140,8 +140,8 @@ python run.py
 如果你习惯用终端，也可以这样做：
 
 ```sh
-git clone https://github.com/huuuboo/learn-claude-code
-cd learn-claude-code
+git clone https://github.com/hubooooooo/claude-code-harness-study
+cd claude-code-harness-study
 
 # 自动装依赖 + 首次引导填 key + 菜单选择章节 s01–s17
 python3 run.py

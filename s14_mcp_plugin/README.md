@@ -180,7 +180,7 @@ MCP error: TypeError: <lambda>() missing 1 required argument: 'query'
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s14_mcp_plugin/code.py
 ```
 
@@ -270,5 +270,3 @@ mcp__docs__get_version()
 ## 接下来
 
 目前，MCP 还是一条独立的课程分支。s15 Integrated Harness 会把基础工具、Hooks、Skills、Context、Memory、Task、Background、Cron、Teams 和 MCP 放进同一个运行时。
-
-<!-- translation-sync: zh@v9, en@v9, ja@v9 -->

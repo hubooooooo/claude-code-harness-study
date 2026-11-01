@@ -142,7 +142,7 @@ for block in tool_calls:
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s02_tool_use/code.py
 ```
 
@@ -219,6 +219,3 @@ python s02_tool_use/code.py
 现在 Agent 有 5 个专用工具。file tools 受 `safe_path` 保护，但 bash 不受限制，`rm -rf /` 还是能跑。
 
 s03 Permission → 在工具执行之前加一道门：这个操作安全吗？需要用户批准吗？
-
-
-<!-- translation-sync: zh@v1, en@v0, ja@v0 -->

@@ -127,7 +127,7 @@ def load(self, name: str) -> str:
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s07_skill_loading/code.py
 ```
 
@@ -202,6 +202,3 @@ python s07_skill_loading/code.py
 随着工具调用增加，`messages[]` 会积累较早的文件内容和工具结果。
 
 s08 Context Compact → 缩短较早的消息，为后续调用保留上下文空间。
-
-
-<!-- translation-sync: zh@v6, en@v6, ja@v6 -->

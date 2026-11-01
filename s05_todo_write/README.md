@@ -133,7 +133,7 @@ Agent 收到任务后的典型流程：先调 `todo_write` 列出所有步骤（
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s05_todo_write/code.py
 ```
 
@@ -210,6 +210,3 @@ python s05_todo_write/code.py
 Agent 能计划了。但如果一个任务太大，比如"重构整个认证模块"，光靠 TODO 列表不够。这个任务本身就是几十个小任务的集合，放在同一个对话里会被上下文淹没。
 
 s06 Subagent → 把大任务拆成子任务，每个子任务派一个独立的 Agent。它们有自己的干净上下文，不会互相污染。
-
-
-<!-- translation-sync: zh@v1, en@v1, ja@v1 -->

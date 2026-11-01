@@ -162,7 +162,7 @@ npm install 在后台运行时，Agent Loop 继续执行了 read_file。
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s11_background_tasks/code.py
 ```
 
@@ -238,6 +238,3 @@ python s11_background_tasks/code.py
 后台任务解决了"慢操作不阻塞"。但如果想定时做某件事呢？比如"每天早上 9 点跑测试"、"每 5 分钟检查一次服务器状态"。
 
 s12 Cron Scheduler → 给 Agent 装一个闹钟。
-
-
-<!-- translation-sync: zh@v7, en@v7, ja@v7 -->

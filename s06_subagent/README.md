@@ -99,7 +99,7 @@ TOOL_HANDLERS = {**BASE_HANDLERS, "task": run_subagent}
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s06_subagent/code.py
 ```
 
@@ -175,6 +175,3 @@ python s06_subagent/code.py
 Agent 现在能拆任务了。但每个任务需要的知识不一样：改 Python 脚本需要知道 PEP 8 规范，写 SQL 需要知道表结构。这些知识全塞进 system prompt，上下文直接爆了。
 
 s07 Skill Loading → 技能按需注入，不在 system prompt 里堆文档。用到的时候才加载，和读文件一样自然。
-
-
-<!-- translation-sync: zh@v2, en@v2, ja@v2 -->

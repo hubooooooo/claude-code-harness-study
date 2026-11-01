@@ -138,7 +138,7 @@ for job in fired:
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s12_cron_scheduler/code.py
 ```
 
@@ -215,5 +215,3 @@ python s12_cron_scheduler/code.py
 调度器可以在指定时间启动一轮 Agent Loop，但这一轮仍由一个 Agent 处理。面对需要同时调查多个模块、并行修改并汇总结果的任务，Harness 还需要把工作分给多个 Agent，并收集各自的执行结果。
 
 s13 Agent Teams → Lead 分配任务，队友独立执行，再通过收件箱返回结果。
-
-<!-- translation-sync: zh@v9, en@v9, ja@v9 -->

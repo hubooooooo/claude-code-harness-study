@@ -179,7 +179,7 @@ except Exception:
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s09_memory/code.py
 ```
 
@@ -256,5 +256,3 @@ python s09_memory/code.py
 Memory 解决了跨会话保留信息的问题，但复杂任务还需要记录每一步的状态和依赖关系。仅靠对话中的 TODO，程序退出后就无法继续追踪进度。
 
 s10 Task System → 把任务、状态和依赖关系保存到磁盘。
-
-<!-- translation-sync: zh@v3, en@v3, ja@v3 -->

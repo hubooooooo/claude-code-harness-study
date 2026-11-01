@@ -215,6 +215,3 @@ python s01_agent_loop/code.py
 现在模型手里只有 bash 一个工具，读文件要 `cat`，写文件要 `echo ... >`，找个文件要 `find`，又丑又容易出错。
 
 s02 Tool Use → 给它 5 个真正的工具，会发生什么？模型会不会一次调用多个工具？几个工具同时跑会不会互相踩？
-
-
-<!-- translation-sync: zh@v1, en@v0, ja@v0 -->

@@ -305,7 +305,7 @@ if compact_requested:
 ## 试一下
 
 ```bash
-cd learn-claude-code
+cd claude-code-harness-study
 python s08_context_compact/code.py
 ```
 
@@ -402,5 +402,3 @@ python s08_context_compact/code.py
 上下文压缩让 Agent 可以在有限窗口中继续长任务。需要跨压缩、跨会话保留的信息，还要进入独立的持久记忆系统。
 
 s09 Memory 将实现记忆写入、检索与整理。
-
-<!-- translation-sync: zh@v8, en@v8, ja@v8 -->

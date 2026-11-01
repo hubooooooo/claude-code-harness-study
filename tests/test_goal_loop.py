@@ -433,7 +433,7 @@ def test_bash_output_keeps_exit_code_when_the_tail_is_trimmed(
         "bash",
         {
             "command": (
-                "python -c \"import sys; "
+                f"'{sys.executable}' -c \"import sys; "
                 "print('x' * 40000); sys.exit(7)\""
             )
         },

@@ -139,7 +139,7 @@ for block in tool_calls:
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s03_permission/code.py
 ```
 
@@ -225,6 +225,3 @@ python s03_permission/code.py
 当前权限检查每次都在循环里硬编码 `check_permission()`。如果我想在每次工具执行前后加日志？如果想在某些操作后自动触发 git commit？这些扩展逻辑散落在 loop 里，循环很快就会膨胀。
 
 s04 Hooks → 给循环加钩子，扩展逻辑挂在钩子上，循环保持干净。
-
-
-<!-- translation-sync: zh@v1, en@v1, ja@v1 -->

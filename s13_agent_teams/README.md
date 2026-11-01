@@ -427,7 +427,7 @@ Lead：我已收到认证任务的结果，接下来继续协调其余工作。
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s13_agent_teams/code.py
 ```
 
@@ -518,5 +518,3 @@ Lead 提出团队方案后回复：
 Lead 和队友目前只能调用直接写在 `code.py` 里的工具。接入 Jira、部署平台或知识库时，Harness 还要为每个外部系统分别编写工具定义和调用逻辑；外部系统增加或修改工具，也要跟着修改课程代码。
 
 s14 MCP Tools → 通过统一的发现与调用协议，在运行时连接外部服务并把它们的工具加入工具池。
-
-<!-- translation-sync: zh@v12, en@v12, ja@v12 -->

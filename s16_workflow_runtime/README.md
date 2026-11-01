@@ -308,5 +308,3 @@ python s16_workflow_runtime/code.py resume   # 用上次的 runId 续跑，每�
 ## 接下来
 
 [s17 Goal Loop](../s17_goal_loop/) 会使用一个更小、独立的循环检查既定目标是否已经达成，并据此决定是否还需要下一轮。
-
-<!-- translation-sync: zh@v10, en@v10, ja@v10 -->

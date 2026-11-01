@@ -209,7 +209,7 @@ complete_task(tests.id)     # ✓ Completed
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s10_task_system/code.py
 ```
 
@@ -287,6 +287,3 @@ python s10_task_system/code.py
 任务图有了，但全量测试、安装依赖和部署等命令可能需要很长时间。同步执行这些命令时，Agent Loop 会一直停在当前工具调用上，只有命令结束后才能继续处理其他工作。
 
 s11 Background Tasks → 把慢操作放到后台。Agent 可以继续处理其他任务，后台执行完成后再接收通知。
-
-
-<!-- translation-sync: zh@v5, en@v5, ja@v5 -->

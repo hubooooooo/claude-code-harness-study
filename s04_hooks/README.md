@@ -208,7 +208,7 @@ for block in tool_calls:
 ## 试一下
 
 ```sh
-cd learn-claude-code
+cd claude-code-harness-study
 python s04_hooks/code.py
 ```
 
@@ -285,6 +285,3 @@ python s04_hooks/code.py
 Agent 现在能安全执行操作了。但它有没有停下来想过"我应该先做什么，再做什么"？给它一个复杂任务，它是一上来就动手，还是先列个计划？
 
 s05 TodoWrite → 给 Agent 一个计划工具。先列清单，再做。
-
-
-<!-- translation-sync: zh@v1, en@v0, ja@v0 -->
