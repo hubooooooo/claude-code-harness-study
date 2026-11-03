@@ -23,6 +23,7 @@ Hooks run callbacks at fixed points in the agent loop:
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -54,7 +55,7 @@ SYSTEM = f"You are a coding agent at {WORKDIR}. Use tools to solve tasks. Act, d
 def run_bash(command: str) -> str:
     try:
         r = subprocess.run(command, shell=True, cwd=WORKDIR,
-                           capture_output=True, text=True, timeout=120)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
         out = (r.stdout + r.stderr).strip()
         return out[:50000] if out else "(没有输出)"
     except subprocess.TimeoutExpired:
@@ -137,18 +138,37 @@ def trigger_hooks(event: str, *args):
 
 
 # s03 permission check logic, now wrapped as a hook
-DENY_LIST = ["rm -rf /", "sudo", "shutdown", "reboot", "mkfs", "dd if="]
-DESTRUCTIVE = ["rm ", "> /etc/", "chmod 777"]
+DENY_LIST = ["sudo", "shutdown", "reboot", "mkfs", "dd", "rm -rf /"]
+DESTRUCTIVE = ["rm", "rmdir", "chmod", "git clean", "-delete", "rmtree(", "| sh", "| bash", "> /etc/"]
+
+
+def command_names(command: str) -> list[str]:
+    """按 ; && || | 把一行拆成子命令，取每条的第一个词：真正要执行的程序名。"""
+    names = []
+    for segment in re.split(r"\|\||&&|[;|]", command):
+        words = segment.split()
+        if words:
+            program = words[0].rsplit("/", 1)[-1]
+            names.append(program.split(".")[0] or program)
+    return names
+
+
+def matches_rule(command: str, rule: str) -> bool:
+    """一个单词的规则按程序名匹配（grep reboot 不算 reboot）；其余规则按压掉多余空白后的字面匹配。"""
+    if rule.isalnum():
+        return rule in command_names(command)
+    return rule in " ".join(command.split())
+
 
 def permission_hook(block):
     """PreToolUse: s03 check_permission() logic moved here."""
     if block.name == "bash":
         for pattern in DENY_LIST:
-            if pattern in block.input.get("command", ""):
+            if matches_rule(block.input.get("command", ""), pattern):
                 print(f"\n\033[31m[已拦截] '{pattern}'\033[0m")
                 return "权限被拒绝：命中黑名单"
         for kw in DESTRUCTIVE:
-            if kw in block.input.get("command", ""):
+            if matches_rule(block.input.get("command", ""), kw):
                 print(f"\n\033[33m[权限] 可能有破坏性的命令\033[0m")
                 print(f"   工具：{block.name}({block.input})")
                 choice = input("   允许执行吗？[y/N] ").strip().lower()

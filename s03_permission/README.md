@@ -47,20 +47,36 @@ s02 的循环完全保留。唯一的变动是在工具执行前插入 `check_pe
 
 ![Permission Pipeline](images/permission-pipeline.svg)
 
-**闸门 1**：一张硬拒绝表，先查，命中就返回阻止信息。这张表使用简单字符串匹配来说明权限闸门的位置，不能视为完整的安全边界。
+**闸门 1**：一张硬拒绝表，先查，命中就返回阻止信息。规则按「要执行的程序名」匹配，而不是看命令里有没有某几个字：`sudo rm x` 会被拦，`grep reboot` 不会。但它仍然只是一张清单，守不住什么，见本章末尾「产品经理视角」。
 
 ```python
-DENY_LIST = [
-    "rm -rf /", "sudo", "shutdown", "reboot",
-    "mkfs", "dd if=", "> /dev/sda",
-]
+DENY_LIST = ["sudo", "shutdown", "reboot", "mkfs", "dd", "rm -rf /"]
+DESTRUCTIVE = ["rm", "rmdir", "chmod", "git clean", "-delete", "rmtree(", "| sh", "| bash", "> /etc/"]
+
+def command_names(command: str) -> list[str]:
+    """按 ; && || | 把一行拆成子命令，取每条的第一个词：真正要执行的程序名。"""
+    names = []
+    for segment in re.split(r"\|\||&&|[;|]", command):
+        words = segment.split()
+        if words:
+            program = words[0].rsplit("/", 1)[-1]
+            names.append(program.split(".")[0] or program)
+    return names
+
+def matches_rule(command: str, rule: str) -> bool:
+    """一个单词的规则按程序名匹配（grep reboot 不算 reboot）；其余规则按压掉多余空白后的字面匹配。"""
+    if rule.isalnum():
+        return rule in command_names(command)
+    return rule in " ".join(command.split())
 
 def check_deny_list(command: str) -> str | None:
     for pattern in DENY_LIST:
-        if pattern in command:
+        if matches_rule(command, pattern):
             return f"已拦截：'{pattern}' 在黑名单里"
     return None
 ```
+
+`sudo`、`rm` 这类单个词的规则，只看每条子命令的第一个词，也就是真正要执行的程序。`cd /tmp && sudo rm x` 拆成 `cd` 和 `sudo` 两条，命中；`cat README.md | grep reboot` 拆成 `cat` 和 `grep`，不命中。`rm -rf /`、`-delete` 这类带符号的规则按字面匹配，多余的空格和 Tab 先压掉，`rm<Tab>-rf` 也逃不掉。
 
 **闸门 2**负责规则匹配，用来描述"什么时候需要问用户"。每条规则指定工具和检查条件。
 
@@ -73,7 +89,7 @@ PERMISSION_RULES = [
     },
     {
         "tools": ["bash"],
-        "check": lambda args: any(kw in args.get("command", "") for kw in ["rm ", "> /etc/", "chmod 777"]),
+        "check": lambda args: any(matches_rule(args.get("command", ""), rule) for rule in DESTRUCTIVE),
         "message": "可能有破坏性的命令",
     },
 ]
@@ -131,7 +147,7 @@ for block in tool_calls:
 | 组件 | 之前 (s02) | 之后 (s03) |
 |------|-----------|-----------|
 | 安全模型 | 无（信任模型） | 三道闸门权限管线 |
-| 新函数 | — | check_deny_list, check_rules, ask_user, check_permission |
+| 新函数 | — | command_names, matches_rule, check_deny_list, check_rules, ask_user, check_permission |
 | 循环 | 直接执行所有工具 | 执行前插入 check_permission() |
 
 ---
@@ -149,6 +165,8 @@ python s03_permission/code.py
 2. `Delete the file test.txt`（bash + rm 会触发闸门 2）
 3. `What files are in the current directory?`（只读，全部通过）
 4. `Try to write a file to /etc/something`（写工作区外，触发闸门 2）
+5. `Show me the lines of README.md that mention reboot`（命令里有 reboot 字样，但程序名是 cat 或 grep，直接通过）
+6. `Delete every .pyc file under this directory using find`（`find -delete` 没有 rm 字样，也触发闸门 2）
 
 观察重点：哪些操作直接通过？哪些需要你确认？哪些被直接拒绝？
 
@@ -169,6 +187,14 @@ python s03_permission/code.py
 - **打断用户**：每次确认都会打断用户。确认太多，用户就会不看内容直接点「同意」，权限形同虚设。
 - **两头为难**：规则太严，Agent 什么都做不了；太松，等于没有。
 - **要持续维护**：每上线一个新工具，就要补一条规则。
+
+### 这套规则守不住什么
+
+本章的黑名单和危险规则是一张「关键词清单」，只能挡住写在清单上的那几种写法：
+
+- 换一种写法就绕过去了。`find -delete`、`git clean`、`rmtree(` 本章补进了清单，但 `xargs rm`、`env rm`、先把命令写进脚本再执行，清单上没有的都会放行。清单永远追不上写法。
+- 模型不是故意绕，它只是换了个顺手的写法。网页、邮件里如果藏着指令（提示词注入），模型也可能照做。
+- 所以关键词清单只是最后一道提醒，真正的边界要靠下面这些更便宜也更可靠的办法：只给只读工具、在沙箱或测试账号里跑、让操作可撤销。结论卡里写「越权次数目标为 0」时，要写清楚靠的是哪一层，不能只靠一张清单。
 
 ### 先试试更便宜的办法
 

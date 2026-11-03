@@ -15,7 +15,7 @@ window.LESSONS = [
   { id: "s12", dir: "s12_cron_scheduler",     zh: "定时调度",       en: "Cron Scheduler",     tip: "按时间自动触发，无需人工",             base: "s04" },
   { id: "s13", dir: "s13_agent_teams",        zh: "Agent 团队",     en: "Agent Teams",        tip: "太大就交给队友分工",                   base: "s10" },
   { id: "s14", dir: "s14_mcp_plugin",         zh: "MCP 插件",       en: "MCP Plugin",         tip: "能力不够？通过 MCP 外接工具",          base: "s04" },
-  { id: "s15", dir: "s15_integrated_harness", zh: "Harness 集成",   en: "Integrated Harness", tip: "不加新组件，把前面 14 个组件装进一个循环", base: "s14" },
+  { id: "s15", dir: "s15_integrated_harness", zh: "Harness 集成",   en: "Integrated Harness", tip: "不加新组件，把前面 14 个组件装进一个循环，外加一层错误恢复", base: "s14" },
   { id: "s16", dir: "s16_workflow_runtime",   zh: "工作流运行时",   en: "Workflow Runtime",   tip: "固定编排写进代码，支持续跑",           base: "s04" },
   { id: "s17", dir: "s17_goal_loop",          zh: "目标循环",       en: "Goal Loop",          tip: "由目标决定循环何时停止",               base: "s04" },
 ];

@@ -114,7 +114,7 @@ agent_loop(history)
 def permission_hook(block):
     if block.name == "bash":
         for pattern in DENY_LIST:
-            if pattern in block.input.get("command", ""):
+            if matches_rule(block.input.get("command", ""), pattern):
                 return "权限被拒绝：命中黑名单"
     if block.name in ("read_file", "write_file", "edit_file"):
         path = block.input.get("path", "")

@@ -109,7 +109,7 @@
       </form>
       <p class="error" id="lvErr" hidden></p>
       <section class="lv-stream ch-area" id="lvStream">${Chat.members(["you", "prog", "model", "pc"])}
-        <div class="ch-list" id="lvChat"><p class="loading">输入一个任务，程序会在你的电脑上运行本课的 code.py，这里像群聊一样显示谁对谁说了什么。<br>运行在一份临时副本里，不会改动你的项目文件。</p></div>
+        <div class="ch-list" id="lvChat"><p class="loading">输入一个任务，程序会在你的电脑上运行本课的 code.py，这里像群聊一样显示谁对谁说了什么。<br>运行在一份临时副本里：文件工具只能读写这份副本；但 bash 命令不受限制，模型能执行你的账号能执行的任何命令，看懂再点允许。</p></div>
         <div class="ch-ask" id="lvApproval" hidden><div class="ch-ask-t">程序停下来问你：</div><pre id="lvAsk"></pre>
           <div class="lv-yn"><button class="btn primary" data-yn="y">允许</button><button class="btn" data-yn="n">拒绝</button></div></div>
       </section>

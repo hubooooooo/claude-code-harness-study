@@ -672,7 +672,7 @@ def run_bash(command: str, cwd: Path | None = None) -> str:
             shell=True,
             cwd=cwd or WORKDIR,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8", errors="replace",
             timeout=120,
         )
         output = (result.stdout + result.stderr).strip()
@@ -1661,8 +1661,26 @@ TOOL_HANDLERS = {
 # -- Hooks and Permission Checks --
 
 HOOKS = {"UserPromptSubmit": [], "PreToolUse": [], "PostToolUse": [], "Stop": []}
-DENY_LIST = ["rm -rf /", "sudo", "shutdown", "reboot", "mkfs", "dd if="]
-DESTRUCTIVE = ["rm ", "> /etc/", "chmod 777"]
+DENY_LIST = ["sudo", "shutdown", "reboot", "mkfs", "dd", "rm -rf /"]
+DESTRUCTIVE = ["rm", "rmdir", "chmod", "git clean", "-delete", "rmtree(", "| sh", "| bash", "> /etc/"]
+
+
+def command_names(command: str) -> list[str]:
+    """按 ; && || | 把一行拆成子命令，取每条的第一个词：真正要执行的程序名。"""
+    names = []
+    for segment in re.split(r"\|\||&&|[;|]", command):
+        words = segment.split()
+        if words:
+            program = words[0].rsplit("/", 1)[-1]
+            names.append(program.split(".")[0] or program)
+    return names
+
+
+def matches_rule(command: str, rule: str) -> bool:
+    """一个单词的规则按程序名匹配（grep reboot 不算 reboot）；其余规则按压掉多余空白后的字面匹配。"""
+    if rule.isalnum():
+        return rule in command_names(command)
+    return rule in " ".join(command.split())
 
 
 def register_hook(event: str, callback):
@@ -1683,9 +1701,9 @@ def check_permission(block, prompt_user: bool = True) -> str | None:
     if block.name == "bash":
         command = block.input.get("command", "")
         for pattern in DENY_LIST:
-            if pattern in command:
+            if matches_rule(command, pattern):
                 return f"权限被拒绝：'{pattern}' 在黑名单里"
-        if any(keyword in command for keyword in DESTRUCTIVE):
+        if any(matches_rule(command, keyword) for keyword in DESTRUCTIVE):
             if not prompt_user:
                 return "Permission required: ask Lead to run this command."
             print(f"\n[权限] {block.name}({block.input})")

@@ -34,6 +34,7 @@ Builds on s02 (multi-tool). Usage:
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -65,7 +66,7 @@ SYSTEM = f"You are a coding agent at {WORKDIR}. All destructive operations requi
 def run_bash(command: str) -> str:
     try:
         r = subprocess.run(command, shell=True, cwd=WORKDIR,
-                           capture_output=True, text=True, timeout=120)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
         out = (r.stdout + r.stderr).strip()
         return out[:50000] if out else "(没有输出)"
     except subprocess.TimeoutExpired:
@@ -141,11 +142,31 @@ TOOL_HANDLERS = {
 # -- New in s03: three-gate permission pipeline --
 
 # Gate 1: Hard deny list - always forbidden
-DENY_LIST = ["rm -rf /", "sudo", "shutdown", "reboot", "mkfs", "dd if=", "> /dev/sda"]
+DENY_LIST = ["sudo", "shutdown", "reboot", "mkfs", "dd", "rm -rf /"]
+DESTRUCTIVE = ["rm", "rmdir", "chmod", "git clean", "-delete", "rmtree(", "| sh", "| bash", "> /etc/"]
+
+
+def command_names(command: str) -> list[str]:
+    """按 ; && || | 把一行拆成子命令，取每条的第一个词：真正要执行的程序名。"""
+    names = []
+    for segment in re.split(r"\|\||&&|[;|]", command):
+        words = segment.split()
+        if words:
+            program = words[0].rsplit("/", 1)[-1]
+            names.append(program.split(".")[0] or program)
+    return names
+
+
+def matches_rule(command: str, rule: str) -> bool:
+    """一个单词的规则按程序名匹配（grep reboot 不算 reboot）；其余规则按压掉多余空白后的字面匹配。"""
+    if rule.isalnum():
+        return rule in command_names(command)
+    return rule in " ".join(command.split())
+
 
 def check_deny_list(command: str) -> str | None:
     for pattern in DENY_LIST:
-        if pattern in command:
+        if matches_rule(command, pattern):
             return f"已拦截：'{pattern}' 在黑名单里"
     return None
 
@@ -156,7 +177,7 @@ PERMISSION_RULES = [
      "check": lambda args: not (WORKDIR / args.get("path", "")).resolve().is_relative_to(WORKDIR),
      "message": "要写工作区以外的文件"},
     {"tools": ["bash"],
-     "check": lambda args: any(kw in args.get("command", "") for kw in ["rm ", "> /etc/", "chmod 777"]),
+     "check": lambda args: any(matches_rule(args.get("command", ""), rule) for rule in DESTRUCTIVE),
      "message": "可能有破坏性的命令"},
 ]
 

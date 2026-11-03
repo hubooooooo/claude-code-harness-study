@@ -89,12 +89,12 @@
     },
     {
       "title": "权限检查：命中规则",
-      "desc": "这次不一样了。闸门 1 黑名单没命中，但闸门 2 有一条规则：bash 命令里出现「rm 」，就算「可能有破坏性」。命中规则不会直接拒绝，而是交给第三道闸门：问你。",
+      "desc": "这次不一样了。闸门 1 黑名单没命中，但闸门 2 有一条规则：要执行的程序名是 rm，就算「可能有破坏性」。命中规则不会直接拒绝，而是交给第三道闸门：问你。",
       "code": {
         "fn": "权限规则 PERMISSION_RULES",
         "lines": [
           "{\"tools\": [\"bash\"],",
-          "\"check\": lambda args: any(kw in args.get(\"command\", \"\") for kw in [\"rm \", \"> /etc/\", \"chmod 777\"]),",
+          "\"check\": lambda args: any(matches_rule(args.get(\"command\", \"\"), rule) for rule in DESTRUCTIVE),",
           "\"message\": \"可能有破坏性的命令\"},"
         ],
         "hi": [

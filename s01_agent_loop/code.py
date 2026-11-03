@@ -76,7 +76,7 @@ def run_bash(command: str) -> str:
         return "错误：危险命令已拦截"
     try:
         r = subprocess.run(command, shell=True, cwd=os.getcwd(),
-                           capture_output=True, text=True, timeout=120)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
         out = (r.stdout + r.stderr).strip()
         return out[:50000] if out else "(没有输出)"
     except subprocess.TimeoutExpired:
