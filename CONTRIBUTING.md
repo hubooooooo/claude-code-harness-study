@@ -6,9 +6,10 @@ This is a curated teaching repository. Each chapter (`sNN_topic/`) builds one id
 
 1. Tie it to a specific issue. Say what is wrong and why your change is the right fix. One PR addresses one issue.
 2. Keep teaching code minimal. Do not add production hardening, defensive parsing, error handling layers, abstractions, or a test framework unless the chapter is specifically about that. A simplification that looks like a bug is often deliberate, so ask in an issue first.
-3. Keep the README in sync with the code. Each chapter has a single Chinese `README.md`; any change to a chapter's `code.py` must be reflected in its code blocks.
-4. Target the current course files (`sNN_topic/`).
-5. Disclose AI assistance. Using an agent is fine. Say so, and make sure you have read and stand behind the change.
+3. Keep the plain-language layer plain. In every chapter README the sections 本章要学会的判断, 问题, 解决方案, 产品经理视角 and 接下来 are written for readers with no coding background: no backticked identifiers or code blocks there, and a technical term appears as 「everyday phrase (term)」 the first time. Each chapter introduces at most three new terms in its 本章新词 table; everything else goes to guide/glossary.md. A test enforces this for the chapters already converted.
+4. Keep the README in sync with the code. Each chapter has a single Chinese `README.md`; any change to a chapter's `code.py` must be reflected in its code blocks.
+5. Target the current course files (`sNN_topic/`).
+6. Disclose AI assistance. Using an agent is fine. Say so, and make sure you have read and stand behind the change.
 
 ## What gets closed without detailed review
 
@@ -29,9 +30,10 @@ Focused, clearly explained contributions from people who have actually worked wi
 
 1. 对应一个具体 issue。说清问题是什么、为什么你的改法是对的。一个 PR 只解决一个问题。
 2. 教学代码保持最简。不要加生产级的防御解析、错误处理层、抽象或测试框架,除非这一章本身就在讲这些。某处"像 bug"的简化往往是刻意的,先在 issue 里问一声。
-3. README 与代码保持同步。每章只保留一份中文 `README.md`,对某章 `code.py` 的改动必须同步到其中的代码块。
-4. 改现行课程文件(`sNN_topic/`)。
-5. 声明 AI 协助。用 agent 没问题,但请说明,并确保你读过、也认可这份改动。
+3. 人话层保持人话。每章 README 的「本章要学会的判断」「问题」「解决方案」「产品经理视角」「接下来」五节是写给零基础读者的：不出现反引号代码词和代码块，技术词第一次出现用「日常说法（术语）」的写法。每章「本章新词」最多三个词，其余放进 guide/glossary.md。已改造的章节有测试把关。
+4. README 与代码保持同步。每章只保留一份中文 `README.md`,对某章 `code.py` 的改动必须同步到其中的代码块。
+5. 改现行课程文件(`sNN_topic/`)。
+6. 声明 AI 协助。用 agent 没问题,但请说明,并确保你读过、也认可这份改动。
 
 ## 哪些会被直接关闭(不做详细评审)
 
