@@ -1,0 +1,521 @@
+{
+ "out": "s04_hooks/images/hooks-overview.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "钩子：检查不写进循环，挂在四个固定位置上",
+   "fontSize": 22
+  },
+  {
+   "type": "rectangle",
+   "id": "h1",
+   "x": 40,
+   "y": 56,
+   "width": 180,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "opacity": 60,
+   "strokeColor": "#ef4444",
+   "strokeStyle": "dashed",
+   "label": {
+    "text": "① 用户输入之后",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a0",
+   "x": 130,
+   "y": 96,
+   "width": 0,
+   "height": 24,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     24
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#ef4444"
+  },
+  {
+   "type": "rectangle",
+   "id": "notes",
+   "x": 40,
+   "y": 120,
+   "width": 180,
+   "height": 84,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "label": {
+    "text": "记录本\n(messages)",
+    "fontSize": 18
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a1",
+   "x": 220,
+   "y": 162,
+   "width": 80,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     80,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow"
+  },
+  {
+   "type": "rectangle",
+   "id": "llm",
+   "x": 300,
+   "y": 110,
+   "width": 230,
+   "height": 104,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#d0bfff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "大模型\n要用工具吗？",
+    "fontSize": 18
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a2",
+   "x": 415,
+   "y": 214,
+   "width": 0,
+   "height": 56,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     56
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "text",
+   "id": "t2",
+   "x": 426,
+   "y": 230,
+   "text": "不要",
+   "fontSize": 14,
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "rectangle",
+   "id": "h4",
+   "x": 300,
+   "y": 270,
+   "width": 230,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "opacity": 60,
+   "strokeColor": "#ef4444",
+   "strokeStyle": "dashed",
+   "label": {
+    "text": "④ 循环要结束时",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a2b",
+   "x": 415,
+   "y": 310,
+   "width": 0,
+   "height": 24,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     24
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#ef4444"
+  },
+  {
+   "type": "rectangle",
+   "id": "done",
+   "x": 300,
+   "y": 334,
+   "width": 230,
+   "height": 56,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#b2f2bb",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "label": {
+    "text": "回答你，循环结束",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a3",
+   "x": 530,
+   "y": 162,
+   "width": 70,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     70,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "text",
+   "id": "t3",
+   "x": 540,
+   "y": 134,
+   "text": "要",
+   "fontSize": 14,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "rectangle",
+   "id": "h2",
+   "x": 600,
+   "y": 56,
+   "width": 320,
+   "height": 190,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "opacity": 30,
+   "strokeColor": "#ef4444",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "th2",
+   "x": 620,
+   "y": 66,
+   "text": "② 执行工具之前（挂了两个钩子）",
+   "fontSize": 15,
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "rectangle",
+   "id": "k1",
+   "x": 630,
+   "y": 100,
+   "width": 260,
+   "height": 56,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "label": {
+    "text": "权限检查（s03 那套，搬过来）\n有权说「不许做」",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "k2",
+   "x": 630,
+   "y": 170,
+   "width": 260,
+   "height": 56,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "label": {
+    "text": "记日志\n只看一眼，不拦",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a4",
+   "x": 760,
+   "y": 246,
+   "width": 0,
+   "height": 44,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     44
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "text",
+   "id": "t4",
+   "x": 772,
+   "y": 254,
+   "text": "都没意见",
+   "fontSize": 13,
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "rectangle",
+   "id": "run",
+   "x": 600,
+   "y": 290,
+   "width": 320,
+   "height": 56,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "label": {
+    "text": "执行工具（查分发表去做）",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a5",
+   "x": 760,
+   "y": 346,
+   "width": 0,
+   "height": 34,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     34
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#ef4444"
+  },
+  {
+   "type": "rectangle",
+   "id": "h3",
+   "x": 600,
+   "y": 380,
+   "width": 320,
+   "height": 100,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "opacity": 30,
+   "strokeColor": "#ef4444",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "th3",
+   "x": 620,
+   "y": 390,
+   "text": "③ 执行工具之后",
+   "fontSize": 15,
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "rectangle",
+   "id": "k3",
+   "x": 630,
+   "y": 418,
+   "width": 260,
+   "height": 48,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "label": {
+    "text": "输出太长就提醒一声",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a6",
+   "x": 600,
+   "y": 210,
+   "width": 70,
+   "height": 230,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     -35,
+     0
+    ],
+    [
+     -35,
+     230
+    ],
+    [
+     -70,
+     230
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "text",
+   "id": "t6",
+   "x": 548,
+   "y": 186,
+   "text": "拦下",
+   "fontSize": 13,
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "rectangle",
+   "id": "rej",
+   "x": 300,
+   "y": 412,
+   "width": 230,
+   "height": 56,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "label": {
+    "text": "不执行\n把「被拦下了」告诉模型",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a7",
+   "x": 760,
+   "y": 480,
+   "width": 630,
+   "height": 316,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ],
+    [
+     -630,
+     40
+    ],
+    [
+     -630,
+     -316
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c",
+   "strokeStyle": "dashed"
+  },
+  {
+   "type": "arrow",
+   "id": "a8",
+   "x": 415,
+   "y": 468,
+   "width": 0,
+   "height": 52,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     52
+    ]
+   ],
+   "endArrowhead": null,
+   "strokeColor": "#c2410c",
+   "strokeStyle": "dashed"
+  },
+  {
+   "type": "text",
+   "id": "t7",
+   "x": 150,
+   "y": 250,
+   "text": "结果写回记录本\n循环继续",
+   "fontSize": 14,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 556,
+   "text": "循环只在四个位置「喊一声」，喊到谁谁就跑。要加检查，往位置上再挂一个，循环一行都不用改。",
+   "fontSize": 15,
+   "strokeColor": "#757575"
+  }
+ ]
+}
