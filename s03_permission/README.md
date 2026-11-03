@@ -169,14 +169,14 @@ cd claude-code-harness-study
 python s03_permission/code.py
 ```
 
-试试这些 prompt：
+试试这些话：
 
-1. `Create a file called test.txt in the current directory`（应该直接通过）
-2. `Delete the file test.txt`（bash + rm 会触发闸门 2）
-3. `What files are in the current directory?`（只读，全部通过）
-4. `Try to write a file to /etc/something`（写工作区外，触发闸门 2）
-5. `Show me the lines of README.md that mention reboot`（命令里有 reboot 字样，但程序名是 cat 或 grep，直接通过）
-6. `Delete every .pyc file under this directory using find`（`find -delete` 没有 rm 字样，也触发闸门 2）
+1. `在当前文件夹新建一个 test.txt`（在项目文件夹里写文件，直接通过）
+2. `删除 test.txt 这个文件`（删文件是危险命令，触发闸门 2，停下来问你）
+3. `当前文件夹里有哪些文件？`（只读，直接通过）
+4. `往系统设置目录 /etc 里写一个文件`（写到项目文件夹外面，触发闸门 2）
+5. `把 README.md 里提到 reboot 的那几行找出来给我`（命令里有「重启」的字样，但真正执行的只是查找，直接通过）
+6. `用 find 命令把这个文件夹下所有 .pyc 文件删掉`（换了一种删除写法，没有 rm 字样，也触发闸门 2）
 
 观察重点：哪些操作直接通过？哪些需要你确认？哪些被直接拒绝？
 
@@ -260,4 +260,4 @@ python s03_permission/code.py
 
 现在权限检查是直接写在循环里的。如果还想在每次工具执行前后记一笔日志？想在某些操作之后自动备份？每加一项都要去改循环本身，循环很快就会越来越胖。
 
-s04 Hooks → 给循环加钩子，扩展逻辑挂在钩子上，循环保持干净。
+s04 钩子（Hooks）→ 给循环加钩子，扩展逻辑挂在钩子上，循环保持干净。

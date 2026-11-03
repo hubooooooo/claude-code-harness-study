@@ -1,7 +1,7 @@
 # s02: Tool Use — 多加一个工具，只加一行
 
 s01 → `s02` → [s03](../s03_permission/) → s04 → ... → s16 → s17
-> *"加一个工具, 只加一个 handler"* — 循环不用动, 新工具注册进 dispatch map 就行。
+> *"加一个工具，只加一行"* — 循环不用动，新工具在分发表里登记一行就行。
 >
 > **Harness 层**: 工具分发 — 扩展模型能触达的边界。
 
@@ -156,14 +156,14 @@ cd claude-code-harness-study
 python s02_tool_use/code.py
 ```
 
-试试这些 prompt：
+试试这些话：
 
-1. `Read the file README.md and tell me what this project is about`
-2. `Create a file called test.py that prints "hello", then read it back`
-3. `Find all Python files in this directory`
-4. `Read both README.md and requirements.txt, then create a summary file`
+1. `读一下 README.md，告诉我这个项目是做什么的`（只用「读文件」一个工具）
+2. `新建一个 test.py，让它打印 "hello"，然后把文件内容读回来`（先「写文件」再「读文件」）
+3. `找出这个文件夹里所有的 Python 文件`（用「找文件」工具，而不是拼命令）
+4. `把 README.md 和 requirements.txt 都读一遍，然后写一个 summary.md 总结`（看模型是一次要两个工具，还是分两圈）
 
-观察重点：模型什么时候只调一个工具，什么时候一次调多个？多个工具调用的顺序和结果是否正确？
+观察重点：模型什么时候只用一个工具，什么时候一次要好几个？一次要好几个时，程序是按什么顺序做的？
 
 ---
 
@@ -195,7 +195,7 @@ python s02_tool_use/code.py
 | 给哪些工具 | 从任务倒推，只给完成任务必需的；第一版先给 3～5 个 |
 | 只读还是能写 | 先全部只读，确有需要再一个个开放写入 |
 | 说明谁写、谁审 | 由业务方审核，写清「什么时候用、什么时候不要用」 |
-| 万能工具给不给 | 能执行任意命令的工具（比如本课的 bash）风险最大，面向普通用户的产品一般不给 |
+| 万能工具给不给 | 能执行任意命令的工具（本课里那个「执行命令」的工具）风险最大，面向普通用户的产品一般不给 |
 
 ### 怎么衡量
 
@@ -228,4 +228,4 @@ python s02_tool_use/code.py
 
 现在 Agent 有 5 个专用工具。读写文件的工具只能碰项目文件夹里的东西，但「执行命令」这个工具没有任何限制，一条删光整台电脑的命令照样能跑。
 
-s03 Permission → 在工具执行之前加一道门：这个操作安全吗？需要用户批准吗？
+s03 权限（Permission）→ 在工具执行之前加一道门：这个操作安全吗？需要用户批准吗？

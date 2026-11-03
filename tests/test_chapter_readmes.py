@@ -98,3 +98,16 @@ def test_plain_language_chapters_introduce_at_most_three_new_words() -> None:
         assert 1 <= len(rows) <= 3, (name, len(rows))
         for row in rows:
             assert row.count("|") == 4, (name, row)  # 词 | 意思 | 比喻
+
+
+def test_plain_language_chapters_give_prompts_in_chinese() -> None:
+    # 「试一下」里让学生输入的句子要是中文，零基础读者不该先翻译一遍英文
+    import re
+
+    for name in PLAIN_LANGUAGE_CHAPTERS:
+        text = (ROOT / name / "README.md").read_text(encoding="utf-8")
+        body = _section(text, "试一下")
+        prompts = re.findall(r"^\d+\. `([^`]+)`", body, re.M)
+        assert prompts, name
+        for prompt in prompts:
+            assert re.search(r"[一-鿿]", prompt), (name, prompt)

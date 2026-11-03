@@ -2,7 +2,7 @@
 
 s01 → s02 → s03 → `s04` → [s05](../s05_todo_write/) → s06 → ... → s16 → s17
 
-> *"挂在循环上, 不写进循环里"* — hook 在工具执行前后注入扩展逻辑。
+> *"挂在循环上，不写进循环里"* — 钩子（hook）在工具执行前后留出插口，扩展挂在插口上。
 >
 > **Harness 层**: hook — 扩展点不侵入循环。
 
@@ -222,11 +222,11 @@ cd claude-code-harness-study
 python s04_hooks/code.py
 ```
 
-试试这些 prompt：
+试试这些话：
 
-1. `Read the file README.md`（应该直接通过，观察 hook 日志）
-2. `Create a file called test.txt`（通过后观察 PostToolUse 是否触发）
-3. `Delete all temporary files in /tmp`（bash + rm 触发权限 hook）
+1. `读一下 README.md`（直接通过，注意屏幕上多出来的「[钩子]」日志行）
+2. `新建一个 test.txt`（通过后看「执行工具之后」的钩子有没有响）
+3. `删除 test.txt 这个文件`（删文件触发「执行工具之前」的权限钩子，停下来问你）
 
 观察重点：每次工具执行前，是否出现了 `[钩子]` 日志？权限被拒时，是 hook 拦截的还是循环里硬编码的？
 
@@ -294,4 +294,4 @@ python s04_hooks/code.py
 
 Agent 现在能安全执行操作了。但它有没有停下来想过"我应该先做什么，再做什么"？给它一个复杂任务，它是一上来就动手，还是先列个计划？
 
-s05 TodoWrite → 给 Agent 一个计划工具。先列清单，再做。
+s05 待办（TodoWrite）→ 给 Agent 一个计划工具。先列清单，再做。

@@ -1,7 +1,7 @@
 # s01: Agent Loop — 一个循环就够了
 
 `s01` → [s02](../s02_tool_use/) → s03 → s04 → ... → s16 → s17
-> *"One loop & Bash is all you need"* — 一个工具 + 一个循环 = 一个 Agent。
+> *"One loop & Bash is all you need"* — 一个「执行命令」的工具 + 一个循环 = 一个 Agent。
 >
 > **Harness 层**: 循环 — 模型与真实世界的第一道连接。
 
@@ -137,27 +137,21 @@ def agent_loop(messages):
 
 ## 试一下
 
-> **安全提示**：代码会执行模型生成的 shell 命令。建议在一个临时测试目录中运行，避免影响你的项目文件。s03 会加入权限控制。
+> **安全提示**：这一章的 Agent 会在你的电脑上真的执行命令，还没有任何权限限制（s03 才加）。第一次试，建议把项目复制一份到别的文件夹再跑，或者先在网页的「运行」页里跑。
 
-**准备**（首次运行）：
+**最简单的方式**：双击「启动.command」（Mac），或在终端里运行 `python3 run.py`，在菜单里输入 `s01` 回车。第一次会自动装依赖、引导你粘贴 API Key。
 
-```sh
-pip install -r requirements.txt
-cp .env.example .env
-# 编辑 .env，填入 ANTHROPIC_API_KEY 和 MODEL_ID
-```
-
-**运行**：
+**直接运行这一章的代码**（已经装好依赖和 Key 之后）：
 
 ```sh
 python s01_agent_loop/code.py
 ```
 
-试试这些 prompt：
+试试这些话：
 
-1. `Create a file called hello.py that prints "Hello, World!"`
-2. `List all Python files in this directory`
-3. `What is the current git branch?`
+1. `新建一个 hello.py，让它打印 "Hello, World!"，然后运行它`（看模型怎么分两步：先写文件，再运行）
+2. `列出这个文件夹里所有的 Python 文件`（一步就能做完，循环只转一圈）
+3. `这个项目的 README 讲了什么？`（模型得先读文件，再回答）
 
 观察重点：模型什么时候调用工具（循环继续），什么时候不调用（循环结束）？
 
@@ -224,4 +218,4 @@ python s01_agent_loop/code.py
 
 现在模型手里只有「执行命令」一个工具。读文件、写文件、找文件，都要它自己拼出一条命令，拼错一个字母就白跑一圈。
 
-s02 Tool Use → 给它 5 个真正的工具，会发生什么？模型会不会一次调用多个工具？几个工具同时跑会不会互相踩？
+s02 工具（Tool Use）→ 给它 5 个真正的工具，会发生什么？模型会不会一次调用多个工具？几个工具同时跑会不会互相踩？
