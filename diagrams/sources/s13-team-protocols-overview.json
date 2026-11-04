@@ -1,0 +1,469 @@
+{
+ "out": "s13_agent_teams/images/team-protocols-overview.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "协议：请求带编号，回应带同一个编号，主控才对得上是哪件事",
+   "fontSize": 22,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "A",
+   "x": 40,
+   "y": 50,
+   "width": 420,
+   "height": 330,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#f1f5f9",
+   "fillStyle": "solid",
+   "opacity": 60,
+   "strokeColor": "#64748b",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "A_t",
+   "x": 58,
+   "y": 60,
+   "text": "协议一：收工（主控发起）",
+   "fontSize": 15,
+   "strokeColor": "#64748b"
+  },
+  {
+   "type": "rectangle",
+   "id": "a_l",
+   "x": 60,
+   "y": 90,
+   "width": 170,
+   "height": 60,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#d0bfff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "主控",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "a_m",
+   "x": 270,
+   "y": 90,
+   "width": 170,
+   "height": 60,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "队友",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a1",
+   "x": 230,
+   "y": 110,
+   "width": 40,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     40,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1d4ed8"
+  },
+  {
+   "type": "text",
+   "id": "ta1",
+   "x": 60,
+   "y": 160,
+   "text": "① 「请收工」，编号 7",
+   "fontSize": 13,
+   "strokeColor": "#1d4ed8"
+  },
+  {
+   "type": "arrow",
+   "id": "a2",
+   "x": 270,
+   "y": 135,
+   "width": 40,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     -40,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "text",
+   "id": "ta2",
+   "x": 60,
+   "y": 182,
+   "text": "② 「收到，收工了」，编号 7",
+   "fontSize": 13,
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "rectangle",
+   "id": "a_ok",
+   "x": 60,
+   "y": 220,
+   "width": 380,
+   "height": 50,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "③ 主控按编号 7 找到当初的请求，打勾 ✓",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "ta3",
+   "x": 60,
+   "y": 290,
+   "text": "没有编号就对不上：三个队友同时回话，\n不知道谁回的是哪一条。",
+   "fontSize": 13,
+   "strokeColor": "#757575"
+  },
+  {
+   "type": "rectangle",
+   "id": "B",
+   "x": 500,
+   "y": 50,
+   "width": 430,
+   "height": 330,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#f1f5f9",
+   "fillStyle": "solid",
+   "opacity": 60,
+   "strokeColor": "#64748b",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "B_t",
+   "x": 518,
+   "y": 60,
+   "text": "协议二：计划审批（队友发起）",
+   "fontSize": 15,
+   "strokeColor": "#64748b"
+  },
+  {
+   "type": "rectangle",
+   "id": "b_l",
+   "x": 520,
+   "y": 90,
+   "width": 170,
+   "height": 60,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#d0bfff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "主控",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b_m",
+   "x": 740,
+   "y": 90,
+   "width": 170,
+   "height": 60,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "队友",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "b1",
+   "x": 690,
+   "y": 105,
+   "width": 50,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     50,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1d4ed8"
+  },
+  {
+   "type": "text",
+   "id": "tb1",
+   "x": 520,
+   "y": 160,
+   "text": "① 「先交计划再动手」",
+   "fontSize": 13,
+   "strokeColor": "#1d4ed8"
+  },
+  {
+   "type": "arrow",
+   "id": "b2",
+   "x": 740,
+   "y": 120,
+   "width": 50,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     -50,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "text",
+   "id": "tb2",
+   "x": 520,
+   "y": 182,
+   "text": "② 「计划如下」，编号 9",
+   "fontSize": 13,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "arrow",
+   "id": "b3",
+   "x": 690,
+   "y": 135,
+   "width": 50,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     50,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "text",
+   "id": "tb3",
+   "x": 520,
+   "y": 204,
+   "text": "③ 「批准 / 驳回」，编号 9",
+   "fontSize": 13,
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "rectangle",
+   "id": "b_ok",
+   "x": 520,
+   "y": 236,
+   "width": 390,
+   "height": 50,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "④ 队友对上编号 9：批准就动手，驳回就停",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "tb4",
+   "x": 520,
+   "y": 300,
+   "text": "批准之前，队友不许改文件、不许跑命令；\n这就是「计划闸门」。",
+   "fontSize": 13,
+   "strokeColor": "#757575"
+  },
+  {
+   "type": "rectangle",
+   "id": "sm1",
+   "x": 40,
+   "y": 420,
+   "width": 150,
+   "height": 46,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "strokeColor": "#b45309",
+   "strokeWidth": 2,
+   "label": {
+    "text": "待处理",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "s1",
+   "x": 190,
+   "y": 443,
+   "width": 60,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     60,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "rectangle",
+   "id": "sm2",
+   "x": 250,
+   "y": 420,
+   "width": 150,
+   "height": 46,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#b2f2bb",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "批准",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "s2",
+   "x": 190,
+   "y": 455,
+   "width": 60,
+   "height": 50,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     30,
+     0
+    ],
+    [
+     30,
+     50
+    ],
+    [
+     60,
+     50
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "rectangle",
+   "id": "sm3",
+   "x": 250,
+   "y": 482,
+   "width": 150,
+   "height": 46,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "驳回",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "smt",
+   "x": 430,
+   "y": 430,
+   "text": "两种协议共用这一个小状态机。再加一种协议，\n只是多一种消息类型，状态机不用改。",
+   "fontSize": 14,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 560,
+   "text": "编号是协议的关键：请求和回应各自独立送达，靠编号把它们重新配成一对。",
+   "fontSize": 15,
+   "strokeColor": "#757575"
+  }
+ ]
+}

@@ -1,0 +1,225 @@
+{
+ "out": "s08_context_compact/images/layer1-budget.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "第 1 步：大结果搬到硬盘，记录本里只留路径和预览",
+   "fontSize": 22,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "text",
+   "id": "p",
+   "x": 40,
+   "y": 50,
+   "text": "症状：模型一口气读了 30 个文件，这一圈的工具结果加起来约 51 万字，记录本装不下。",
+   "fontSize": 14,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "bh",
+   "x": 40,
+   "y": 90,
+   "width": 400,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "strokeColor": "#b45309",
+   "strokeWidth": 2,
+   "label": {
+    "text": "搬之前",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1",
+   "x": 40,
+   "y": 140,
+   "width": 400,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b45309",
+   "strokeWidth": 2,
+   "label": {
+    "text": "结果 A：7.8 万字  …",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b2",
+   "x": 40,
+   "y": 190,
+   "width": 400,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b45309",
+   "strokeWidth": 2,
+   "label": {
+    "text": "结果 B：14 万字  …",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b3",
+   "x": 40,
+   "y": 240,
+   "width": 400,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b45309",
+   "strokeWidth": 2,
+   "label": {
+    "text": "结果 C：29 万字  …",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "bt",
+   "x": 40,
+   "y": 290,
+   "text": "合计 51 万字，超过 20 万字的预算",
+   "fontSize": 14,
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "arrow",
+   "id": "a",
+   "x": 440,
+   "y": 210,
+   "width": 60,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     60,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "rectangle",
+   "id": "ah",
+   "x": 500,
+   "y": 90,
+   "width": 400,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#b2f2bb",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "搬之后",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "a1",
+   "x": 500,
+   "y": 140,
+   "width": 400,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "结果 A：7.8 万字  …（没动）",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "a2",
+   "x": 500,
+   "y": 190,
+   "width": 400,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "结果 B → 已存硬盘：路径 + 前 2000 字预览",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "a3",
+   "x": 500,
+   "y": 240,
+   "width": 400,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "结果 C → 已存硬盘：路径 + 前 2000 字预览",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "at",
+   "x": 500,
+   "y": 290,
+   "text": "从最大的开始搬，搬到合计不超过 20 万字为止；不花钱",
+   "fontSize": 14,
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 340,
+   "text": "信息没有丢，只是搬出了记录本：需要时模型可以按路径把完整内容读回来。",
+   "fontSize": 15,
+   "strokeColor": "#757575"
+  }
+ ]
+}

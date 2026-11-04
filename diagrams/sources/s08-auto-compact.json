@@ -1,0 +1,361 @@
+{
+ "out": "s08_context_compact/images/auto-compact.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "第 4 步：前三步做完仍然太长，就让模型写一份摘要换掉旧历史",
+   "fontSize": 22,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "bh",
+   "x": 40,
+   "y": 60,
+   "width": 260,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "strokeColor": "#b45309",
+   "strokeWidth": 2,
+   "label": {
+    "text": "换之前的记录本",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1",
+   "x": 40,
+   "y": 110,
+   "width": 260,
+   "height": 32,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b45309",
+   "strokeWidth": 2,
+   "label": {
+    "text": "你：……",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b2",
+   "x": 40,
+   "y": 148,
+   "width": 260,
+   "height": 32,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b45309",
+   "strokeWidth": 2,
+   "label": {
+    "text": "模型：……",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b3",
+   "x": 40,
+   "y": 186,
+   "width": 260,
+   "height": 32,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b45309",
+   "strokeWidth": 2,
+   "label": {
+    "text": "工具结果：……",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b4",
+   "x": 40,
+   "y": 224,
+   "width": 260,
+   "height": 32,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b45309",
+   "strokeWidth": 2,
+   "label": {
+    "text": "……几十条……",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "bt",
+   "x": 40,
+   "y": 266,
+   "text": "合计超过 5 万字",
+   "fontSize": 14,
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "rectangle",
+   "id": "A",
+   "x": 340,
+   "y": 60,
+   "width": 260,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "A  先存档\n整段对话原样写进硬盘",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "aA",
+   "x": 470,
+   "y": 130,
+   "width": 0,
+   "height": 24,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     24
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "rectangle",
+   "id": "B",
+   "x": 340,
+   "y": 154,
+   "width": 260,
+   "height": 84,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "B  让模型写事实摘要\n只保留：目标、已做的决定、\n相关文件、剩余工作、你的要求",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "aB",
+   "x": 470,
+   "y": 238,
+   "width": 0,
+   "height": 24,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     24
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "rectangle",
+   "id": "C",
+   "x": 340,
+   "y": 262,
+   "width": 260,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "C  用一条摘要消息\n换掉整段旧历史",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a1",
+   "x": 300,
+   "y": 150,
+   "width": 40,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     40,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "arrow",
+   "id": "a2",
+   "x": 600,
+   "y": 297,
+   "width": 40,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     40,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "ah",
+   "x": 640,
+   "y": 60,
+   "width": 260,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#b2f2bb",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "换之后的记录本",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c1",
+   "x": 640,
+   "y": 110,
+   "width": 260,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "[已压缩]\n你当前的要求：……",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c2",
+   "x": 640,
+   "y": 190,
+   "width": 260,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "对话摘要（只作参考）：\n事实、决定、剩余工作",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "c3",
+   "x": 640,
+   "y": 270,
+   "width": 260,
+   "height": 44,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "完整原文在硬盘：路径",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "ct",
+   "x": 640,
+   "y": 324,
+   "text": "一条消息，远小于上限",
+   "fontSize": 14,
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "text",
+   "id": "note",
+   "x": 40,
+   "y": 370,
+   "text": "摘要只是参考，不是新命令：当前要求单独放一条，模型按它来，不会被摘要里的旧指令带偏。\n模型仍然报错「太长了」时，再补救压一次，只重试一次。",
+   "fontSize": 13,
+   "strokeColor": "#757575"
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 430,
+   "text": "花 1 次调用换来一本干净的记录本；原文永远在硬盘上，随时可查。",
+   "fontSize": 15,
+   "strokeColor": "#757575"
+  }
+ ]
+}

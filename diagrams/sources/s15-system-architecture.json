@@ -1,0 +1,651 @@
+{
+ "out": "s15_integrated_harness/images/system-architecture.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "总装：十几个组件都挂在同一个循环上，没有第二个循环",
+   "fontSize": 22,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "notes",
+   "x": 330,
+   "y": 50,
+   "width": 300,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "记录本 (messages)",
+    "fontSize": 18
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "c1",
+   "x": 480,
+   "y": 120,
+   "width": 0,
+   "height": 40,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "pre",
+   "x": 330,
+   "y": 160,
+   "width": 300,
+   "height": 100,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "问模型之前\n塞进定时任务和后台通知\n给记录本腾地方；挑相关记忆\n把技能目录拼进系统提示词",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "c2",
+   "x": 480,
+   "y": 260,
+   "width": 0,
+   "height": 40,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "llm",
+   "x": 330,
+   "y": 300,
+   "width": 300,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#d0bfff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "大模型\n（外面包一层：出错重试、换备用模型、续写）",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "c3",
+   "x": 480,
+   "y": 370,
+   "width": 0,
+   "height": 40,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "gate",
+   "x": 330,
+   "y": 410,
+   "width": 300,
+   "height": 60,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "执行之前：钩子 + 权限",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "c4",
+   "x": 480,
+   "y": 470,
+   "width": 0,
+   "height": 40,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "pool",
+   "x": 330,
+   "y": 510,
+   "width": 300,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "工具池：自带的 + 外部接进来的\n慢的放后台，大的派子 Agent",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "c5",
+   "x": 630,
+   "y": 545,
+   "width": 30,
+   "height": 460,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     30,
+     0
+    ],
+    [
+     30,
+     -460
+    ],
+    [
+     -30,
+     -460
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c",
+   "strokeStyle": "dashed"
+  },
+  {
+   "type": "text",
+   "id": "c5t",
+   "x": 634,
+   "y": 296,
+   "text": "结果\n写回",
+   "fontSize": 12,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "rectangle",
+   "id": "g1",
+   "x": 40,
+   "y": 160,
+   "width": 250,
+   "height": 190,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#f1f5f9",
+   "fillStyle": "solid",
+   "opacity": 60,
+   "strokeColor": "#64748b",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "g1_t",
+   "x": 58,
+   "y": 170,
+   "text": "上下文与知识",
+   "fontSize": 15,
+   "strokeColor": "#64748b"
+  },
+  {
+   "type": "rectangle",
+   "id": "g1a",
+   "x": 60,
+   "y": 196,
+   "width": 210,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "s07 技能：目录常驻，全文按需",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "g1b",
+   "x": 60,
+   "y": 244,
+   "width": 210,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "s08 压缩：先腾地方再问",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "g1c",
+   "x": 60,
+   "y": 292,
+   "width": 210,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "s09 记忆：挑相关的放进来",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "g1x",
+   "x": 290,
+   "y": 210,
+   "width": 40,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     40,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#64748b"
+  },
+  {
+   "type": "rectangle",
+   "id": "g2",
+   "x": 40,
+   "y": 400,
+   "width": 250,
+   "height": 190,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#f1f5f9",
+   "fillStyle": "solid",
+   "opacity": 60,
+   "strokeColor": "#64748b",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "g2_t",
+   "x": 58,
+   "y": 410,
+   "text": "治理与兜底",
+   "fontSize": 15,
+   "strokeColor": "#64748b"
+  },
+  {
+   "type": "rectangle",
+   "id": "g2a",
+   "x": 60,
+   "y": 436,
+   "width": 210,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "s03 权限：三道闸门",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "g2b",
+   "x": 60,
+   "y": 484,
+   "width": 210,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "s04 钩子：四个位置",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "g2c",
+   "x": 60,
+   "y": 532,
+   "width": 210,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "错误恢复：s15 唯一新增的代码",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "g2x",
+   "x": 290,
+   "y": 440,
+   "width": 40,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     40,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#64748b"
+  },
+  {
+   "type": "rectangle",
+   "id": "g3",
+   "x": 690,
+   "y": 160,
+   "width": 250,
+   "height": 190,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#f1f5f9",
+   "fillStyle": "solid",
+   "opacity": 60,
+   "strokeColor": "#64748b",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "g3_t",
+   "x": 708,
+   "y": 170,
+   "text": "持久工作",
+   "fontSize": 15,
+   "strokeColor": "#64748b"
+  },
+  {
+   "type": "rectangle",
+   "id": "g3a",
+   "x": 710,
+   "y": 196,
+   "width": 210,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "s05 待办 · s10 任务板",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "g3b",
+   "x": 710,
+   "y": 244,
+   "width": 210,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "s11 后台任务：通知回流",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "g3c",
+   "x": 710,
+   "y": 292,
+   "width": 210,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "s12 定时：到点注入",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "g3x",
+   "x": 690,
+   "y": 210,
+   "width": 60,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     -60,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#64748b"
+  },
+  {
+   "type": "rectangle",
+   "id": "g4",
+   "x": 690,
+   "y": 400,
+   "width": 250,
+   "height": 190,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#f1f5f9",
+   "fillStyle": "solid",
+   "opacity": 60,
+   "strokeColor": "#64748b",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "g4_t",
+   "x": 708,
+   "y": 410,
+   "text": "团队与插件",
+   "fontSize": 15,
+   "strokeColor": "#64748b"
+  },
+  {
+   "type": "rectangle",
+   "id": "g4a",
+   "x": 710,
+   "y": 436,
+   "width": 210,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "s06 子 Agent：新记录本",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "g4b",
+   "x": 710,
+   "y": 484,
+   "width": 210,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "s13 团队：信箱 + 任务板",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "g4c",
+   "x": 710,
+   "y": 532,
+   "width": 210,
+   "height": 40,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "s14 外部工具：同一个工具池",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "g4x",
+   "x": 690,
+   "y": 545,
+   "width": 60,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     -60,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#64748b"
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 620,
+   "text": "不加新组件：灰框里都是前面各章造好的。唯一多出来的代码，是调用模型外面那层错误恢复。",
+   "fontSize": 15,
+   "strokeColor": "#757575"
+  }
+ ]
+}

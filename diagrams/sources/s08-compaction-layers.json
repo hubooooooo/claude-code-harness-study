@@ -1,0 +1,309 @@
+{
+ "out": "s08_context_compact/images/compaction-layers.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "四步管线：便宜的先做，做完仍然超限才让模型写摘要",
+   "fontSize": 22,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "h0",
+   "x": 40,
+   "y": 60,
+   "width": 200,
+   "height": 44,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "第 1 步  大结果搬硬盘",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b0",
+   "x": 40,
+   "y": 104,
+   "width": 200,
+   "height": 130,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "这一圈的工具结果加起来\n超过 20 万字 → 从最大的开始\n存进硬盘，记录本里只留\n文件路径 + 前 2000 字预览",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "c0",
+   "x": 100,
+   "y": 242,
+   "text": "不花钱",
+   "fontSize": 14,
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "arrow",
+   "id": "a0",
+   "x": 240,
+   "y": 160,
+   "width": 30,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     30,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "h1",
+   "x": 270,
+   "y": 60,
+   "width": 200,
+   "height": 44,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "第 2 步  剪掉中段",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b1",
+   "x": 270,
+   "y": 104,
+   "width": 200,
+   "height": 130,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "消息超过 50 条 → 中间那段\n存档后删掉，留开头和结尾\n工具调用和它的结果成对保留",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "c1",
+   "x": 330,
+   "y": 242,
+   "text": "不花钱",
+   "fontSize": 14,
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "arrow",
+   "id": "a1",
+   "x": 470,
+   "y": 160,
+   "width": 30,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     30,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "h2",
+   "x": 500,
+   "y": 60,
+   "width": 200,
+   "height": 44,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "第 3 步  旧结果占位",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b2",
+   "x": 500,
+   "y": 104,
+   "width": 200,
+   "height": 130,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "早先读过的工具结果，只留\n最近 3 条完整，更早的换成\n一行「早先的结果已省略」",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "c2",
+   "x": 560,
+   "y": 242,
+   "text": "不花钱",
+   "fontSize": 14,
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "arrow",
+   "id": "a2",
+   "x": 700,
+   "y": 160,
+   "width": 30,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     30,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "h3",
+   "x": 730,
+   "y": 60,
+   "width": 200,
+   "height": 44,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "第 4 步  写摘要",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "b3",
+   "x": 730,
+   "y": 104,
+   "width": 200,
+   "height": 130,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "做完前三步还超过 5 万字 →\n原文存档，让模型写一份摘要\n（目标、决定、文件、剩余工作）\n替换掉整段旧历史",
+    "fontSize": 12
+   }
+  },
+  {
+   "type": "text",
+   "id": "c3",
+   "x": 790,
+   "y": 242,
+   "text": "花 1 次调用",
+   "fontSize": 14,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "rectangle",
+   "id": "fb",
+   "x": 40,
+   "y": 300,
+   "width": 890,
+   "height": 90,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "opacity": 30,
+   "strokeColor": "#b91c1c",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "fb_t",
+   "x": 58,
+   "y": 310,
+   "text": "补救（模型报错「太长了」时才做，最多一次）",
+   "fontSize": 15,
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "text",
+   "id": "fb_body",
+   "x": 60,
+   "y": 334,
+   "text": "总结较早的历史，保留最近 5 条消息，工具调用和结果仍然成对；然后重试一次，再不行就把错误交还给你",
+   "fontSize": 13,
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 420,
+   "text": "原则：可恢复的信息优先保留（存档不是删除）；代价递增：整理 → 摘要 → 补救。",
+   "fontSize": 15,
+   "strokeColor": "#757575"
+  }
+ ]
+}

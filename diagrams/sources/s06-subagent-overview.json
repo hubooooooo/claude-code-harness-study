@@ -1,0 +1,355 @@
+{
+ "out": "s06_subagent/images/subagent-overview.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "子 Agent：另开一本记录本去干活，只把结论带回来",
+   "fontSize": 22,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "parent",
+   "x": 40,
+   "y": 40,
+   "width": 400,
+   "height": 460,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#f1f5f9",
+   "fillStyle": "solid",
+   "opacity": 60,
+   "strokeColor": "#64748b",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "parent_t",
+   "x": 58,
+   "y": 50,
+   "text": "父 Agent（原来那个循环）",
+   "fontSize": 15,
+   "strokeColor": "#64748b"
+  },
+  {
+   "type": "rectangle",
+   "id": "pn",
+   "x": 70,
+   "y": 80,
+   "width": 180,
+   "height": 84,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "父的记录本\n整段对话都在",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a1",
+   "x": 160,
+   "y": 164,
+   "width": 0,
+   "height": 40,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "pl",
+   "x": 70,
+   "y": 204,
+   "width": 180,
+   "height": 84,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#d0bfff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "大模型\n决定派个活出去",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a2",
+   "x": 160,
+   "y": 288,
+   "width": 0,
+   "height": 40,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "pt",
+   "x": 70,
+   "y": 328,
+   "width": 340,
+   "height": 100,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "分发表：5 个基础工具\n＋「派活」(task)（s06 新增）\n派活 = 开一个子 Agent，等它回话",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "child",
+   "x": 560,
+   "y": 40,
+   "width": 400,
+   "height": 460,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "opacity": 30,
+   "strokeColor": "#b91c1c",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "child_t",
+   "x": 578,
+   "y": 50,
+   "text": "子 Agent（s06 新增）：全新的记录本",
+   "fontSize": 15,
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "rectangle",
+   "id": "cn",
+   "x": 590,
+   "y": 80,
+   "width": 340,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "新记录本：只有那一段任务描述\n看不到父的对话",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a3",
+   "x": 760,
+   "y": 150,
+   "width": 0,
+   "height": 40,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "cl",
+   "x": 590,
+   "y": 190,
+   "width": 340,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#d0bfff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "大模型\n自己转循环，最多 30 圈",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a4",
+   "x": 760,
+   "y": 260,
+   "width": 0,
+   "height": 40,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "ct",
+   "x": 590,
+   "y": 300,
+   "width": 340,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "5 个基础工具\n没有「派活」：不能再往下派",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "text",
+   "id": "t5",
+   "x": 610,
+   "y": 392,
+   "text": "中间的几十圈对话都留在这本新记录本里\n干完就丢，不进父的记录本",
+   "fontSize": 13,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "arrow",
+   "id": "a6",
+   "x": 410,
+   "y": 350,
+   "width": 180,
+   "height": 235,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     60,
+     0
+    ],
+    [
+     60,
+     -235
+    ],
+    [
+     180,
+     -235
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1d4ed8"
+  },
+  {
+   "type": "text",
+   "id": "t6",
+   "x": 70,
+   "y": 436,
+   "text": "① 蓝线：父把一段任务描述交给子 Agent",
+   "fontSize": 13,
+   "strokeColor": "#1d4ed8"
+  },
+  {
+   "type": "arrow",
+   "id": "a7",
+   "x": 590,
+   "y": 335,
+   "width": 180,
+   "height": 70,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     -80,
+     0
+    ],
+    [
+     -80,
+     70
+    ],
+    [
+     -180,
+     70
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "text",
+   "id": "t7",
+   "x": 70,
+   "y": 460,
+   "text": "② 绿线：子 Agent 只把最终结论交回来",
+   "fontSize": 13,
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 540,
+   "text": "隔开的是记录本，不是电脑：父子用同一个文件夹、同一套权限和钩子。父的记录本只多一条结论。",
+   "fontSize": 15,
+   "strokeColor": "#757575"
+  }
+ ]
+}

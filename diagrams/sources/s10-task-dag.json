@@ -1,0 +1,238 @@
+{
+ "out": "s10_task_system/images/task-dag.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "任务之间有先后：前置都完成了，这个任务才能被认领",
+   "fontSize": 22,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "A",
+   "x": 40,
+   "y": 80,
+   "width": 230,
+   "height": 90,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#b2f2bb",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "搭数据库表\n已完成 ✓",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "B",
+   "x": 340,
+   "y": 80,
+   "width": 230,
+   "height": 90,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "写接口\n进行中：队友 1 认领了",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "C",
+   "x": 340,
+   "y": 230,
+   "width": 230,
+   "height": 90,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "strokeColor": "#b45309",
+   "strokeWidth": 2,
+   "label": {
+    "text": "写文档\n可以开始：前置已完成",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "D",
+   "x": 640,
+   "y": 80,
+   "width": 230,
+   "height": 90,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#f1f5f9",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "跑测试\n等待：接口还没写完",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "E",
+   "x": 640,
+   "y": 230,
+   "width": 230,
+   "height": 90,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#f1f5f9",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "上线\n等待：测试、文档都没完",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "ab",
+   "x": 270,
+   "y": 125,
+   "width": 70,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     70,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "arrow",
+   "id": "ac",
+   "x": 270,
+   "y": 150,
+   "width": 70,
+   "height": 125,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     35,
+     0
+    ],
+    [
+     35,
+     125
+    ],
+    [
+     70,
+     125
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "arrow",
+   "id": "bd",
+   "x": 570,
+   "y": 125,
+   "width": 70,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     70,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "arrow",
+   "id": "de",
+   "x": 755,
+   "y": 170,
+   "width": 0,
+   "height": 60,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     60
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "arrow",
+   "id": "ce",
+   "x": 570,
+   "y": 275,
+   "width": 70,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     70,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "text",
+   "id": "lg",
+   "x": 40,
+   "y": 350,
+   "text": "箭头方向 = 先做谁。绿色已完成，橙色进行中，黄色可以开始，灰色还在等前置。",
+   "fontSize": 14,
+   "strokeColor": "#757575"
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 390,
+   "text": "「写文档」只依赖「搭数据库表」，所以空闲的队友现在就能认领它；「上线」要等两条线都完成。",
+   "fontSize": 15,
+   "strokeColor": "#757575"
+  }
+ ]
+}
