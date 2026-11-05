@@ -16,22 +16,23 @@ s01 → s02 → s03 → s04 → s05 → s06 → `s07` → [s08](../s08_context_c
 
 > 代码看不懂可以先跳过，到网页上看「回放」动画。详细的判断方法在本章末尾的「产品经理视角」。
 
+### 本章新词
+
+每章最多三个新词。看不懂的其他词，去[名词表](../guide/glossary.md)查。
+
+| 词 | 意思 | 比喻 |
+|---|---|---|
+| 技能 | 一份写给 Agent 的操作说明书，放在一个文件夹里 | 新员工手册里的一章 |
+| 技能目录 | 每个技能的名字加一句简介，常驻在系统提示词里 | 手册的目录页 |
+| 按需加载 | 用到哪个技能，才读它的全文 | 翻到那一章再细看 |
+
 ---
 
 ## 问题
 
-假设某个项目有一套 React 组件规范、一份 SQL 风格指南和一份 API 设计文档。我们希望 Agent 在开发过程中遵守这些规范，最直接的做法就是把它们全部放进 system prompt：
+假设一个项目有三份规范：前端组件规范、数据库查询风格、接口设计文档。我们希望 Agent 干活时遵守它们，最直接的做法是把三份全文都塞进系统提示词。
 
-```python
-SYSTEM = (
-    f"You are a coding agent. "
-    + open("guides/react-style.md").read()
-    + open("guides/sql-style.md").read()
-    + open("guides/api-design.md").read()
-)
-```
-
-这种做法能让 Agent 读到所有规范，但问题在于，三份文档被固定放进了 system prompt，无法根据当前任务只选择需要的那一份。每次调用 LLM 时，三份文档的全文都会一起发送给模型。当前任务只修改 React 组件时，实际需要的只有 React 组件规范；SQL 风格指南和 API 设计文档与任务无关，却仍然占用输入 token 和上下文窗口，留给代码、对话和工具结果的空间也会变少。
+能用，但有个问题：每次问模型都把三份全带上。当前任务只改前端时，真正需要的只有前端那份，另外两份白占地方，留给代码、对话和工具结果的空间就少了。
 
 ---
 
@@ -39,12 +40,12 @@ SYSTEM = (
 
 ![Skill Overview](images/skill-overview.svg)
 
-启动时，`SkillLoader` 扫描 `skills/*/SKILL.md`，读取 YAML frontmatter 中的 `name` 和 `description`，并把这份目录加入 system prompt。模型需要完整说明时，调用 `load_skill(name)`；返回的 `SKILL.md` 作为 `tool_result` 追加到消息列表。
+启动时，程序扫一遍技能文件夹，只拿每个技能的名字和一句简介，拼成一份目录放进系统提示词。模型判断某个技能用得上时，调用「读取技能」工具，整份说明书作为工具结果写回记录本。
 
-| 内容 | 进入模型的位置 | 何时加入 |
-|------|----------------|----------|
-| 技能名称和描述 | system prompt | 启动时 |
-| 完整 `SKILL.md` | `tool_result` | 调用 `load_skill` 时 |
+| 内容 | 放在哪里 | 什么时候加进去 |
+|------|----------|----------------|
+| 技能的名字和简介 | 系统提示词 | 启动时就有 |
+| 整份说明书 | 工具结果 | 模型点名要读时 |
 
 ---
 
@@ -131,13 +132,13 @@ cd claude-code-harness-study
 python s07_skill_loading/code.py
 ```
 
-试试这些 prompt：
+试试这些话：
 
-1. `What skills are available?`
-2. `Load the code-review skill and follow its instructions`
-3. `Review README.md and load the relevant skill first`
+1. `现在有哪些技能可以用？`
+2. `加载「代码审查」技能，按它的要求审查 README.md`
+3. `先判断该用哪个技能，加载后再审查 README.md`
 
-观察 system prompt 中是否只有技能目录，以及调用 `load_skill` 后是否出现完整的 `SKILL.md` 内容。
+观察重点：一开始系统提示词里只有目录；调用读取技能之后，整份说明书才出现在工具结果里。
 
 ---
 
@@ -178,7 +179,7 @@ python s07_skill_loading/code.py
 
 ### 真实产品里的样子
 
-- Anthropic 在 2025 年推出了 Agent Skills。每个技能是一个文件夹，核心是一份 SKILL.md 说明。Claude 平时只看到技能的名字和简介，需要时才读全文，和本章的机制一样。
+- Anthropic 在 2025 年推出了 Agent Skills。每个技能是一个文件夹，核心是一份说明书文件。Claude 平时只看到技能的名字和简介，需要时才读全文，和本章的机制一样。
 - 这个格式后来公开成开放规范，其他厂商的工具也陆续支持。业务方写好的一份技能，可以在不同工具里复用。
 
 ### 面试题
@@ -199,6 +200,6 @@ python s07_skill_loading/code.py
 
 ## 接下来
 
-随着工具调用增加，`messages[]` 会积累较早的文件内容和工具结果。
+工具用得越多，记录本里堆的旧文件内容和旧工具结果就越多。
 
-s08 Context Compact → 缩短较早的消息，为后续调用保留上下文空间。
+s08 压缩（Context Compact）→ 给记录本腾地方，让后面的对话还装得下。
