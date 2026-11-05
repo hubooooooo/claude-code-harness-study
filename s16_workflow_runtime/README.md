@@ -17,25 +17,43 @@ s01 → ... → s14 → [s15](../s15_integrated_harness/) → `s16` → [s17](..
 
 > 代码看不懂可以先跳过，到网页上看「回放」动画。详细的判断方法在本章末尾的「产品经理视角」。
 
+### 本章新词
+
+每章最多三个新词。看不懂的其他词，去[名词表](../guide/glossary.md)查。
+
+| 词 | 意思 | 比喻 |
+|---|---|---|
+| 工作流 | 事先写好的固定步骤，一次调用跑完 | 工厂里的流水线 |
+| 续跑 | 中途断了，从断点接着跑，做过的不重做 | 游戏的存档点 |
+| 调用日志 | 每一步派出去的结果记在硬盘上，续跑时直接用 | 流水账 |
+
 ---
 
-从 s01 到 s15，每一轮都由模型决定调用哪些工具。工具结果进入 `messages[]` 后，模型再根据更新后的上下文决定下一步。当后续路径取决于上一步发现了什么时，这种方式很合适。
+## 问题
+
+从 s01 到 s15，每一圈都由模型决定用哪些工具。工具结果写回记录本后，模型再看情况决定下一步。下一步取决于上一步发现了什么时，这种方式很合适。
 
 有些任务会重复一套固定流程。例如代码审查可以同时检查多个维度，再逐条验证发现、合并重复项并按严重程度排序。执行前已经知道步骤及其先后关系，这时宿主需要三样东西：
 
 - **并行**，别一个一个串着等；
-- **稳定的结果结构**，即使每个 agent 的回答会变化；
+- **稳定的结果结构**，即使每个小 Agent 的回答会变化；
 - **可恢复**，跑到一半断了，已经做完的部分别从头再来。
 
-如果这套编排只存在于对话历史里，步骤顺序和检查点也只存在于历史里。保存好的 workflow 把固定流程写进代码，并在 journal 中记录已经完成的调用。
+如果这套流程只存在于对话里，步骤顺序和检查点也只存在于对话里，下次又得重新凑。
+
+---
+
+## 解决方案
+
+![Workflow Runtime 总览](images/workflow-runtime-overview.svg)
+
+把固定流程写成一个脚本，登记成一个「工作流」工具。模型只需要点名跑哪个工作流、给参数；程序按脚本分阶段派活、并行执行，整轮跑完只回一条结果。每一步派出去的结果都记在硬盘上的调用日志里，中途断了可以续跑，做过的不重做、不花钱。
 
 ## 计划写在代码里，不是靠聊天一轮轮凑
 
 在 harness 的工具池里加入一个 `Workflow` 工具。宿主注册由 `agent() / parallel() / pipeline() / phase()` 组成的可信脚本。模型只提供保存好的 workflow 名称、参数和可选的续跑 run ID，不会提交可执行代码或元数据。
 
 workflow 以一次 `tool_use` 进入主循环。脚本运行时，runtime 会发出生命周期和进度事件，并把每一步写进磁盘上的 journal。脚本结束后，这次调用返回启动信息、结果和任务状态。脚本里的中间结果存在变量里，不会塞进对话历史。下次用 `resume_from_run_id` 重启时，没改过的 `agent()` 会直接使用 journal 中的结果。
-
-![Workflow Runtime 总览](images/workflow-runtime-overview.svg)
 
 ```python
 SAMPLE_META = {"name": "review-changes", "description": "审查代码改动", "phases": ["Review", "Verify"]}
@@ -239,13 +257,21 @@ s16 不替换主循环，它只是在工具层暴露 `Workflow`，背后启动�
 
 ## 试一下
 
-```bash
-python s16_workflow_runtime/code.py          # 主模型和 Workflow 子 agent 都使用真实 API
-python s16_workflow_runtime/code.py demo     # 运行确定性的 review-changes 测试数据并观察事件流
-python s16_workflow_runtime/code.py resume   # 用上次的 runId 续跑，每个 agent() 都命中 journal 缓存
+```sh
+cd claude-code-harness-study
+python s16_workflow_runtime/code.py          # 主模型和工作流里的子 agent 都用真实模型
+python s16_workflow_runtime/code.py demo     # 用固定的假数据跑一遍「代码审查」工作流，看事件流
+python s16_workflow_runtime/code.py resume   # 用上一次的运行编号续跑，每一步都命中调用日志
 ```
 
-默认命令里，可以先让模型读取改动，再把内容放进 `args.changes` 并运行保存好的 `review-changes` workflow。主模型和 workflow 子 agent 都使用真实 API。`demo` 命令使用固定 runner 数据，便于重复观察生命周期和续跑；续跑命中全部缓存时显示 `agents=0 tokens=0`。
+试试这些话：
+
+1. `读一下 s16_workflow_runtime/code.py 里的示例改动，用保存好的「代码审查」工作流审一遍`（主模型先读改动，再把它交给工作流）
+2. `再跑一次刚才那个工作流，用上次的运行编号续跑`（看屏幕上每一步是不是都显示「命中缓存」）
+
+观察重点：demo 模式不需要 key；续跑全部命中缓存时，屏幕上会显示派出 0 个 agent、花 0 个 token。
+
+---
 
 ## 产品经理视角
 
@@ -307,4 +333,4 @@ python s16_workflow_runtime/code.py resume   # 用上次的 runId 续跑，每�
 
 ## 接下来
 
-[s17 Goal Loop](../s17_goal_loop/) 会使用一个更小、独立的循环检查既定目标是否已经达成，并据此决定是否还需要下一轮。
+[s17 目标（Goal Loop）](../s17_goal_loop/) 会用一个更小的独立判断器检查既定目标有没有达成，再决定要不要继续下一圈。

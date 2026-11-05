@@ -1,0 +1,347 @@
+{
+ "out": "s13_agent_teams/images/agent-teams-overview.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "团队：一个主控、几个队友、一块共享任务板、各有信箱",
+   "fontSize": 22,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "you",
+   "x": 40,
+   "y": 70,
+   "width": 160,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#a5d8ff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "你\n先确认团队方案",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a0",
+   "x": 200,
+   "y": 105,
+   "width": 100,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     100,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "lead",
+   "x": 300,
+   "y": 60,
+   "width": 330,
+   "height": 100,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#d0bfff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "主控 Agent（原来那个循环）\n和你对话、建任务、派人\n发消息、审批计划、建工作目录",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a1",
+   "x": 465,
+   "y": 160,
+   "width": 0,
+   "height": 50,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     50
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "text",
+   "id": "t1",
+   "x": 476,
+   "y": 172,
+   "text": "留言 / 收汇报",
+   "fontSize": 13,
+   "strokeColor": "#757575"
+  },
+  {
+   "type": "rectangle",
+   "id": "bus",
+   "x": 40,
+   "y": 210,
+   "width": 890,
+   "height": 60,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "strokeColor": "#b45309",
+   "strokeWidth": 2,
+   "label": {
+    "text": "信箱（s13 新增）：每人一个文件，谁都能给谁留言；汇报、空闲通知、控制消息都走这里",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "m0",
+   "x": 165,
+   "y": 270,
+   "width": 0,
+   "height": 50,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     50
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "mate0",
+   "x": 40,
+   "y": 320,
+   "width": 250,
+   "height": 120,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "队友 A（后端）\n自己的记录本和工具\n干活 → 汇报 → 空闲\n收到直接消息 → 干活",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "b0",
+   "x": 165,
+   "y": 440,
+   "width": 0,
+   "height": 50,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     50
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#0f766e"
+  },
+  {
+   "type": "arrow",
+   "id": "m1",
+   "x": 485,
+   "y": 270,
+   "width": 0,
+   "height": 50,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     50
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "mate1",
+   "x": 360,
+   "y": 320,
+   "width": 250,
+   "height": 120,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "队友 B（前端）\n自己的记录本和工具\n干活 → 汇报 → 空闲\n空闲 → 认领下一个任务",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "b1",
+   "x": 485,
+   "y": 440,
+   "width": 0,
+   "height": 50,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     50
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#0f766e"
+  },
+  {
+   "type": "arrow",
+   "id": "m2",
+   "x": 805,
+   "y": 270,
+   "width": 0,
+   "height": 50,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     50
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "mate2",
+   "x": 680,
+   "y": 320,
+   "width": 250,
+   "height": 120,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "队友 C（测试）\n自己的记录本和工具\n干活 → 汇报 → 空闲\n收到「收工」→ 结束",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "b2",
+   "x": 805,
+   "y": 440,
+   "width": 0,
+   "height": 50,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     50
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#0f766e"
+  },
+  {
+   "type": "rectangle",
+   "id": "board",
+   "x": 40,
+   "y": 490,
+   "width": 570,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#c3fae8",
+   "fillStyle": "solid",
+   "strokeColor": "#0f766e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "共享任务板（s10 那块）：谁空闲谁来认领，认领是原子的，两人不会抢到同一个",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "wt",
+   "x": 640,
+   "y": 490,
+   "width": 290,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#f1f5f9",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "可选：每个任务一个独立工作目录\n只是隔开目录，不是安全沙箱",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 600,
+   "text": "主控不亲自干活，队友不和你说话：分工靠信箱和任务板，不靠谁盯着谁。",
+   "fontSize": 15,
+   "strokeColor": "#757575"
+  }
+ ]
+}

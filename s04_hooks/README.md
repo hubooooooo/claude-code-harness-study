@@ -2,7 +2,7 @@
 
 s01 → s02 → s03 → `s04` → [s05](../s05_todo_write/) → s06 → ... → s16 → s17
 
-> *"挂在循环上, 不写进循环里"* — hook 在工具执行前后注入扩展逻辑。
+> *"挂在循环上，不写进循环里"* — 钩子（hook）在工具执行前后留出插口，扩展挂在插口上。
 >
 > **Harness 层**: hook — 扩展点不侵入循环。
 
@@ -16,13 +16,48 @@ s01 → s02 → s03 → `s04` → [s05](../s05_todo_write/) → s06 → ... → 
 
 > 代码看不懂可以先跳过，到网页上看「回放」动画。详细的判断方法在本章末尾的「产品经理视角」。
 
+### 本章新词
+
+每章最多三个新词。看不懂的其他词，去[名词表](../guide/glossary.md)查。
+
+| 词 | 意思 | 比喻 |
+|---|---|---|
+| 钩子 | 循环在固定位置「喊一声」，挂在那个位置上的小程序就会跑。要加检查，挂上去就行，不用改循环 | 门口的打卡机，进门出门都要刷一下 |
+| 留痕（审计） | 把谁在什么时候做了什么记下来，出了问题能追查 | 公司的进出登记本 |
+| 否决 | 一个检查有权说「这步不许做」，后面的步骤就不再执行 | 财务不签字，报销走不下去 |
+
 ---
 
 ## 问题
 
-s03 的 Agent 有权限检查了。但每次加一个新检查，比如"记录每次 bash 调用"、"操作后自动 git add"，都要修改 `agent_loop` 函数。
+s03 的 Agent 有权限检查了。但每加一个新要求，比如「每次执行命令都记一笔日志」「改完文件自动备份」「出错了通知负责人」，都要去改循环本身的代码。
 
-循环很快就变成了这样：
+改着改着，循环里塞满了检查、通知、备份，原本十来行的核心谁也认不出来了。
+
+你想扩展的是 Agent 的行为，但你改的却是循环本身。循环应该是一个稳定的核心，扩展应该挂在外面。
+
+---
+
+## 解决方案
+
+![Hooks Overview](images/hooks-overview.svg)
+
+s03 的循环和权限逻辑完全保留。唯一的变动：权限检查不再写在循环里，而是挂到一个固定位置上。循环只负责在固定位置「喊一声」，喊到谁，谁就跑；喊的位置一共四个。
+
+| 位置 | 什么时候喊 | 典型用途 |
+|------|---------|---------|
+| 用户输入之后（UserPromptSubmit） | 你的话刚发出，还没交给模型 | 检查输入、补上当前时间等背景 |
+| 执行工具之前（PreToolUse） | 模型要用工具，程序还没动手 | 权限检查、记日志 |
+| 执行工具之后（PostToolUse） | 工具刚跑完 | 自动备份、检查输出 |
+| 循环要结束时（Stop） | 模型说做完了，程序准备停下 | 收尾、决定要不要继续 |
+
+要加新检查，就往对应位置上再挂一个；循环本身一行都不用改。
+
+---
+
+## 工作原理
+
+先看 s03 那种写法的下场。检查一多，循环就会变成这样：
 
 ```python
 def agent_loop(messages):
@@ -38,31 +73,6 @@ def agent_loop(messages):
             auto_git_add(block)         # 再加一行
             # ... 很快循环就认不出来了
 ```
-
-你想扩展的是 Agent 的行为，但你改的却是循环本身。循环应该是一个稳定的核心，扩展应该挂在外面。
-
----
-
-## 解决方案
-
-![Hooks Overview](images/hooks-overview.svg)
-
-s03 的循环和权限逻辑完全保留。唯一的变动是把 `check_permission()` 从循环体内移到了 hook 上，循环不再直接调用任何检查函数，改为 `trigger_hooks("PreToolUse", block)`，由注册表决定跑什么。
-
-四个事件，覆盖一个完整的 agent cycle：
-
-| 事件 | 触发时机 | 典型用途 |
-|------|---------|---------|
-| UserPromptSubmit | 用户输入提交后、进入 LLM 前 | 输入验证、注入上下文 |
-| PreToolUse | 工具执行前 | 权限检查、日志记录 |
-| PostToolUse | 工具执行后 | 副作用（自动 git add 等）、输出检查 |
-| Stop | 循环即将退出时 | 收尾清理、决定是否继续循环 |
-
-扩展通过 `register_hook()` 添加，循环只调用 `trigger_hooks()`。
-
----
-
-## 工作原理
 
 **hook 注册表**：一个字典，事件名映射到回调列表。
 
@@ -114,7 +124,7 @@ agent_loop(history)
 def permission_hook(block):
     if block.name == "bash":
         for pattern in DENY_LIST:
-            if pattern in block.input.get("command", ""):
+            if matches_rule(block.input.get("command", ""), pattern):
                 return "权限被拒绝：命中黑名单"
     if block.name in ("read_file", "write_file", "edit_file"):
         path = block.input.get("path", "")
@@ -212,11 +222,11 @@ cd claude-code-harness-study
 python s04_hooks/code.py
 ```
 
-试试这些 prompt：
+试试这些话：
 
-1. `Read the file README.md`（应该直接通过，观察 hook 日志）
-2. `Create a file called test.txt`（通过后观察 PostToolUse 是否触发）
-3. `Delete all temporary files in /tmp`（bash + rm 触发权限 hook）
+1. `读一下 README.md`（直接通过，注意屏幕上多出来的「[钩子]」日志行）
+2. `新建一个 test.txt`（通过后看「执行工具之后」的钩子有没有响）
+3. `删除 test.txt 这个文件`（删文件触发「执行工具之前」的权限钩子，停下来问你）
 
 观察重点：每次工具执行前，是否出现了 `[钩子]` 日志？权限被拒时，是 hook 拦截的还是循环里硬编码的？
 
@@ -284,4 +294,4 @@ python s04_hooks/code.py
 
 Agent 现在能安全执行操作了。但它有没有停下来想过"我应该先做什么，再做什么"？给它一个复杂任务，它是一上来就动手，还是先列个计划？
 
-s05 TodoWrite → 给 Agent 一个计划工具。先列清单，再做。
+s05 待办（TodoWrite）→ 给 Agent 一个计划工具。先列清单，再做。

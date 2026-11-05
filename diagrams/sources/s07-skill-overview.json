@@ -1,0 +1,346 @@
+{
+ "out": "s07_skill_loading/images/skill-overview.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "技能：先给模型一份目录，用到哪个再读哪个的全文",
+   "fontSize": 22,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "dir",
+   "x": 40,
+   "y": 60,
+   "width": 220,
+   "height": 110,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#c3fae8",
+   "fillStyle": "solid",
+   "strokeColor": "#0f766e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "技能文件夹\n每个技能一份「说明书」\n（代码审查、读 PDF……）",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a1",
+   "x": 260,
+   "y": 115,
+   "width": 80,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     80,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "text",
+   "id": "t1",
+   "x": 262,
+   "y": 68,
+   "text": "启动时扫一遍",
+   "fontSize": 13,
+   "strokeColor": "#757575"
+  },
+  {
+   "type": "rectangle",
+   "id": "cat",
+   "x": 340,
+   "y": 60,
+   "width": 240,
+   "height": 110,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "只拿目录\n每个技能：名字 + 一句简介",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a2",
+   "x": 580,
+   "y": 115,
+   "width": 80,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     80,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "text",
+   "id": "t2",
+   "x": 592,
+   "y": 68,
+   "text": "写进目录",
+   "fontSize": 13,
+   "strokeColor": "#757575"
+  },
+  {
+   "type": "rectangle",
+   "id": "sys",
+   "x": 660,
+   "y": 60,
+   "width": 240,
+   "height": 110,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#d0bfff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "系统提示词\n基础指令 + 技能目录\n（每次问模型都带着）",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a3",
+   "x": 780,
+   "y": 170,
+   "width": 0,
+   "height": 60,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     60
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "llm",
+   "x": 660,
+   "y": 230,
+   "width": 240,
+   "height": 90,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#d0bfff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "大模型\n看目录，判断这次用不用得上",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a4",
+   "x": 660,
+   "y": 275,
+   "width": 80,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     -80,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "text",
+   "id": "t4",
+   "x": 584,
+   "y": 244,
+   "text": "用得上就读",
+   "fontSize": 13,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "rectangle",
+   "id": "z",
+   "x": 300,
+   "y": 230,
+   "width": 280,
+   "height": 180,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "opacity": 30,
+   "strokeColor": "#b91c1c",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "z_t",
+   "x": 318,
+   "y": 240,
+   "text": "读取技能（s07 新增）",
+   "fontSize": 15,
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "rectangle",
+   "id": "load",
+   "x": 320,
+   "y": 266,
+   "width": 240,
+   "height": 50,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "按名字找到那份说明书",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a5",
+   "x": 440,
+   "y": 316,
+   "width": 0,
+   "height": 30,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     30
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "rectangle",
+   "id": "full",
+   "x": 320,
+   "y": 346,
+   "width": 240,
+   "height": 50,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "整份说明书原文",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a6",
+   "x": 320,
+   "y": 371,
+   "width": 160,
+   "height": 57,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     -160,
+     0
+    ],
+    [
+     -160,
+     -57
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c",
+   "strokeStyle": "dashed"
+  },
+  {
+   "type": "rectangle",
+   "id": "notes",
+   "x": 40,
+   "y": 230,
+   "width": 180,
+   "height": 84,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "记录本\n(messages)",
+    "fontSize": 18
+   }
+  },
+  {
+   "type": "text",
+   "id": "t6",
+   "x": 40,
+   "y": 412,
+   "text": "整份说明书作为工具结果写回记录本，下一圈模型就按它办事",
+   "fontSize": 13,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 462,
+   "text": "目录常驻、全文按需：技能再多，提示词也不会被撑爆；模型先知道「有什么」，用到时才读「怎么做」。",
+   "fontSize": 15,
+   "strokeColor": "#757575"
+  }
+ ]
+}

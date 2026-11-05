@@ -896,7 +896,7 @@ def _run_bash_process(command: str, cwd: Path | None = None) -> tuple[str, int |
         process = subprocess.Popen(
             command, shell=True, cwd=cwd or WORKDIR,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            text=True, start_new_session=True,
+            text=True, encoding="utf-8", errors="replace", start_new_session=True,
         )
         with _shell_process_lock:
             _shell_processes.add(process)
@@ -1744,7 +1744,26 @@ def trigger_hooks(event: str, *args):
     return None
 
 
-DENY_LIST = ["rm -rf /", "sudo", "shutdown", "reboot", "mkfs", "dd if="]
+DENY_LIST = ["sudo", "shutdown", "reboot", "mkfs", "dd", "rm -rf /"]
+
+
+def command_names(command: str) -> list[str]:
+    """按 ; && || | 把一行拆成子命令，取每条的第一个词：真正要执行的程序名。"""
+    names = []
+    for segment in re.split(r"\|\||&&|[;|]", command):
+        words = segment.split()
+        if words:
+            program = words[0].rsplit("/", 1)[-1]
+            names.append(program.split(".")[0] or program)
+    return names
+
+
+def matches_rule(command: str, rule: str) -> bool:
+    """一个单词的规则按程序名匹配（grep reboot 不算 reboot）；其余规则按压掉多余空白后的字面匹配。"""
+    if rule.isalnum():
+        return rule in command_names(command)
+    return rule in " ".join(command.split())
+
 mcp_tool_policies: dict[str, str] = {}
 
 
@@ -1756,7 +1775,7 @@ def permission_hook(block):
         if not isinstance(command, str):
             return "权限被拒绝：命令必须是字符串"
         for pattern in DENY_LIST:
-            if pattern in command:
+            if matches_rule(command, pattern):
                 return f"权限被拒绝：'{pattern}' 在黑名单里"
         if threading.current_thread() is not threading.main_thread():
             return ("Permission denied: interactive shell approval is unavailable "

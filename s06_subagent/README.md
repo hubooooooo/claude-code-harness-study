@@ -16,11 +16,21 @@ s01 → s02 → s03 → s04 → s05 → `s06` → [s07](../s07_skill_loading/) �
 
 > 代码看不懂可以先跳过，到网页上看「回放」动画。详细的判断方法在本章末尾的「产品经理视角」。
 
+### 本章新词
+
+每章最多三个新词。看不懂的其他词，去[名词表](../guide/glossary.md)查。
+
+| 词 | 意思 | 比喻 |
+|---|---|---|
+| 派活（task） | 把一件独立的小任务交给另一个 Agent，它干完只汇报结论 | 让同事去查资料，回来只说结论 |
+| 新记录本 | 子 Agent 从一本空白记录本开始，看不到主对话 | 新来的同事不知道之前的讨论 |
+| 只回结论 | 子 Agent 的中间过程不进主对话，只有最后一段话进 | 会议纪要只写结论，不写争论过程 |
+
 ---
 
 ## 问题
 
-Agent 在修一个 bug。为了追踪调用链，它读取了许多文件；每次工具调用和结果都会留在父循环的 `messages[]` 中。调用链已经弄清以后，多数中间细节不再需要，却仍然占用上下文。
+Agent 在修一个错误。为了弄清几个文件之间怎么互相调用，它读了很多文件，每次读到的内容都留在主记录本里。关系弄清以后，大部分中间细节已经没用了，却还占着位置。
 
 ---
 
@@ -28,9 +38,9 @@ Agent 在修一个 bug。为了追踪调用链，它读取了许多文件；每�
 
 ![Subagent Overview](images/subagent-overview.svg)
 
-调用 `task` 时，会同步运行一个使用全新 `messages[]` 的嵌套 Agent Loop。循环结束后，它的最终文本会成为父对话中的工具结果。
+多一个「派活」工具。模型用它时，程序另开一本空白记录本，只写上那段任务描述，再跑一个独立的循环；这个循环结束后，它的最终回答作为一条工具结果写回主记录本。
 
-这里隔离的是消息，不是进程或文件系统。父 Agent 与子 Agent 共享 `WORKDIR`，写文件和命令仍会影响同一个工作区。子 Agent 拥有五个基础工具，但没有 `task`；它的工具调用与父 Agent 使用同一组权限和生命周期 Hooks。
+隔开的是记录本，不是电脑：父子 Agent 用同一个项目文件夹，子 Agent 写文件、跑命令同样会生效。子 Agent 有五个基础工具，但没有「派活」，不能再往下派；它用的工具同样要过权限检查和钩子。
 
 ---
 
@@ -103,13 +113,13 @@ cd claude-code-harness-study
 python s06_subagent/code.py
 ```
 
-试试这些 prompt：
+试试这些话：
 
-1. `Use a subtask to find what testing framework this project uses`（子 Agent 去读文件，主 Agent 只收结论）
-2. `Delegate: read all .py files in s01_agent_loop/ and summarize what each one does`
-3. `Use a task to create s06_subagent/example/string_tools.py with a slugify(text: str) function, then verify it from the parent agent`
+1. `派一个子任务去查这个项目用的是哪个测试框架`（子 Agent 去读文件，主 Agent 只收结论）
+2. `派一个子任务读完 s01_agent_loop 下所有 Python 文件，总结每个文件是干什么的`
+3. `派一个子任务在 s06_subagent/example 下新建 string_tools.py，写一个把标题变成网址友好格式的函数，然后由你自己检查一遍`
 
-观察重点：是否出现 `[子 Agent 开始]` / `[子 Agent 结束]`？子 Agent 的工具调用是否以 `[子] ...` 输出？父 Agent 是否只接收到 `task` 返回的最终文本？
+观察重点：屏幕上有没有「[子 Agent 开始]」和「[子 Agent 结束]」？子 Agent 的工具调用是不是带「[子]」前缀？主 Agent 是不是只收到一段最终结论？
 
 ---
 
@@ -172,6 +182,6 @@ python s06_subagent/code.py
 
 ## 接下来
 
-Agent 现在能拆任务了。但每个任务需要的知识不一样：改 Python 脚本需要知道 PEP 8 规范，写 SQL 需要知道表结构。这些知识全塞进 system prompt，上下文直接爆了。
+Agent 现在能拆任务了。但每个任务需要的知识不一样：改代码要知道代码风格规范，写数据库查询要知道表结构。这些知识全塞进系统提示词，记录本直接爆了。
 
-s07 Skill Loading → 技能按需注入，不在 system prompt 里堆文档。用到的时候才加载，和读文件一样自然。
+s07 技能（Skill Loading）→ 规范按需加载，不在系统提示词里堆文档。用到的时候才读，和读文件一样自然。

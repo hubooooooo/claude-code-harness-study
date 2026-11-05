@@ -21,6 +21,7 @@ The subagent has no task tool, so it cannot delegate again.
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -61,7 +62,7 @@ def run_bash(command: str) -> str:
     try:
         result = subprocess.run(
             command, shell=True, cwd=WORKDIR,
-            capture_output=True, text=True, timeout=120,
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120,
         )
         output = (result.stdout + result.stderr).strip()
         return output[:50000] if output else "(没有输出)"
@@ -153,8 +154,26 @@ def trigger_hooks(event: str, *args):
     return None
 
 
-DENY_LIST = ["rm -rf /", "sudo", "shutdown", "reboot", "mkfs", "dd if="]
-DESTRUCTIVE = ["rm ", "> /etc/", "chmod 777"]
+DENY_LIST = ["sudo", "shutdown", "reboot", "mkfs", "dd", "rm -rf /"]
+DESTRUCTIVE = ["rm", "rmdir", "chmod", "git clean", "-delete", "rmtree(", "| sh", "| bash", "> /etc/"]
+
+
+def command_names(command: str) -> list[str]:
+    """按 ; && || | 把一行拆成子命令，取每条的第一个词：真正要执行的程序名。"""
+    names = []
+    for segment in re.split(r"\|\||&&|[;|]", command):
+        words = segment.split()
+        if words:
+            program = words[0].rsplit("/", 1)[-1]
+            names.append(program.split(".")[0] or program)
+    return names
+
+
+def matches_rule(command: str, rule: str) -> bool:
+    """一个单词的规则按程序名匹配（grep reboot 不算 reboot）；其余规则按压掉多余空白后的字面匹配。"""
+    if rule.isalnum():
+        return rule in command_names(command)
+    return rule in " ".join(command.split())
 
 
 def permission_hook(block):
@@ -162,11 +181,11 @@ def permission_hook(block):
     if block.name == "bash":
         command = block.input.get("command", "")
         for pattern in DENY_LIST:
-            if pattern in command:
+            if matches_rule(command, pattern):
                 print(f"\n\033[31m[已拦截] '{pattern}'\033[0m")
                 return "权限被拒绝：命中黑名单"
         for keyword in DESTRUCTIVE:
-            if keyword in command:
+            if matches_rule(command, keyword):
                 print("\n\033[33m[权限] 可能有破坏性的命令\033[0m")
                 print(f"   工具：{block.name}({block.input})")
                 choice = input("   允许执行吗？[y/N] ").strip().lower()

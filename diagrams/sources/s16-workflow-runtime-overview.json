@@ -1,0 +1,306 @@
+{
+ "out": "s16_workflow_runtime/images/workflow-runtime-overview.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "工作流：固定的流程写成脚本，一次调用跑完整轮，只回一条结果",
+   "fontSize": 22,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "notes",
+   "x": 40,
+   "y": 100,
+   "width": 180,
+   "height": 84,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "记录本\n(messages)",
+    "fontSize": 18
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a1",
+   "x": 220,
+   "y": 142,
+   "width": 80,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     80,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "llm",
+   "x": 300,
+   "y": 80,
+   "width": 230,
+   "height": 124,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#d0bfff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "大模型\n判断这事有固定套路\n点名跑哪个工作流、给参数",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a2",
+   "x": 530,
+   "y": 142,
+   "width": 70,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     70,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "text",
+   "id": "t2",
+   "x": 536,
+   "y": 114,
+   "text": "跑工作流",
+   "fontSize": 13,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "rectangle",
+   "id": "z",
+   "x": 600,
+   "y": 40,
+   "width": 330,
+   "height": 430,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "opacity": 30,
+   "strokeColor": "#b91c1c",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "z_t",
+   "x": 618,
+   "y": 50,
+   "text": "工作流运行时（s16 新增）",
+   "fontSize": 15,
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "rectangle",
+   "id": "chk",
+   "x": 630,
+   "y": 76,
+   "width": 270,
+   "height": 50,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "检查：名字合法？有权限？参数对？",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "z1",
+   "x": 765,
+   "y": 126,
+   "width": 0,
+   "height": 24,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     24
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "rectangle",
+   "id": "exec",
+   "x": 630,
+   "y": 150,
+   "width": 270,
+   "height": 100,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "按脚本执行\n分阶段；每一步派一个 agent 去做\n可以并行，可以流水线\n中间结果留在脚本里，不进记录本",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "z2",
+   "x": 765,
+   "y": 250,
+   "width": 0,
+   "height": 24,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     24
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "rectangle",
+   "id": "fin",
+   "x": 630,
+   "y": 274,
+   "width": 270,
+   "height": 56,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#b91c1c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "收尾：结果写成文件\n发一条「完成」通知",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "jrn",
+   "x": 630,
+   "y": 350,
+   "width": 270,
+   "height": 100,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#c3fae8",
+   "fillStyle": "solid",
+   "strokeColor": "#0f766e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "调用日志（续跑的关键）\n每次派 agent 的结果按「键」记下\n中途断了再跑：没变的直接用缓存\n不再花钱",
+    "fontSize": 13
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a3",
+   "x": 600,
+   "y": 302,
+   "width": 470,
+   "height": 118,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     -30,
+     0
+    ],
+    [
+     -30,
+     220
+    ],
+    [
+     -470,
+     220
+    ],
+    [
+     -470,
+     -118
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c",
+   "strokeStyle": "dashed"
+  },
+  {
+   "type": "text",
+   "id": "t3",
+   "x": 165,
+   "y": 250,
+   "text": "整轮跑完，才回一条工具结果\n（只回一次）",
+   "fontSize": 13,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "text",
+   "id": "ev",
+   "x": 300,
+   "y": 300,
+   "text": "过程里的「第几阶段、派了谁」\n只显示在屏幕上，不进记录本",
+   "fontSize": 13,
+   "strokeColor": "#757575"
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 560,
+   "text": "编排形状固定时，不该每次让模型临场发挥；写成脚本，省钱、可续跑、可审计。",
+   "fontSize": 15,
+   "strokeColor": "#757575"
+  }
+ ]
+}

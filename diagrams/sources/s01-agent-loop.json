@@ -1,0 +1,284 @@
+{
+ "out": "s01_agent_loop/images/agent-loop.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "循环：模型说要用工具，程序就去做；它说做完了，才停",
+   "fontSize": 22
+  },
+  {
+   "type": "rectangle",
+   "id": "you",
+   "x": 40,
+   "y": 56,
+   "width": 180,
+   "height": 62,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#a5d8ff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "你说一句话",
+    "fontSize": 20
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a_you_notes",
+   "x": 130,
+   "y": 118,
+   "width": 0,
+   "height": 40,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ]
+   ],
+   "endArrowhead": "arrow"
+  },
+  {
+   "type": "rectangle",
+   "id": "notes",
+   "x": 40,
+   "y": 158,
+   "width": 180,
+   "height": 84,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "label": {
+    "text": "记录本\n(messages)",
+    "fontSize": 18
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a_notes_llm",
+   "x": 220,
+   "y": 200,
+   "width": 110,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     110,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow"
+  },
+  {
+   "type": "text",
+   "id": "t_send",
+   "x": 232,
+   "y": 172,
+   "text": "整本发过去",
+   "fontSize": 14,
+   "strokeColor": "#757575"
+  },
+  {
+   "type": "rectangle",
+   "id": "llm",
+   "x": 330,
+   "y": 150,
+   "width": 250,
+   "height": 104,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#d0bfff",
+   "fillStyle": "solid",
+   "label": {
+    "text": "大模型\n读完记录本，自己决定：\n直接回答，还是先用工具",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a_llm_q",
+   "x": 455,
+   "y": 254,
+   "width": 0,
+   "height": 40,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ]
+   ],
+   "endArrowhead": "arrow"
+  },
+  {
+   "type": "diamond",
+   "id": "q",
+   "x": 335,
+   "y": 294,
+   "width": 240,
+   "height": 96,
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "label": {
+    "text": "要用工具吗？",
+    "fontSize": 18
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a_q_done",
+   "x": 575,
+   "y": 342,
+   "width": 45,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     45,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "text",
+   "id": "t_no",
+   "x": 578,
+   "y": 316,
+   "text": "不要",
+   "fontSize": 14,
+   "strokeColor": "#15803d"
+  },
+  {
+   "type": "rectangle",
+   "id": "done",
+   "x": 620,
+   "y": 310,
+   "width": 150,
+   "height": 64,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#b2f2bb",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "label": {
+    "text": "回答你\n循环结束",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a_q_run",
+   "x": 455,
+   "y": 390,
+   "width": 0,
+   "height": 40,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "text",
+   "id": "t_yes",
+   "x": 466,
+   "y": 398,
+   "text": "要",
+   "fontSize": 14,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "rectangle",
+   "id": "run",
+   "x": 330,
+   "y": 430,
+   "width": 250,
+   "height": 74,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "label": {
+    "text": "程序去执行\n这一章只有一种：跑一条命令",
+    "fontSize": 16
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a_run_notes",
+   "x": 330,
+   "y": 467,
+   "width": 200,
+   "height": 225,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     -200,
+     0
+    ],
+    [
+     -200,
+     -225
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c",
+   "strokeStyle": "dashed"
+  },
+  {
+   "type": "text",
+   "id": "t_back",
+   "x": 150,
+   "y": 300,
+   "text": "结果写回记录本\n再转一圈",
+   "fontSize": 14,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 536,
+   "text": "一圈一圈转，直到模型不再要工具。后面每一章，都是在这个循环上加东西。",
+   "fontSize": 16,
+   "strokeColor": "#757575"
+  }
+ ]
+}

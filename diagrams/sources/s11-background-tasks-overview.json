@@ -1,0 +1,359 @@
+{
+ "out": "s11_background_tasks/images/background-tasks-overview.svg",
+ "opts": {
+  "padding": 28
+ },
+ "elements": [
+  {
+   "type": "text",
+   "id": "title",
+   "x": 40,
+   "y": 0,
+   "text": "后台任务：慢命令丢到后台跑，循环不用干等",
+   "fontSize": 22,
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "notes",
+   "x": 40,
+   "y": 90,
+   "width": 180,
+   "height": 84,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "记录本\n(messages)",
+    "fontSize": 18
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a1",
+   "x": 220,
+   "y": 132,
+   "width": 80,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     80,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "rectangle",
+   "id": "llm",
+   "x": 300,
+   "y": 70,
+   "width": 230,
+   "height": 124,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#d0bfff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "大模型\n要跑一条命令\n顺便说一句：放后台吧",
+    "fontSize": 15
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a2",
+   "x": 530,
+   "y": 132,
+   "width": 70,
+   "height": 0,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     70,
+     0
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "diamond",
+   "id": "q",
+   "x": 600,
+   "y": 86,
+   "width": 220,
+   "height": 92,
+   "backgroundColor": "#fff3bf",
+   "fillStyle": "solid",
+   "label": {
+    "text": "放后台吗？",
+    "fontSize": 18
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a3",
+   "x": 710,
+   "y": 178,
+   "width": 0,
+   "height": 40,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     40
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#1e1e1e"
+  },
+  {
+   "type": "text",
+   "id": "t3",
+   "x": 720,
+   "y": 186,
+   "text": "不放",
+   "fontSize": 13,
+   "strokeColor": "#757575"
+  },
+  {
+   "type": "rectangle",
+   "id": "sync",
+   "x": 600,
+   "y": 218,
+   "width": 220,
+   "height": 60,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#1e1e1e",
+   "strokeWidth": 2,
+   "label": {
+    "text": "当场跑，等结果回来\n（和以前一样）",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a4",
+   "x": 820,
+   "y": 132,
+   "width": 75,
+   "height": 204,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     40,
+     0
+    ],
+    [
+     40,
+     204
+    ],
+    [
+     -75,
+     204
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "text",
+   "id": "t4",
+   "x": 840,
+   "y": 104,
+   "text": "放",
+   "fontSize": 13,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "rectangle",
+   "id": "z",
+   "x": 560,
+   "y": 300,
+   "width": 370,
+   "height": 190,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffc9c9",
+   "fillStyle": "solid",
+   "opacity": 30,
+   "strokeColor": "#b91c1c",
+   "strokeStyle": "dashed",
+   "strokeWidth": 2
+  },
+  {
+   "type": "text",
+   "id": "z_t",
+   "x": 578,
+   "y": 310,
+   "text": "后台线程（s11 新增）",
+   "fontSize": 15,
+   "strokeColor": "#b91c1c"
+  },
+  {
+   "type": "rectangle",
+   "id": "bg",
+   "x": 580,
+   "y": 336,
+   "width": 330,
+   "height": 60,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffd8a8",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "另开一条线程去跑这条命令\n马上回一句「已启动，编号 1」给模型",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a5",
+   "x": 745,
+   "y": 396,
+   "width": 0,
+   "height": 24,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     24
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "rectangle",
+   "id": "notify",
+   "x": 580,
+   "y": 420,
+   "width": 330,
+   "height": 60,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#ffffff",
+   "fillStyle": "solid",
+   "strokeColor": "#c2410c",
+   "strokeWidth": 2,
+   "label": {
+    "text": "跑完了：下一圈问模型之前\n把「任务 1 完成，结果是…」塞进记录本",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "arrow",
+   "id": "a6",
+   "x": 560,
+   "y": 450,
+   "width": 430,
+   "height": 276,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     -430,
+     0
+    ],
+    [
+     -430,
+     -276
+    ]
+   ],
+   "endArrowhead": "arrow",
+   "strokeColor": "#c2410c",
+   "strokeStyle": "dashed"
+  },
+  {
+   "type": "text",
+   "id": "t6",
+   "x": 165,
+   "y": 230,
+   "text": "通知和普通工具结果一样\n写回记录本",
+   "fontSize": 13,
+   "strokeColor": "#c2410c"
+  },
+  {
+   "type": "rectangle",
+   "id": "cmp1",
+   "x": 40,
+   "y": 530,
+   "width": 420,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#f1f5f9",
+   "fillStyle": "solid",
+   "strokeColor": "#64748b",
+   "strokeWidth": 2,
+   "label": {
+    "text": "以前：问模型 → 等命令跑完（可能几分钟）→ 才能下一圈",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "rectangle",
+   "id": "cmp2",
+   "x": 500,
+   "y": 530,
+   "width": 430,
+   "height": 70,
+   "roundness": {
+    "type": 3
+   },
+   "backgroundColor": "#b2f2bb",
+   "fillStyle": "solid",
+   "strokeColor": "#15803d",
+   "strokeWidth": 2,
+   "label": {
+    "text": "现在：问模型 → 命令在后台跑 → 继续干别的 → 收到完成通知",
+    "fontSize": 14
+   }
+  },
+  {
+   "type": "text",
+   "id": "cap",
+   "x": 40,
+   "y": 630,
+   "text": "模型自己决定放不放后台；程序保证通知一定送到，而且只送一次。",
+   "fontSize": 15,
+   "strokeColor": "#757575"
+  }
+ ]
+}

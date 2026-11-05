@@ -64,3 +64,50 @@ def test_s15_is_counted_as_assembly_not_a_component() -> None:
     docs = [ROOT / "README.md", ROOT / "SUMMARY.md", *ROOT.glob("guide/*.md"), *ROOT.glob("s[0-9][0-9]_*/README.md")]
     for doc in docs:
         assert not re.search(r"17 ?个(组件|部件|零件)", doc.read_text()), doc
+
+
+# 人话层：这几节写给零基础读者，不许出现代码词；每章最多三个新词。
+# 已改造的章节逐步加进来，最终覆盖 s01～s17。
+PLAIN_SECTIONS = ("本章要学会的判断", "问题", "解决方案", "产品经理视角", "接下来")
+PLAIN_LANGUAGE_CHAPTERS = ("s01_agent_loop", "s02_tool_use", "s03_permission", "s04_hooks")
+
+
+def _section(text: str, title: str) -> str:
+    import re
+
+    match = re.search(rf"^## {re.escape(title)}\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    assert match, f"缺少 ## {title}"
+    return match.group(1)
+
+
+def test_plain_language_sections_have_no_code_words() -> None:
+    for name in PLAIN_LANGUAGE_CHAPTERS:
+        text = (ROOT / name / "README.md").read_text(encoding="utf-8")
+        for title in PLAIN_SECTIONS:
+            body = _section(text, title)
+            assert "`" not in body, f"{name} 的「{title}」里有代码词：{body[body.index('`') - 30:body.index('`') + 40]!r}"
+
+
+def test_plain_language_chapters_introduce_at_most_three_new_words() -> None:
+    for name in PLAIN_LANGUAGE_CHAPTERS:
+        text = (ROOT / name / "README.md").read_text(encoding="utf-8")
+        brief = _section(text, "本章要学会的判断")
+        assert "### 本章新词" in brief, name
+        table = brief.split("### 本章新词", 1)[1]
+        rows = [line for line in table.splitlines() if line.startswith("| ") and not line.startswith("| 词 ")]
+        assert 1 <= len(rows) <= 3, (name, len(rows))
+        for row in rows:
+            assert row.count("|") == 4, (name, row)  # 词 | 意思 | 比喻
+
+
+def test_plain_language_chapters_give_prompts_in_chinese() -> None:
+    # 「试一下」里让学生输入的句子要是中文，零基础读者不该先翻译一遍英文
+    import re
+
+    for name in PLAIN_LANGUAGE_CHAPTERS:
+        text = (ROOT / name / "README.md").read_text(encoding="utf-8")
+        body = _section(text, "试一下")
+        prompts = re.findall(r"^\d+\. `([^`]+)`", body, re.M)
+        assert prompts, name
+        for prompt in prompts:
+            assert re.search(r"[一-鿿]", prompt), (name, prompt)
